@@ -10,7 +10,7 @@
             <context-root>BackendWeb</context-root>
         </web>
     </module>
-    <!--<module id="Backend-EJB">
+    <module id="Backend-EJB">
         <ejb>ejb.jar</ejb>
-    </module>-->
+    </module>
 </application>
