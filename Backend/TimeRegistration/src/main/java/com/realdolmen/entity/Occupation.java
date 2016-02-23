@@ -2,6 +2,7 @@ package com.realdolmen.entity;
 
 import javax.persistence.MappedSuperclass;
 import javax.persistence.Column;
+import javax.validation.constraints.Digits;
 import javax.validation.constraints.NotNull;
 
 /**
@@ -12,36 +13,36 @@ import javax.validation.constraints.NotNull;
 @MappedSuperclass
 public class Occupation {
 
-	@Column
-	@NotNull(message = "name")
-	private String name;
+    @Column
+    @NotNull(message = "name")
+    private String name;
 
-	@Column
-	private String description;
+    @Column
+    private String description;
 
-	public String getName() {
-		return name;
-	}
+    public String getName() {
+        return name;
+    }
 
-	public void setName(String name) {
-		this.name = name;
-	}
+    public void setName(String name) {
+        this.name = name;
+    }
 
-	public String getDescription() {
-		return description;
-	}
+    public String getDescription() {
+        return description;
+    }
 
-	public void setDescription(String description) {
-		this.description = description;
-	}
+    public void setDescription(String description) {
+        this.description = description;
+    }
 
-	@Override
-	public String toString() {
-		String result = getClass().getSimpleName() + " ";
-		if (name != null && !name.trim().isEmpty())
-			result += "name: " + name;
-		if (description != null && !description.trim().isEmpty())
-			result += ", description: " + description;
-		return result;
-	}
+    @Override
+    public String toString() {
+        String result = getClass().getSimpleName() + " ";
+        if (name != null && !name.trim().isEmpty())
+            result += "name: " + name;
+        if (description != null && !description.trim().isEmpty())
+            result += ", description: " + description;
+        return result;
+    }
 }

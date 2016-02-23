@@ -17,6 +17,7 @@ import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
+import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.core.UriBuilder;
@@ -33,7 +34,7 @@ public class EmployeeEndpoint {
 	private EntityManager em;
 
 	@POST
-	@Consumes("application/json")
+	@Produces({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
 	public Response create(Employee entity) {
 		em.persist(entity);
 		return Response.created(
@@ -42,7 +43,7 @@ public class EmployeeEndpoint {
 	}
 
 	@DELETE
-	@Path("/{id:[0-9][0-9]*}")
+	@Path("/{id:[0-9]+}")
 	public Response deleteById(@PathParam("id") Long id) {
 		Employee entity = em.find(Employee.class, id);
 		if (entity == null) {
@@ -53,8 +54,8 @@ public class EmployeeEndpoint {
 	}
 
 	@GET
-	@Path("/{id:[0-9][0-9]*}")
-	@Produces("application/json")
+	@Path("/{id:[0-9]+}")
+	@Produces({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
 	public Response findById(@PathParam("id") Long id) {
 		Employee entity = em.find(Employee.class, id);
 
@@ -66,7 +67,7 @@ public class EmployeeEndpoint {
 	}
 
 	@GET
-	@Produces("application/json")
+	@Produces({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
 	public List<Employee> listAll(@QueryParam("start") Integer startPosition,
 			@QueryParam("max") Integer maxResult) {
 		TypedQuery<Employee> findAllQuery = em.createNamedQuery("Employee.findAll", Employee.class);
@@ -82,8 +83,8 @@ public class EmployeeEndpoint {
 	}
 
 	@PUT
-	@Path("/{id:[0-9][0-9]*}")
-	@Consumes("application/json")
+	@Path("/{id:[0-9]+}")
+	@Produces({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
 	public Response update(@PathParam("id") Long id, Employee entity) {
 		if (entity == null) {
 			return Response.status(Status.BAD_REQUEST).build();
