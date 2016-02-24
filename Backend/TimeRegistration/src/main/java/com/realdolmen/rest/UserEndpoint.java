@@ -5,14 +5,16 @@ import com.realdolmen.entity.validation.New;
 import com.realdolmen.service.SecurityManager;
 import com.realdolmen.validation.ValidationResult;
 import com.realdolmen.validation.Validator;
-import org.jetbrains.annotations.TestOnly;
 
 import javax.ejb.Stateless;
 import javax.inject.Inject;
 import javax.persistence.EntityManager;
 import javax.persistence.NoResultException;
 import javax.persistence.PersistenceContext;
-import javax.ws.rs.*;
+import javax.ws.rs.Consumes;
+import javax.ws.rs.POST;
+import javax.ws.rs.Path;
+import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriBuilder;

@@ -42,4 +42,10 @@ public class SecurityManager {
                 .setIssuedAt(new Date())
                 .signWith(SignatureAlgorithm.HS256, key).compact();
     }
+
+    public Key getKey() {
+        return key;
+    }
+
+    //TODO: create validateToken
 }

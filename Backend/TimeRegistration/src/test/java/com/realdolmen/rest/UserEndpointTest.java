@@ -30,9 +30,7 @@ public class UserEndpointTest {
 
     @Before
     public void setUp() throws Exception {
-
         when(securityManager.randomSalt()).thenReturn("1234567");
-
     }
 
     @After
