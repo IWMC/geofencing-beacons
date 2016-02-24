@@ -4,11 +4,9 @@ import java.util.List;
 
 import javax.ejb.Stateless;
 import javax.persistence.EntityManager;
-import javax.persistence.NoResultException;
 import javax.persistence.OptimisticLockException;
 import javax.persistence.PersistenceContext;
 import javax.persistence.TypedQuery;
-import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
@@ -24,7 +22,8 @@ import javax.ws.rs.core.UriBuilder;
 import com.realdolmen.entity.Employee;
 
 /**
- * 
+ * Endpoint for managing employees. However management <b>related</b> to employees, such as project manager assignment, is not
+ * enclosed in this endpoint.
  */
 @Stateless
 @Path("/employees")
@@ -32,15 +31,6 @@ public class EmployeeEndpoint {
 
 	@PersistenceContext
 	private EntityManager em;
-
-	@POST
-	@Produces({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
-	public Response create(Employee entity) {
-		em.persist(entity);
-		return Response.created(
-				UriBuilder.fromResource(EmployeeEndpoint.class)
-						.path(String.valueOf(entity.getId())).build()).build();
-	}
 
 	@DELETE
 	@Path("/{id:[0-9]+}")
@@ -99,7 +89,7 @@ public class EmployeeEndpoint {
 			return Response.status(Status.NOT_FOUND).build();
 		}
 		try {
-			entity = em.merge(entity);
+            em.merge(entity);
 		} catch (OptimisticLockException e) {
 			return Response.status(Response.Status.CONFLICT)
 					.entity(e.getEntity()).build();

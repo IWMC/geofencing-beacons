@@ -1,16 +1,16 @@
 package com.realdolmen.entity;
 
 import javax.persistence.*;
+import javax.xml.bind.annotation.XmlRootElement;
 import java.io.Serializable;
 import java.util.Date;
 import java.util.Set;
-import javax.persistence.Column;
-import javax.persistence.ManyToOne;
 
 /**
  * An occupation that contains extra data concerning the project.
  */
 @Entity
+@XmlRootElement
 public class Project implements Serializable {
 
 	@Id
@@ -34,6 +34,9 @@ public class Project implements Serializable {
 
 	@OneToMany
 	private Set<Project> subProjects;
+
+    @ManyToMany(mappedBy = "memberProjects")
+    private Set<Employee> employees;
 
 	public Long getId() {
 		return this.id;

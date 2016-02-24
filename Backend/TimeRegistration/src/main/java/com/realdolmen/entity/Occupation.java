@@ -2,7 +2,6 @@ package com.realdolmen.entity;
 
 import javax.persistence.MappedSuperclass;
 import javax.persistence.Column;
-import javax.validation.constraints.Digits;
 import javax.validation.constraints.NotNull;
 
 /**
