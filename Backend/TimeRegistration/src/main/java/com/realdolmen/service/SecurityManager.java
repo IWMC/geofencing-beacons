@@ -50,8 +50,6 @@ public class SecurityManager {
         return key;
     }
 
-    //TODO: create validateToken
-
     public boolean isValidToken(String jwtToken) {
         try {
             Jwts.parser().setSigningKey(key).parseClaimsJws(jwtToken);
