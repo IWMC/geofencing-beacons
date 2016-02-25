@@ -1,7 +1,5 @@
 package com.realdolmen.validation;
 
-import javax.ejb.Local;
-
 /**
  * Validator EJB that can validate entities and will return understandable multilingual feedback.
  */

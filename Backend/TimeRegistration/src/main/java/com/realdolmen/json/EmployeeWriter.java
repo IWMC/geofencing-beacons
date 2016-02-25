@@ -4,7 +4,6 @@ package com.realdolmen.json;
 import com.realdolmen.entity.Employee;
 
 import javax.json.Json;
-import javax.json.JsonObject;
 import javax.json.JsonWriter;
 import javax.ws.rs.Produces;
 import javax.ws.rs.WebApplicationException;

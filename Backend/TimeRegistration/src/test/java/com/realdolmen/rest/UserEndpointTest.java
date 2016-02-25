@@ -1,50 +1,28 @@
 package com.realdolmen.rest;
 
+import com.realdolmen.ArquillianUtil;
 import com.realdolmen.entity.Employee;
+import com.realdolmen.entity.validation.New;
 import com.realdolmen.service.SecurityManager;
-import com.realdolmen.validation.EmployeeValidator;
+import com.realdolmen.validation.ValidationResult;
 import com.realdolmen.validation.Validator;
-import com.sun.security.sasl.ClientFactoryImpl;
-import org.glassfish.jersey.message.internal.MessageBodyProviderNotFoundException;
 import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.container.test.api.RunAsClient;
-import org.jboss.arquillian.container.test.api.TargetsContainer;
 import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
-import org.jboss.shrinkwrap.api.asset.Asset;
 import org.jboss.shrinkwrap.api.asset.EmptyAsset;
-import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.jboss.shrinkwrap.impl.base.asset.AssetUtil;
 import org.jboss.shrinkwrap.resolver.api.maven.Maven;
-import org.jboss.shrinkwrap.resolver.api.maven.PomEquippedResolveStage;
-import org.jboss.shrinkwrap.resolver.api.maven.PomEquippedResolveStageBase;
-import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.junit.runner.Runner;
 import org.mockito.*;
-import org.mockito.internal.MockitoCore;
-import org.mockito.runners.MockitoJUnitRunner;
 
-import javax.inject.Inject;
 import javax.persistence.EntityManager;
-import javax.persistence.Query;
+import javax.persistence.NoResultException;
 import javax.persistence.TypedQuery;
-import javax.ws.rs.client.Client;
-import javax.ws.rs.client.ClientBuilder;
-import javax.ws.rs.client.Entity;
-import javax.ws.rs.client.WebTarget;
-import javax.ws.rs.core.Configuration;
-import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import javax.ws.rs.core.UriBuilder;
 
-import java.net.URI;
-import java.net.URL;
-import java.security.NoSuchAlgorithmException;
+import java.util.ArrayList;
 import java.util.Arrays;
 
 import static org.mockito.Mockito.*;
@@ -53,33 +31,30 @@ import static org.junit.Assert.*;
 @RunWith(Arquillian.class)
 public class UserEndpointTest {
 
+    @Spy private SecurityManager securityManager;
     @Mock private EntityManager entityManager;
-    @Mock private SecurityManager securityManager;
+    @Mock private Validator<Employee> validator;
 
-    @Inject @InjectMocks
-    private UserEndpoint endpoint;
+    @InjectMocks
+    private UserEndpoint endpoint = new UserEndpoint();
     private Employee employee;
 
     private TypedQuery<Employee> singleResultFoundQuery;
 
     @Deployment
     public static WebArchive createDeployment() {
-        WebArchive archive = ShrinkWrap.create(WebArchive.class);
-        Arrays.stream(Maven.resolver().loadPomFromFile("pom.xml").importRuntimeAndTestDependencies()
-                .resolve().withoutTransitivity().asFile()).forEach(archive::addAsLibrary);
-
-        return archive.addAsResource("META-INF/persistence.xml")
-                .addPackages(true, "com.realdolmen")
-                .addAsManifestResource(EmptyAsset.INSTANCE, "beans.xml");
+        return ArquillianUtil.createDeployment();
     }
 
     @Before
     public void setUp() throws Exception {
-        entityManager = mock(EntityManager.class);
+        MockitoAnnotations.initMocks(this);
         final String password = "ThePass123";
         employee = new Employee(password, "1234567", "123456789", "email@email.com", "Test", "Test", "Test");
         singleResultFoundQuery = mockQuerySingleResult(employee);
         when(securityManager.randomSalt()).thenReturn("1234567");
+        when(entityManager.createNamedQuery("Employee.findByUsername", Employee.class)).thenReturn(singleResultFoundQuery);
+        when(validator.validate(eq(employee), anyObject())).thenReturn(new ValidationResult(true, new ArrayList<>()));
     }
 
     private <T> TypedQuery<T> mockQuerySingleResult(T result) {
@@ -89,23 +64,48 @@ public class UserEndpointTest {
         return query;
     }
 
-    @After
-    public void tearDown() throws Exception {
-
+    private <T> TypedQuery<T> mockQueryNoResult() {
+        TypedQuery<T> query = mock(TypedQuery.class);
+        when(query.getSingleResult()).thenThrow(NoResultException.class);
+        when(query.setParameter(anyString(), anyObject())).thenReturn(query);
+        return query;
     }
 
     @Test
-    public void testRegister() throws Exception {
-
+    public void testRegisterInvalidData() throws Exception {
+        ValidationResult result = new ValidationResult(false, Arrays.asList(new String[] { "invalidation1", "invalidation2" }));
+        when(validator.validate(employee, New.class)).thenReturn(result);
+        Response response = endpoint.register(employee);
+        verify(validator, atLeastOnce()).validate(employee, New.class);
+        assertEquals("response returns 400 code", 400, response.getStatus());
+        assertEquals("response returns validation violations", result, response.getEntity());
     }
 
     @Test
-    public void testLoginWithValidCredentialsReturnsJWT(@ArquillianResource URL baseURL) throws Exception {
+    public void testRegisterValidData() throws Exception {
+        Response response = endpoint.register(employee);
+        assertEquals("valid registration returns 201 code", 201, response.getStatus());
+        verify(validator, atLeastOnce()).validate(employee, New.class);
+    }
+
+    @Test
+    public void testLoginWithValidCredentialsReturnsJWT() throws Exception {
         final String validToken = "the.jwt.token";
-        when(entityManager.createNamedQuery("Employee.findByUsername", Employee.class)).thenReturn(singleResultFoundQuery);
+        when(securityManager.generateToken(employee)).thenReturn(validToken);
+        when(securityManager.checkPassword(employee, employee.getPassword())).thenReturn(true);
         Response response = endpoint.login(employee);
         assertEquals("response has 200 OK status", 200, response.getStatus());
         assertNotNull("response contains JWT", response.getEntity());
         assertEquals("response returns correct JWT", validToken, response.getEntity());
+        verify(singleResultFoundQuery, atLeastOnce()).setParameter("username", employee.getUsername());
+    }
+
+    @Test
+    public void testLoginWithInvalidCredentialsReturns400() throws Exception {
+        TypedQuery<Employee> query = mockQueryNoResult();
+        when(entityManager.createNamedQuery("Employee.findByUsername", Employee.class)).thenReturn(query);
+        Response response = endpoint.login(employee);
+        assertEquals("response has 400 status", 400, response.getStatus());
+        assertNull("response does not contain JWT", response.getEntity());
     }
 }

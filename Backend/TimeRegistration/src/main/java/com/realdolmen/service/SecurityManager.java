@@ -7,16 +7,13 @@ import io.jsonwebtoken.SignatureException;
 import io.jsonwebtoken.impl.crypto.MacProvider;
 
 import javax.ejb.Singleton;
-import javax.ejb.Stateless;
 import java.math.BigInteger;
 import java.nio.charset.Charset;
 import java.security.Key;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
-import java.util.Arrays;
 import java.util.Date;
-import java.util.concurrent.ThreadLocalRandom;
 
 /**
  * A stateless EJB used as a collection of security functions.
