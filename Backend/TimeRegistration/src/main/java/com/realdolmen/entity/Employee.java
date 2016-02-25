@@ -68,7 +68,7 @@ public class Employee implements Serializable {
     @Transient
     @NotNull(message = "password.empty", groups = New.class)
     @Size(min = 6, max = 15, message = "password.length", groups = New.class)
-    @Pattern(regexp = "^(?=.*\\d)(?=.*[a-z])(?=.*[A-Z])[0-9a-zA-Z]*$", message = "password.pattern", groups = New.class)
+    @Pattern(regexp = "^((?=.*\\d)(?=.*[a-z])(?=.*[A-Z])[0-9a-zA-Z]*)?$", message = "password.pattern")
     private String password;
 
     @ManyToMany
