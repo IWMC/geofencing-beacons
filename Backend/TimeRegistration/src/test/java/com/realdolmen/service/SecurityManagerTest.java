@@ -4,12 +4,17 @@ import com.realdolmen.entity.Employee;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.SignatureException;
+import io.jsonwebtoken.impl.crypto.MacProvider;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
+import org.mockito.Spy;
 
 import java.nio.charset.Charset;
+import java.security.Key;
 import java.security.MessageDigest;
+import java.util.Base64;
 import java.util.Date;
 
 import static org.junit.Assert.*;
@@ -21,6 +26,9 @@ public class SecurityManagerTest {
 
     private SecurityManager securityManager;
     private Employee employee;
+
+    @Spy
+    private Key jwtKey = MacProvider.generateKey();
 
     @Before
     public void setUp() throws Exception {
@@ -42,6 +50,7 @@ public class SecurityManagerTest {
         assertNotNull(secondSalt);
         assertTrue("Salt length is larger than 0", firstSalt.length() > 0);
         assertTrue("Salt length is larger than 0", secondSalt.length() > 0);
+        System.out.println("Performing 1000 generations for salt randomness");
         for (int i = 0; i < 1000; i++) {
             firstSalt = securityManager.randomSalt();
             secondSalt = securityManager.randomSalt();
@@ -53,7 +62,7 @@ public class SecurityManagerTest {
     public void testGenerateHash() throws Exception {
         String generatedHash = securityManager.generateHash(employee.getSalt(), employee.getPassword());
         String expectedHash = new String(MessageDigest.getInstance("SHA-256").digest((employee.getSalt() + employee.getPassword()).getBytes()), Charset.forName("UTF-8"));
-        System.out.println(generatedHash + " for salt: " + employee.getSalt() + " and pass: " + employee.getPassword());
+        System.out.println("hash in base64: " + Base64.getEncoder().encodeToString(generatedHash.getBytes()) + " for salt: " + employee.getSalt() + " and pass: " + employee.getPassword());
         assertEquals(expectedHash, generatedHash);
     }
 
@@ -65,17 +74,27 @@ public class SecurityManagerTest {
     }
 
     @Test
-    public void testGenerateToken() throws Exception {
-        String firstToken = securityManager.generateToken(employee);
-        String secondToken = securityManager.generateToken(employee);
-        Jwts.parser().setSigningKey(securityManager.getKey()).parseClaimsJws(firstToken);
+    public void testGenerateTokenReturnsValidToken() throws Exception {
+        String firstToken = null;
+        System.out.println("Performing 1000 jwt token generations");
+        for (int i = 0; i < 1000; i++) {
+            firstToken = securityManager.generateToken(employee);
+            Thread.sleep(2);
+            String secondToken = securityManager.generateToken(employee);
+            assertNotEquals(firstToken, secondToken);
+        }
+
+        assertNotNull(Jwts.parser().setSigningKey(securityManager.getKey()).parseClaimsJws(firstToken).getBody().getIssuedAt());
     }
 
     @Test(expected = SignatureException.class)
-    public void testGenerateTokenInvalid() throws Exception {
+    public void testInvalidTokenIsInvalidated() throws Exception {
+        long timestamp = System.currentTimeMillis();
         String badToken = Jwts.builder().setSubject(employee.getUsername()).claim("id", employee.getId())
-                .setIssuedAt(new Date())
-                .signWith(SignatureAlgorithm.HS256, "invalidkey").compact();
+                .claim("timestamp", timestamp)
+                .setIssuedAt(new Date(timestamp))
+                .signWith(SignatureAlgorithm.HS256, MacProvider.generateKey()).compact();
+        assertFalse(securityManager.isValidToken(badToken));
         Jwts.parser().setSigningKey(securityManager.getKey()).parseClaimsJws(badToken);
     }
 }
