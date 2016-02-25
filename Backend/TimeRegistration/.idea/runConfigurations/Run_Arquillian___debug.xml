@@ -1,0 +1,7 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="Run Arquillian + debug" type="Multirun" factoryName="Multirun" singleton="true" separateTabs="true" startOneByOne="true" markFailedProcess="true" hideSuccessProcess="false" delayTime="5">
+    <runConfiguration name="com.realdolmen in TimeRegistration" type="JUnit" />
+    <runConfiguration name="Arquillian debug" type="Remote" />
+    <method />
+  </configuration>
+</component>

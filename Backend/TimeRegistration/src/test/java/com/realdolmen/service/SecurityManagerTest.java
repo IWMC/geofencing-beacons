@@ -25,9 +25,6 @@ public class SecurityManagerTest {
     private SecurityManager securityManager;
     private Employee employee;
 
-    @Spy
-    private Key jwtKey = MacProvider.generateKey();
-
     @Before
     public void setUp() throws Exception {
         securityManager = new SecurityManager();

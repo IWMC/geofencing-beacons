@@ -35,7 +35,6 @@ captures/
 
 # Custom
 *.iml
-*.idea
 *.ipr
 *.iws
 out
@@ -47,4 +46,6 @@ crashlytics.properties
 crashlytics-build.properties
 fabric.properties
 
-
+# IntelliJ private project elements
+*/TimeRegistration/.idea
+!*/TimeRegistration/.idea/runConfigurations
