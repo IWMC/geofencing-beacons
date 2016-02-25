@@ -54,8 +54,9 @@ import static org.junit.Assert.*;
 public class UserEndpointTest {
 
     @Mock private EntityManager entityManager;
+    @Mock private SecurityManager securityManager;
 
-    @Inject
+    @Inject @InjectMocks
     private UserEndpoint endpoint;
     private Employee employee;
 
@@ -75,10 +76,10 @@ public class UserEndpointTest {
     @Before
     public void setUp() throws Exception {
         entityManager = mock(EntityManager.class);
-        endpoint.setEntityManager(entityManager);
         final String password = "ThePass123";
         employee = new Employee(password, "1234567", "123456789", "email@email.com", "Test", "Test", "Test");
         singleResultFoundQuery = mockQuerySingleResult(employee);
+        when(securityManager.randomSalt()).thenReturn("1234567");
     }
 
     private <T> TypedQuery<T> mockQuerySingleResult(T result) {

@@ -3,6 +3,7 @@ package com.realdolmen.service;
 import com.realdolmen.entity.Employee;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
+import io.jsonwebtoken.SignatureException;
 import io.jsonwebtoken.impl.crypto.MacProvider;
 
 import javax.ejb.Singleton;
@@ -38,8 +39,26 @@ public class SecurityManager {
     }
 
     public String generateToken(Employee employee) {
+        long timestamp = System.currentTimeMillis();
         return Jwts.builder().setSubject(employee.getUsername()).claim("id", employee.getId())
-                .setIssuedAt(new Date())
+                .claim("timestamp", timestamp)
+                .setIssuedAt(new Date(timestamp))
                 .signWith(SignatureAlgorithm.HS256, key).compact();
+    }
+
+    public Key getKey() {
+        return key;
+    }
+
+    //TODO: create validateToken
+
+    public boolean isValidToken(String jwtToken) {
+        try {
+            Jwts.parser().setSigningKey(key).parseClaimsJws(jwtToken);
+        } catch (SignatureException se) {
+            return false;
+        }
+
+        return true;
     }
 }
