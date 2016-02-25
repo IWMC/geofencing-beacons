@@ -35,11 +35,10 @@ captures/
 
 # Custom
 *.iml
-.idea
+*.idea
 *.ipr
 *.iws
 out
-
 .idea_modules/
 atlassian-ide-plugin.xml
 

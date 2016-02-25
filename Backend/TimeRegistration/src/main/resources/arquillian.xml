@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<arquillian xmlns="http://jboss.org/schema/arquillian">
+
+
+    <container qualifier="jboss" default="true">
+        <protocol type="Servlet 3.0"/>
+        <configuration>
+            <property name="jbossHome">C:\Users\FDMAZ46\Documents\WildFly</property>
+            <property name="modulePath">C:\Users\FDMAZ46\Documents\WildFly\modules</property>
+            <property name="javaVmArguments">-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=5005</property>
+        </configuration>
+    </container>
+</arquillian>

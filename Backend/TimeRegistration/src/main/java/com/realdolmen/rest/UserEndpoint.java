@@ -66,6 +66,7 @@ public class UserEndpoint {
      */
     @POST
     @Path("login")
+    @Consumes(MediaType.APPLICATION_JSON)
     public Response login(Employee employee) throws NoSuchAlgorithmException {
         if (employee.getUsername() == null || employee.getUsername().isEmpty() || employee.getPassword() == null
                 || employee.getPassword().isEmpty()) {
@@ -86,5 +87,10 @@ public class UserEndpoint {
         }
 
         return Response.ok().entity(securityManager.generateToken(dbEmployee)).build();
+    }
+
+    @TestOnly
+    public void setEntityManager(EntityManager entityManager) {
+        this.em = entityManager;
     }
 }

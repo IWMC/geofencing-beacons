@@ -6,6 +6,7 @@ import com.realdolmen.entity.Employee;
 import javax.json.Json;
 import javax.json.JsonObject;
 import javax.json.JsonWriter;
+import javax.ws.rs.Produces;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.MultivaluedMap;
@@ -20,6 +21,7 @@ import java.lang.reflect.Type;
  * Created by FDMAZ46 on 24/02/2016.
  */
 @Provider
+@Produces(MediaType.APPLICATION_JSON)
 public class EmployeeWriter implements MessageBodyWriter<Employee> {
 
     @Override
