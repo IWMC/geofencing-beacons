@@ -4,6 +4,7 @@ import com.realdolmen.entity.validation.New;
 
 import javax.persistence.*;
 import java.io.Serializable;
+import java.util.HashSet;
 import java.util.Set;
 import javax.validation.constraints.*;
 import javax.xml.bind.annotation.XmlRootElement;
@@ -18,6 +19,10 @@ import javax.xml.bind.annotation.XmlRootElement;
  * <p>
  * This entity will be used to check login credentials of users and will be used to do all operations involving users.
  * For example: assigning a project manager to a project and adding employees as members of a project.
+ * <p>
+ *     <b>EDIT: </b>We are using the Joined Table inheritance strategy so that the joined table between employees and
+ *     projects does not need default values for their foreign keys.
+ * </p>
  */
 @Entity
 @XmlRootElement
@@ -27,12 +32,12 @@ import javax.xml.bind.annotation.XmlRootElement;
         @NamedQuery(name = "Management.findByUsername", query = "SELECT e FROM Employee e WHERE e.username = :username " +
                 "AND TYPE(e) IN (ProjectManager, ManagementEmployee)")
 })
-@Inheritance(strategy = InheritanceType.SINGLE_TABLE)
+@Inheritance(strategy = InheritanceType.JOINED)
 public class Employee implements Serializable {
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
-    @Column(name = "id", updatable = false, nullable = false)
+    @Column(name = "id", updatable = false)
     private Long id;
 
     @Version
@@ -72,7 +77,12 @@ public class Employee implements Serializable {
     private String password;
 
     @ManyToMany
-    private Set<Project> memberProjects;
+    @JoinTable(
+            name = "employee_project",
+            joinColumns = @JoinColumn(name = "employee_id"),
+            inverseJoinColumns = @JoinColumn(name = "project_id")
+    )
+    private Set<Project> memberProjects = new HashSet<>();
 
     public Employee() {
     }

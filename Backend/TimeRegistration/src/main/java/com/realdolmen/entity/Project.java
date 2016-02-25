@@ -4,6 +4,7 @@ import javax.persistence.*;
 import javax.xml.bind.annotation.XmlRootElement;
 import java.io.Serializable;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.Set;
 
 /**
@@ -11,7 +12,7 @@ import java.util.Set;
  */
 @Entity
 @XmlRootElement
-public class Project implements Serializable {
+public class Project extends Occupation implements Serializable {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.AUTO)
@@ -33,10 +34,10 @@ public class Project implements Serializable {
 	private int projectNr;
 
 	@OneToMany
-	private Set<Project> subProjects;
+	private Set<Project> subProjects = new HashSet<>();
 
     @ManyToMany(mappedBy = "memberProjects")
-    private Set<Employee> employees;
+    private Set<Employee> employees = new HashSet<>();
 
 	public Long getId() {
 		return this.id;
@@ -109,6 +110,10 @@ public class Project implements Serializable {
 
 	public void setSubProjects(Set<Project> subProjects) {
 		this.subProjects = subProjects;
+	}
+
+	public Set<Employee> getEmployees() {
+		return employees;
 	}
 
 	@Override

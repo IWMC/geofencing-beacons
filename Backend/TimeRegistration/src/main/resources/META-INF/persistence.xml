@@ -15,4 +15,20 @@
             <property name="hibernate.dialect" value="org.hibernate.dialect.MySQL5InnoDBDialect"/>
         </properties>
     </persistence-unit>
+
+    <persistence-unit name="TimeRegistration-test-persistence-unit" transaction-type="JTA">
+        <description>Forge Persistence Unit</description>
+        <provider>org.hibernate.jpa.HibernatePersistenceProvider</provider>
+        <jta-data-source>java:jboss/datasources/LocalTimeRegistrationTest</jta-data-source>
+        <exclude-unlisted-classes>false</exclude-unlisted-classes>
+        <validation-mode>NONE</validation-mode>
+        <properties>
+
+            <property name="hibernate.hbm2ddl.auto" value="create-drop"/>
+            <property name="hibernate.show_sql" value="true"/>
+            <property name="hibernate.format_sql" value="true"/>
+            <property name="hibernate.transaction.flush_before_completion" value="true"/>
+            <property name="hibernate.dialect" value="org.hibernate.dialect.MySQL5InnoDBDialect"/>
+        </properties>
+    </persistence-unit>
 </persistence>

@@ -28,7 +28,7 @@ import com.realdolmen.entity.Employee;
 @Path("/employees")
 public class EmployeeEndpoint {
 
-	@PersistenceContext
+	@PersistenceContext(unitName = "TimeRegistration-persistence-unit")
 	private EntityManager em;
 
 	@DELETE
