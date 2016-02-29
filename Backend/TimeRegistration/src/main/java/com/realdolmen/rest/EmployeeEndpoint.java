@@ -3,6 +3,7 @@ package com.realdolmen.rest;
 import java.util.List;
 
 import javax.ejb.Stateless;
+import javax.inject.Named;
 import javax.persistence.EntityManager;
 import javax.persistence.OptimisticLockException;
 import javax.persistence.PersistenceContext;

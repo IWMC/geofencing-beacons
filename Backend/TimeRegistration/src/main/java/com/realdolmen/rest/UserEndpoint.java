@@ -35,7 +35,7 @@ public class UserEndpoint {
     @Inject
     private SecurityManager securityManager;
 
-    @PersistenceContext(unitName = "TimeRegistration-persistence-unit")
+    @PersistenceContext(unitName = "TimeRegistration-test-persistence-unit")
     private EntityManager em;
 
     @POST

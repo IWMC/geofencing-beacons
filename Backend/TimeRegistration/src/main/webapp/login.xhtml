@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+        "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:mp="http://primefaces.org/ui/material"
+      xmlns:p="http://primefaces.org/ui">
+<f:view locale="nl">
+    <h:head>
+        <meta name="viewport" content="width=device-width, initial-scale=0.9"/>
+        <h:outputStylesheet library="css" name="common.css"/>
+        <link rel="stylesheet"
+              href="https://cdnjs.cloudflare.com/ajax/libs/materialize/0.97.5/css/materialize.min.css"/>
+        <title>Aanmelden</title>
+    </h:head>
+    <h:body styleClass="valign-wrapper container" style="max-width: 380px; height: 90vh">
+        <div class="s12 center-align">
+            <h:form styleClass="card valign">
+                <div class="card-content">
+                    <h:graphicImage library="img" name="logo.svg"/>
+                    <mp:input label="Gebruikersnaam" id="username" value="#{login.username}" required="true"
+                              requiredMessage=""/>
+                    <mp:input type="password" label="Wachtwoord" id="password" value="#{login.password}"/>
+                    <p:message autoUpdate="true" for="login_button" errorClass="err" warnClass="warn" infoClass="info" />
+                    <mp:button id="login_button" action="#{login.doLogin}" value="Inloggen" binding="#{login.loginButton}"/>
+                </div>
+            </h:form>
+        </div>
+        <script type="javascript"
+                src="https://cdnjs.cloudflare.com/ajax/libs/materialize/0.97.5/js/materialize.min.js"></script>
+    </h:body>
+</f:view>
+</html>
