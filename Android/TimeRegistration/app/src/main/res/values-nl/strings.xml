@@ -5,4 +5,9 @@
     <string name="login_header_title">Aanmelden</string>
     <string name="login_password_hint">Wachtwoord</string>
     <string name="login_login_button">Meld aan</string>
+    <string name="login_empty_field">Dit veld mag niet leeg zijn.</string>
+    <string name="login_logging_in">Bezig met aanmelden...</string>
+    <string name="login_incorrect_credentials">De ingevulde gegevens zijn ongeldig!</string>
+    <string name="login_retry">Opnieuw</string>
+    <string name="login_server_unreachable">Server kon niet gecontacteerd worden!</string>
 </resources>
