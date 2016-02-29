@@ -19,7 +19,8 @@ import java.util.function.Consumer;
 import static org.junit.Assert.*;
 
 /**
- * Created by BCCAZ45 on 25/02/2016.
+ * This test class tests JPA operations with {@link Employee}s. It ensures that all JPA operations are consistent and
+ * valid.
  */
 @RunWith(Arquillian.class)
 public class EmployeeTest {
