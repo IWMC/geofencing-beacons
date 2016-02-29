@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Tijdsregistratie</string>
+    <string name="login_username_hint">Gebruikersnaam of email</string>
+    <string name="login_header_title">Aanmelden</string>
+    <string name="login_password_hint">Wachtwoord</string>
+    <string name="login_login_button">Meld aan</string>
+</resources>

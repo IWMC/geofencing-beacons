@@ -1,3 +1,7 @@
 <resources>
     <string name="app_name">Time Registration</string>
+    <string name="login_username_hint">Username or email</string>
+    <string name="login_header_title">Log in</string>
+    <string name="login_password_hint">Password</string>
+    <string name="login_login_button">Log in</string>
 </resources>
