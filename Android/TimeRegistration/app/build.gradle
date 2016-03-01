@@ -29,4 +29,5 @@ dependencies {
     compile 'com.mcxiaoke.volley:library:1.0.19'
     compile 'com.jakewharton:butterknife:7.0.1'
     compile 'com.google.code.gson:gson:2.6.2'
+    androidTestCompile 'org.mockito:mockito-all:2.0.2-beta'
 }

@@ -4,9 +4,10 @@
     <string name="login_header_title">Log in</string>
     <string name="login_password_hint">Password</string>
     <string name="login_login_button">Log in</string>
-    <string name="login_empty_field">This field cannot be empty.</string>
+    <string name="login_empty_field">This field cannot be empty</string>
     <string name="login_logging_in">Logging in...</string>
     <string name="login_incorrect_credentials">The credentials you provided are incorrect!</string>
     <string name="login_retry">Retry</string>
     <string name="login_server_unreachable">Could not contact server!</string>
+    <string name="login_generic_error">Failed to login due to a server error!</string>
 </resources>

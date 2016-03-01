@@ -42,7 +42,6 @@ public class LoginActivity extends AppCompatActivity {
     @OnClick(R.id.login_login_button)
     public void doLogin() {
         if (validate()) {
-            //TODO: Network request for login
             final ProgressDialog loginProgress = new ProgressDialog(this);
             loginProgress.setIndeterminate(true);
             loginProgress.setMessage(getString(R.string.login_logging_in));
@@ -57,6 +56,8 @@ public class LoginActivity extends AppCompatActivity {
                             loginProgress.dismiss();
                         }
                     });
+                    Snackbar.make(findViewById(android.R.id.content), "Token received.", Snackbar.LENGTH_LONG).show();
+                    System.out.println("Token: " + data.getJwtToken());
                 }
 
                 @Override
@@ -64,7 +65,11 @@ public class LoginActivity extends AppCompatActivity {
                     if (error.networkResponse != null) {
                         if (error.networkResponse.statusCode == 400) {
                             Snackbar.make(findViewById(android.R.id.content), R.string.login_incorrect_credentials, Snackbar.LENGTH_LONG).show();
+                        } else {
+                            Snackbar.make(findViewById(android.R.id.content), R.string.login_generic_error, Snackbar.LENGTH_LONG).show();
                         }
+
+
                     } else {
                         if (error instanceof GenericVolleyError) {
                             Log.e(TAG, "onError: " + error.getMessage());

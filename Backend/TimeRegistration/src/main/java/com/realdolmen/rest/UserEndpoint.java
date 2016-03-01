@@ -2,6 +2,7 @@ package com.realdolmen.rest;
 
 import com.realdolmen.entity.Employee;
 import com.realdolmen.entity.validation.New;
+import com.realdolmen.json.JsonWebToken;
 import com.realdolmen.service.SecurityManager;
 import com.realdolmen.validation.ValidationResult;
 import com.realdolmen.validation.Validator;
@@ -70,6 +71,7 @@ public class UserEndpoint {
     @POST
     @Path("login")
     @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
     public Response login(Employee employee) throws NoSuchAlgorithmException {
         if (employee.getUsername() == null || employee.getUsername().isEmpty() || employee.getPassword() == null
                 || employee.getPassword().isEmpty()) {
@@ -89,7 +91,7 @@ public class UserEndpoint {
             return Response.status(Response.Status.BAD_REQUEST).build();
         }
 
-        return Response.ok().entity(securityManager.generateToken(dbEmployee)).build();
+        return Response.ok().entity(new JsonWebToken(securityManager.generateToken(dbEmployee))).build();
     }
 
     @TestOnly
