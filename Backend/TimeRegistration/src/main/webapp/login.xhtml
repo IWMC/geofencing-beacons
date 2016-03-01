@@ -16,15 +16,14 @@
         <title>Aanmelden</title>
     </h:head>
     <h:body styleClass="valign-wrapper container" style="max-width: 380px; height: 90vh">
-        <div class="s12 center-align">
-            <h:form styleClass="card valign">
+        <div class="center-align">
+            <h:form styleClass="card valign" id="loginForm">
                 <div class="card-content">
                     <h:graphicImage library="img" name="logo.svg"/>
-                    <mp:input label="Gebruikersnaam" id="username" value="#{login.username}" required="true"
-                              requiredMessage=""/>
-                    <mp:input type="password" label="Wachtwoord" id="password" value="#{login.password}"/>
-                    <p:message autoUpdate="true" for="login_button" errorClass="err" warnClass="warn" infoClass="info" />
-                    <mp:button id="login_button" action="#{login.doLogin}" value="Inloggen" binding="#{login.loginButton}"/>
+                    <mp:input placeholder="Gebruikersnaam" id="username" value="#{login.username}" floatingPlaceholder="false" />
+                    <mp:input type="password" placeholder="Wachtwoord" id="password" value="#{login.password}" floatingPlaceholder="false" />
+                    <h:messages id="messages" showDetail="false" errorClass="error" />
+                    <mp:button id="loginButton" action="#{login.doLogin}" value="Inloggen" update="loginForm:messages" />
                 </div>
             </h:form>
         </div>

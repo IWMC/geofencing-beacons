@@ -95,8 +95,8 @@ public class UserEndpointTest {
         when(securityManager.checkPassword(employee, employee.getPassword())).thenReturn(true);
         Response response = endpoint.login(employee);
         assertEquals("response has 200 OK status", 200, response.getStatus());
-        assertNotNull("response contains JWT", response.getEntity());
-        assertEquals("response returns correct JWT", validToken, response.getEntity());
+        assertNotNull("response contains JWT_KEY", response.getEntity());
+        assertEquals("response returns correct JWT_KEY", validToken, response.getEntity());
         verify(singleResultFoundQuery, atLeastOnce()).setParameter("username", employee.getUsername());
     }
 
@@ -106,6 +106,6 @@ public class UserEndpointTest {
         when(entityManager.createNamedQuery("Employee.findByUsername", Employee.class)).thenReturn(query);
         Response response = endpoint.login(employee);
         assertEquals("response has 400 status", 400, response.getStatus());
-        assertNull("response does not contain JWT", response.getEntity());
+        assertNull("response does not contain JWT_KEY", response.getEntity());
     }
 }

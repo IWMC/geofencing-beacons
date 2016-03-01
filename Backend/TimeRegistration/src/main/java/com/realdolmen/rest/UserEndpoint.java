@@ -65,7 +65,7 @@ public class UserEndpoint {
 
     /**
      * @param employee the credentials with which the user tries to log in
-     * @return 200 code with a JWT used as a session token for later validation or 400 code
+     * @return 200 code with a JWT_KEY used as a session token for later validation or 400 code
      */
     @POST
     @Path("login")

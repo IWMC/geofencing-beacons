@@ -2,15 +2,16 @@ package com.realdolmen.jsf;
 
 import com.realdolmen.entity.Employee;
 import com.realdolmen.rest.UserEndpoint;
+import org.primefaces.material.application.ToastService;
 
-import javax.annotation.PostConstruct;
 import javax.enterprise.context.RequestScoped;
-import javax.enterprise.context.SessionScoped;
 import javax.faces.application.FacesMessage;
 import javax.faces.component.UIComponent;
 import javax.faces.context.FacesContext;
 import javax.inject.Inject;
 import javax.inject.Named;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpSession;
 import javax.ws.rs.core.Response;
 import java.io.Serializable;
 import java.security.NoSuchAlgorithmException;
@@ -30,22 +31,29 @@ public class Login implements Serializable {
 
     private UIComponent loginButton;
 
-    public void doLogin() {
+    public String doLogin() {
         Employee employee = new Employee();
         employee.setUsername(username);
         employee.setPassword(password);
-        boolean succeeded = false;
+        Response jwt = null;
 
         try {
-            succeeded = endpoint.login(employee).getStatus() == 200;
+            jwt = endpoint.login(employee);
         } catch (NoSuchAlgorithmException e) {
             e.printStackTrace();
         } finally {
-            if (succeeded) {
-
+            if (jwt != null && jwt.getStatus() == 200) {
+                FacesContext context = FacesContext.getCurrentInstance();
+                HttpServletRequest request = (HttpServletRequest)context.getExternalContext().getRequest();
+                HttpSession httpSession = request.getSession(false);
+                httpSession.setAttribute(AuthorizationFilter.JWT_KEY, jwt.getEntity());
+                return Pages.index().redirect();
             } else {
-                FacesContext.getCurrentInstance().addMessage(loginButton.getClientId(),
-                        new FacesMessage("Verkeerd gebruikersnaam of wachtwoord"));
+                String messageText = "Verkeerde gebruikersnaam of wachtwoord";
+                ToastService.getInstance().newToast(messageText);
+                FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_ERROR, messageText, messageText);
+                FacesContext.getCurrentInstance().addMessage(null, message);
+                return "";
             }
         }
     }

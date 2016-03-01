@@ -9,3 +9,7 @@
 .btn, .btn-large {
     background-color: #009AD8 !important;
 }
+
+.error {
+    color: #F22613;
+}
