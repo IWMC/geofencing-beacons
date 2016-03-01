@@ -1,6 +1,7 @@
 package com.realdolmen.jsf;
 
 import com.realdolmen.entity.Employee;
+import com.realdolmen.json.JsonWebToken;
 import com.realdolmen.rest.UserEndpoint;
 import org.primefaces.material.application.ToastService;
 
@@ -26,27 +27,25 @@ public class Login implements Serializable {
     @Inject
     private UserEndpoint endpoint;
 
+    @Inject
+    private Session session;
+
     private String username = "";
     private String password = "";
-
-    private UIComponent loginButton;
 
     public String doLogin() {
         Employee employee = new Employee();
         employee.setUsername(username);
         employee.setPassword(password);
-        Response jwt = null;
+        Response response = null;
 
         try {
-            jwt = endpoint.login(employee);
+            response = endpoint.loginLocal(employee);
         } catch (NoSuchAlgorithmException e) {
             e.printStackTrace();
         } finally {
-            if (jwt != null && jwt.getStatus() == 200) {
-                FacesContext context = FacesContext.getCurrentInstance();
-                HttpServletRequest request = (HttpServletRequest)context.getExternalContext().getRequest();
-                HttpSession httpSession = request.getSession(false);
-                httpSession.setAttribute(AuthorizationFilter.JWT_KEY, jwt.getEntity());
+            if (response != null && response.getStatus() == 200) {
+                session.setEmployee((Employee) response.getEntity());
                 return Pages.index().redirect();
             } else {
                 String messageText = "Verkeerde gebruikersnaam of wachtwoord";
@@ -72,13 +71,5 @@ public class Login implements Serializable {
 
     public void setPassword(String password) {
         this.password = password;
-    }
-
-    public UIComponent getLoginButton() {
-        return loginButton;
-    }
-
-    public void setLoginButton(UIComponent loginButton) {
-        this.loginButton = loginButton;
     }
 }

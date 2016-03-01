@@ -6,6 +6,7 @@ import com.realdolmen.json.JsonWebToken;
 import com.realdolmen.service.SecurityManager;
 import com.realdolmen.validation.ValidationResult;
 import com.realdolmen.validation.Validator;
+import org.jetbrains.annotations.Nullable;
 import org.jetbrains.annotations.TestOnly;
 
 import javax.ejb.Stateless;
@@ -13,6 +14,7 @@ import javax.inject.Inject;
 import javax.persistence.EntityManager;
 import javax.persistence.NoResultException;
 import javax.persistence.PersistenceContext;
+import javax.validation.constraints.NotNull;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
@@ -91,7 +93,30 @@ public class UserEndpoint {
             return Response.status(Response.Status.BAD_REQUEST).build();
         }
 
-        return Response.ok().entity(new JsonWebToken(securityManager.generateToken(dbEmployee))).build();
+        return Response.ok().entity(securityManager.generateToken(dbEmployee)).build();
+    }
+
+    @Nullable
+    public Response loginLocal(@NotNull Employee employee) throws NoSuchAlgorithmException {
+        if (employee.getUsername() == null || employee.getUsername().isEmpty() || employee.getPassword() == null
+                || employee.getPassword().isEmpty()) {
+            return Response.status(Response.Status.BAD_REQUEST).build();
+        }
+
+        Employee dbEmployee;
+
+        try {
+            dbEmployee = em.createNamedQuery("Employee.findByUsername", Employee.class).setParameter("username", employee.getUsername()).getSingleResult();
+        } catch (NoResultException ex) {
+            return Response.status(Response.Status.BAD_REQUEST).build();
+        }
+
+        boolean isValid = securityManager.checkPassword(dbEmployee, employee.getPassword());
+        if (!isValid) {
+            return Response.status(Response.Status.BAD_REQUEST).build();
+        }
+
+        return Response.ok().entity(dbEmployee).build();
     }
 
     @TestOnly

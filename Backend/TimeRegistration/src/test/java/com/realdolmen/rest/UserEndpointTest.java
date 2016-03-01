@@ -3,6 +3,7 @@ package com.realdolmen.rest;
 import com.realdolmen.ArquillianUtil;
 import com.realdolmen.entity.Employee;
 import com.realdolmen.entity.validation.New;
+import com.realdolmen.json.JsonWebToken;
 import com.realdolmen.service.SecurityManager;
 import com.realdolmen.validation.ValidationResult;
 import com.realdolmen.validation.Validator;
@@ -90,7 +91,7 @@ public class UserEndpointTest {
 
     @Test
     public void testLoginWithValidCredentialsReturnsJWT() throws Exception {
-        final String validToken = "the.jwt.token";
+        final JsonWebToken validToken = new JsonWebToken("the.jwt.token");
         when(securityManager.generateToken(employee)).thenReturn(validToken);
         when(securityManager.checkPassword(employee, employee.getPassword())).thenReturn(true);
         Response response = endpoint.login(employee);
