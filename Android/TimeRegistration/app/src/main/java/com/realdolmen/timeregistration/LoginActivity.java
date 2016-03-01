@@ -10,11 +10,9 @@ import android.widget.Button;
 import android.widget.EditText;
 
 import com.android.volley.VolleyError;
-import com.realdolmen.timeregistration.model.User;
+import com.realdolmen.timeregistration.model.Session;
 import com.realdolmen.timeregistration.service.BackendService;
 import com.realdolmen.timeregistration.service.GenericVolleyError;
-
-import org.json.JSONObject;
 
 import butterknife.Bind;
 import butterknife.ButterKnife;
@@ -32,6 +30,9 @@ public class LoginActivity extends AppCompatActivity {
     @Bind(R.id.login_login_button)
     Button loginButton;
 
+    private boolean loggingIn;
+    private boolean ignoreDismiss = false;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -39,25 +40,35 @@ public class LoginActivity extends AppCompatActivity {
         ButterKnife.bind(this);
     }
 
+    @Override
+    protected void onDestroy() {
+        ignoreDismiss = true;
+        super.onDestroy();
+    }
+
     @OnClick(R.id.login_login_button)
     public void doLogin() {
         if (validate()) {
+            loggingIn = true;
             final ProgressDialog loginProgress = new ProgressDialog(this);
             loginProgress.setIndeterminate(true);
             loginProgress.setMessage(getString(R.string.login_logging_in));
             loginProgress.show();
-
-            BackendService.with(this).login(new User(username.getText().toString(), password.getText().toString()), new BackendService.RequestCallback<User>() {
+            loginProgress.setCanceledOnTouchOutside(false);
+            loginProgress.setCancelable(false);
+            BackendService.with(this).login(new Session(username.getText().toString(), password.getText().toString()), new BackendService.RequestCallback<Session>() {
                 @Override
-                public void onSuccess(User data) {
+                public void onSuccess(Session data) {
                     runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
-                            loginProgress.dismiss();
+                            if (!ignoreDismiss)
+                                loginProgress.dismiss();
                         }
                     });
                     Snackbar.make(findViewById(android.R.id.content), "Token received.", Snackbar.LENGTH_LONG).show();
                     System.out.println("Token: " + data.getJwtToken());
+                    loggingIn = false;
                 }
 
                 @Override
@@ -94,23 +105,14 @@ public class LoginActivity extends AppCompatActivity {
                     runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
-                            loginProgress.dismiss();
+                            if (!ignoreDismiss)
+                                loginProgress.dismiss();
                         }
                     });
+                    loggingIn = false;
                 }
-            });
-            new android.os.Handler().postDelayed(new Runnable() {
-                @Override
-                public void run() {
-                    runOnUiThread(new Runnable() {
-                        @Override
-                        public void run() {
-                            loginProgress.dismiss();
-                        }
-                    });
-                }
-            }, 3000);
 
+            });
         }
     }
 
@@ -126,6 +128,6 @@ public class LoginActivity extends AppCompatActivity {
             valid = false;
         }
 
-        return valid;
+        return valid && !loggingIn;
     }
 }

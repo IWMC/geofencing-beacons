@@ -4,13 +4,14 @@ import android.content.Context;
 import android.support.annotation.NonNull;
 
 import com.android.volley.Request;
+import com.android.volley.RequestQueue;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.Volley;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import com.realdolmen.timeregistration.model.User;
+import com.realdolmen.timeregistration.model.Session;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -35,8 +36,25 @@ public class BackendService {
 
     private static final Map<Context, BackendService> contextMap = new HashMap<>();
 
+    private static Session currentSession;
+
+    private RequestQueue requestQueue;
+
+    public static Session getCurrentSession() {
+        return currentSession;
+    }
+
+    public static void setSession(@NonNull Session session) {
+        currentSession = session;
+    }
+
+    public static boolean isAuthenticated() {
+        return currentSession != null && currentSession.getJwtToken() != null && !currentSession.getJwtToken().isEmpty();
+    }
+
     /**
-     * Creates an instance of {@link BackendService} if it does not yet exist for the given {@link Context} or returns it if it does.
+     * Creates an instance of {@link BackendService} if it does not yet exist for the given
+     * {@link Context} or returns it if it does.
      * @param context The context used in the {@link BackendService}.
      * @return an instance of {@link BackendService} given a {@link Context}.
      */
@@ -52,6 +70,7 @@ public class BackendService {
 
     public BackendService(Context context) {
         this.context = context;
+        requestQueue = Volley.newRequestQueue(context);
     }
 
     /**
@@ -66,26 +85,31 @@ public class BackendService {
         void onSuccess(E data);
 
         /**
-         * Called when the request fails. A request can fail if the http response code is in the error range or the response is invalid.
-         * @param error The error produces by Volley. There is also a {@link GenericVolleyError} for custom errors in case of invalid responses.
+         * Called when the request fails. A request can fail if the http response code is in the
+         * error range or the response is invalid.
+         * @param error The error produces by Volley. There is also a {@link GenericVolleyError} for
+         *              custom errors in case of invalid responses.
          */
         void onError(VolleyError error);
     }
 
     /**
-     * Sends a login request to the backend. The {@link User} is converted to JSON using {@link Gson}.
-     * @param user The user that contains the username and password to use for authentication.
-     * @param callback The {@link com.realdolmen.timeregistration.service.BackendService.RequestCallback<User>} used to inform the UI of network events.
+     * Sends a login request to the backend. The {@link Session} is converted to JSON using {@link Gson}.
+     * @param session The session that contains the username and password to use for authentication.
+     * @param callback The {@link com.realdolmen.timeregistration.service.BackendService.RequestCallback< Session >}
+     *                 used to inform the UI of network events.
      */
-    public void login(@NonNull final User user, final @NonNull RequestCallback<User> callback) {
+    public void login(@NonNull final Session session, final @NonNull RequestCallback<Session> callback) {
 
-        JsonObjectRequest request = new JsonObjectRequest(Request.Method.POST, API_LOGIN_URI, compactGson.toJson(user), new Response.Listener<JSONObject>() {
+        JsonObjectRequest request = new JsonObjectRequest(Request.Method.POST, API_LOGIN_URI,
+                compactGson.toJson(session), new Response.Listener<JSONObject>() {
             @Override
             public void onResponse(JSONObject response) {
                 if (response.has("token")) {
                     try {
-                        user.setJwtToken(response.getString("token"));
-                        callback.onSuccess(user);
+                        session.setJwtToken(response.getString("token"));
+                        callback.onSuccess(session);
+                        setSession(session);
                     } catch (JSONException e) {
                         callback.onError(new GenericVolleyError(e.getMessage()));
                     }
@@ -100,6 +124,6 @@ public class BackendService {
             }
         });
 
-        Volley.newRequestQueue(context).add(request);
+        requestQueue.add(request);
     }
 }

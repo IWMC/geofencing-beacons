@@ -3,14 +3,14 @@ package com.realdolmen.timeregistration.model;
 /**
  * Created by Brent on 29/02/2016.
  */
-public class User {
+public class Session {
 
     private String username;
     private String password;
 
     private String jwtToken;
 
-    public User(String username, String password) {
+    public Session(String username, String password) {
         this.username = username;
         this.password = password;
     }

@@ -94,10 +94,6 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content" />
 
-        <SeekBar
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content" />
-
         <SearchView
             android:layout_width="match_parent"
             android:layout_height="wrap_content" android:queryHint="Search box"/>
