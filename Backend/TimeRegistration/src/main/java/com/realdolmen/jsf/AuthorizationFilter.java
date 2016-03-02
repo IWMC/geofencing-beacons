@@ -4,6 +4,8 @@ import com.realdolmen.entity.Employee;
 import com.realdolmen.json.JsonWebToken;
 import com.realdolmen.service.SecurityManager;
 
+import javax.ejb.Stateless;
+import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.inject.Instance;
 import javax.inject.Inject;
 import javax.servlet.*;
@@ -20,6 +22,7 @@ import java.util.stream.Stream;
 /**
  * Authorization filter that redirects all traffic to login.xhtml if the user is not logged in in the current session.
  */
+@ApplicationScoped
 @WebFilter(urlPatterns = "*.xhtml", initParams = {
         @WebInitParam(name = AuthorizationFilter.INCLUDED_WEB_INIT_PARAM, value = "/index.xhtml")
 })
@@ -30,9 +33,6 @@ public class AuthorizationFilter implements Filter {
 
     @Inject
     private Session session;
-
-    @Inject
-    private SecurityManager manager;
 
     private List<String> includedUrls = new ArrayList<>();
 
