@@ -33,6 +33,8 @@ public class Login implements Serializable {
     private String username = "";
     private String password = "";
 
+    private FacesContext context = FacesContext.getCurrentInstance();
+
     public String doLogin() {
         Employee employee = new Employee();
         employee.setUsername(username);
@@ -49,9 +51,8 @@ public class Login implements Serializable {
                 return Pages.index().redirect();
             } else {
                 String messageText = "Verkeerde gebruikersnaam of wachtwoord";
-                ToastService.getInstance().newToast(messageText);
                 FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_ERROR, messageText, messageText);
-                FacesContext.getCurrentInstance().addMessage(null, message);
+                context.addMessage(null, message);
                 return "";
             }
         }
