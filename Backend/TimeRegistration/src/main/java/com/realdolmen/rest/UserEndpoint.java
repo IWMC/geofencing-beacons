@@ -1,5 +1,7 @@
 package com.realdolmen.rest;
 
+import com.realdolmen.annotations.Authorized;
+import com.realdolmen.annotations.UserGroup;
 import com.realdolmen.entity.Employee;
 import com.realdolmen.entity.PersistenceUnit;
 import com.realdolmen.entity.validation.New;
@@ -47,6 +49,7 @@ public class UserEndpoint {
     @Path("register")
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
+    @Authorized(UserGroup.MANAGEMENT_EMPLOYEE_ONLY)
     public Response register(Employee entity) throws NoSuchAlgorithmException {
         if (entity == null) {
             return Response.status(Response.Status.BAD_REQUEST).entity("Entity must not be null").build();

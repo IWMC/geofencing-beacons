@@ -23,12 +23,12 @@ import javax.ws.rs.core.Response;
 
 /**
  * Interceptor for checking authorization before accessing certain resources, such as JAX-RS resources.
- * Every method or class in which {@link UserGroup#MANAGEMENT} authentication is required will go through this interceptor.
+ * Every method or class in which {@link UserGroup#MANAGEMENT_EMPLOYEE_ONLY} authentication is required will go through this interceptor.
  */
-@Authorized(UserGroup.MANAGEMENT)
+@Authorized(UserGroup.MANAGEMENT_EMPLOYEE_ONLY)
 @Interceptor
 @Priority(Interceptor.Priority.APPLICATION)
-public class ManagementSecurityInterceptor {
+public class ManagementEmployeeSecurityInterceptor {
 
     @Inject
     private HttpServletRequest request;
@@ -42,7 +42,7 @@ public class ManagementSecurityInterceptor {
     @AroundInvoke
     public Object manageTransaction(InvocationContext ctx) throws Exception {
         if (session.getEmployee() != null) {
-            if (session.getEmployee() instanceof ProjectManager || session.getEmployee() instanceof ManagementEmployee) {
+            if (session.getEmployee() instanceof ManagementEmployee) {
                 return ctx.proceed();
             } else {
                 return Response.status(Response.Status.FORBIDDEN).build();
@@ -51,7 +51,7 @@ public class ManagementSecurityInterceptor {
             JsonWebToken jwt = new JsonWebToken(request.getHeader("Authorization"));
             if (jwt.getToken() != null) {
                 Employee employee = securityManager.findByJwt(jwt);
-                if (employee != null && (employee instanceof ProjectManager || employee instanceof ManagementEmployee)) {
+                if (employee != null && employee instanceof ManagementEmployee) {
                     return ctx.proceed();
                 }
             }

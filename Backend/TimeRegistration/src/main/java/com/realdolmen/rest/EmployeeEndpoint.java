@@ -21,10 +21,7 @@ import javax.ws.rs.core.Response.Status;
 
 import com.realdolmen.annotations.Authorized;
 import com.realdolmen.annotations.UserGroup;
-import com.realdolmen.entity.Employee;
-import com.realdolmen.entity.PersistenceUnit;
-import com.realdolmen.entity.Project;
-import com.realdolmen.entity.ProjectManager;
+import com.realdolmen.entity.*;
 import org.hibernate.Hibernate;
 
 import static com.realdolmen.annotations.UserGroup.*;
@@ -42,7 +39,7 @@ public class EmployeeEndpoint {
 
 	@DELETE
 	@Path("/{id:[0-9]+}")
-    @Authorized(MANAGEMENT)
+    @Authorized(MANAGEMENT_EMPLOYEE_ONLY)
 	public Response deleteById(@PathParam("id") Long id) {
 		Employee entity = em.find(Employee.class, id);
 		if (entity == null) {
@@ -55,6 +52,7 @@ public class EmployeeEndpoint {
 	@GET
 	@Path("/{id:[0-9]+}")
 	@Produces({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
+    @Authorized(MANAGEMENT)
 	public Response findById(@PathParam("id") Long id) {
 		Employee entity = em.find(Employee.class, id);
 
@@ -68,6 +66,7 @@ public class EmployeeEndpoint {
 
 	@GET
 	@Produces({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
+    @Authorized(MANAGEMENT)
 	public List<Employee> listAll(@QueryParam("start") Integer startPosition,
 			@QueryParam("max") Integer maxResult) {
 		TypedQuery<Employee> findAllQuery = em.createNamedQuery("Employee.findAll", Employee.class);
@@ -85,6 +84,7 @@ public class EmployeeEndpoint {
 	@PUT
 	@Path("/{id:[0-9]+}")
 	@Produces({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
+    @Authorized(MANAGEMENT_EMPLOYEE_ONLY)
 	public Response update(@PathParam("id") Long id, Employee entity) {
 		if (entity == null) {
 			return Response.status(Status.BAD_REQUEST).build();
@@ -115,9 +115,42 @@ public class EmployeeEndpoint {
 	}
 
     @PUT
+    @Path("/{id:[0-9]+}/upgrade/management-employee")
+    @Produces({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
+    @Authorized(MANAGEMENT_EMPLOYEE_ONLY)
+    public Response upgradeManagementEmployee(@PathParam("id") Long id) {
+        if (id == null) {
+            return Response.status(Status.BAD_REQUEST).build();
+        }
+
+        Employee employee = em.find(Employee.class, id);
+
+        if (employee == null) {
+            return Response.status(Status.NOT_FOUND).build();
+        }
+
+        ManagementEmployee newManager = new ManagementEmployee(employee);
+        employee.getMemberProjects().stream().map(Project::getEmployees).forEach(e -> {
+            e.remove(employee);
+            e.add(newManager);
+        });
+        em.remove(employee);
+
+        try {
+            em.merge(newManager);
+        } catch (OptimisticLockException e) {
+            return Response.status(Response.Status.CONFLICT)
+                    .entity(e.getEntity()).build();
+        }
+
+        return Response.noContent().build();
+    }
+
+    @PUT
     @Path("/{id:[0-9]+}/upgrade/project-manager")
     @Produces({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
-    public Response update(@PathParam("id") Long id) {
+    @Authorized(MANAGEMENT_EMPLOYEE_ONLY)
+    public Response upgradeProjectManager(@PathParam("id") Long id) {
         if (id == null) {
             return Response.status(Status.BAD_REQUEST).build();
         }

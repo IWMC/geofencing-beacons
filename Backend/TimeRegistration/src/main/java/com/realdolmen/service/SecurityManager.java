@@ -23,6 +23,7 @@ import java.security.Key;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
+import java.util.Base64;
 import java.util.Date;
 
 /**
@@ -41,7 +42,7 @@ public class SecurityManager {
     }
 
     public String generateHash(String salt, String clearText) throws NoSuchAlgorithmException {
-        return new String(MessageDigest.getInstance("SHA-256").digest((salt + clearText).getBytes()), Charset.forName("UTF-8"));
+        return new String(Base64.getEncoder().encode(MessageDigest.getInstance("SHA-256").digest((salt + clearText).getBytes())), Charset.forName("UTF-8"));
     }
 
     public boolean checkPassword(Employee employee, String password) throws NoSuchAlgorithmException {
