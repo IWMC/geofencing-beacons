@@ -1,6 +1,7 @@
 package com.realdolmen.service;
 
 import com.realdolmen.entity.Employee;
+import com.realdolmen.json.JsonWebToken;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.SignatureException;
@@ -69,26 +70,27 @@ public class SecurityManagerTest {
 
     @Test
     public void testGenerateTokenReturnsValidToken() throws Exception {
-        String firstToken = null;
+        JsonWebToken firstToken = null;
         System.out.println("Performing 100 jwt token generations");
         for (int i = 0; i < 100; i++) {
             firstToken = securityManager.generateToken(employee);
             Thread.sleep(2);
-            String secondToken = securityManager.generateToken(employee);
+            JsonWebToken secondToken = securityManager.generateToken(employee);
             assertNotEquals(firstToken, secondToken);
         }
 
-        assertNotNull(Jwts.parser().setSigningKey(securityManager.getKey()).parseClaimsJws(firstToken).getBody().getIssuedAt());
+        assertNotNull(Jwts.parser().setSigningKey(securityManager.getKey()).parseClaimsJws(firstToken.getToken())
+                .getBody().getIssuedAt());
     }
 
     @Test(expected = SignatureException.class)
     public void testInvalidTokenIsInvalidated() throws Exception {
         long timestamp = System.currentTimeMillis();
-        String badToken = Jwts.builder().setSubject(employee.getUsername()).claim("id", employee.getId())
+        JsonWebToken badToken = new JsonWebToken(Jwts.builder().setSubject(employee.getUsername()).claim("id", employee.getId())
                 .claim("timestamp", timestamp)
                 .setIssuedAt(new Date(timestamp))
-                .signWith(SignatureAlgorithm.HS256, MacProvider.generateKey()).compact();
+                .signWith(SignatureAlgorithm.HS256, MacProvider.generateKey()).compact());
         assertFalse(securityManager.isValidToken(badToken));
-        Jwts.parser().setSigningKey(securityManager.getKey()).parseClaimsJws(badToken);
+        Jwts.parser().setSigningKey(securityManager.getKey()).parseClaimsJws(badToken.getToken());
     }
 }

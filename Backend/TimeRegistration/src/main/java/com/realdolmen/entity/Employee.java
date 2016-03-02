@@ -2,6 +2,7 @@ package com.realdolmen.entity;
 
 import com.realdolmen.entity.validation.New;
 
+import javax.inject.Named;
 import javax.persistence.*;
 import java.io.Serializable;
 import java.util.HashSet;
@@ -32,6 +33,7 @@ import javax.xml.bind.annotation.XmlRootElement;
         @NamedQuery(name = "Management.findByUsername", query = "SELECT e FROM Employee e WHERE e.username = :username " +
                 "AND TYPE(e) IN (ProjectManager, ManagementEmployee)")
 })
+@Named
 @Inheritance(strategy = InheritanceType.JOINED)
 public class Employee implements Serializable {
 

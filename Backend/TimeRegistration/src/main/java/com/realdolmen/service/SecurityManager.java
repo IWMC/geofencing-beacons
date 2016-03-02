@@ -1,12 +1,18 @@
 package com.realdolmen.service;
 
 import com.realdolmen.entity.Employee;
+import com.realdolmen.json.JsonWebToken;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.SignatureException;
 import io.jsonwebtoken.impl.crypto.MacProvider;
+import org.jetbrains.annotations.Nullable;
 
 import javax.ejb.Singleton;
+import javax.json.Json;
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
+import javax.validation.constraints.NotNull;
 import java.math.BigInteger;
 import java.nio.charset.Charset;
 import java.security.Key;
@@ -35,21 +41,21 @@ public class SecurityManager {
         return generateHash(employee.getSalt(), password).equals(employee.getHash());
     }
 
-    public String generateToken(Employee employee) {
+    public JsonWebToken generateToken(Employee employee) {
         long timestamp = System.currentTimeMillis();
-        return Jwts.builder().setSubject(employee.getUsername()).claim("id", employee.getId())
+        return new JsonWebToken(Jwts.builder().setSubject(employee.getUsername()).claim("id", employee.getId())
                 .claim("timestamp", timestamp)
                 .setIssuedAt(new Date(timestamp))
-                .signWith(SignatureAlgorithm.HS256, key).compact();
+                .signWith(SignatureAlgorithm.HS256, key).compact());
     }
 
     public Key getKey() {
         return key;
     }
 
-    public boolean isValidToken(String jwtToken) {
+    public boolean isValidToken(@NotNull JsonWebToken jwtToken) {
         try {
-            Jwts.parser().setSigningKey(key).parseClaimsJws(jwtToken);
+            Jwts.parser().setSigningKey(key).parseClaimsJws(jwtToken.getToken());
         } catch (SignatureException se) {
             return false;
         }
