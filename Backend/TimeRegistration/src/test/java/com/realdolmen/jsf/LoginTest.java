@@ -1,6 +1,5 @@
 package com.realdolmen.jsf;
 
-import com.realdolmen.ArquillianTest;
 import com.realdolmen.ArquillianUtil;
 import com.realdolmen.entity.Employee;
 import com.realdolmen.rest.UserEndpoint;
