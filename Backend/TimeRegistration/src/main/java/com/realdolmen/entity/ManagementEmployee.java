@@ -13,4 +13,12 @@ import javax.persistence.NamedQuery;
 })
 @Entity
 public class ManagementEmployee extends Employee {
+
+    public ManagementEmployee() {
+    }
+
+    public ManagementEmployee(Employee employee) {
+        super(employee.getId(), employee.getVersion(), employee.getFirstName(), employee.getLastName(), employee.getUsername(),
+                employee.getEmail(), employee.getHash(), employee.getSalt(), employee.getPassword(), employee.getMemberProjects());
+    }
 }

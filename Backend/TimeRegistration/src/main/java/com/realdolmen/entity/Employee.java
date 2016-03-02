@@ -21,8 +21,8 @@ import javax.xml.bind.annotation.XmlRootElement;
  * This entity will be used to check login credentials of users and will be used to do all operations involving users.
  * For example: assigning a project manager to a project and adding employees as members of a project.
  * <p>
- *     <b>EDIT: </b>We are using the Joined Table inheritance strategy so that the joined table between employees and
- *     projects does not need default values for their foreign keys.
+ * <b>EDIT: </b>We are using the Joined Table inheritance strategy so that the joined table between employees and
+ * projects does not need default values for their foreign keys.
  * </p>
  */
 @Entity
@@ -39,8 +39,7 @@ public class Employee implements Serializable {
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
-    @Column(name = "id", updatable = false)
-    private Long id;
+    private long id;
 
     @Version
     @Column(name = "version")
@@ -89,6 +88,19 @@ public class Employee implements Serializable {
     public Employee() {
     }
 
+    public Employee(long id, int version, String firstName, String lastName, String username, String email, String hash, String salt, String password, Set<Project> memberProjects) {
+        this.id = id;
+        this.version = version;
+        this.firstName = firstName;
+        this.lastName = lastName;
+        this.username = username;
+        this.email = email;
+        this.hash = hash;
+        this.salt = salt;
+        this.password = password;
+        this.memberProjects = memberProjects;
+    }
+
     public Employee(String password, String salt, String hash, String email, String username, String lastName, String firstName) {
         this.password = password;
         this.salt = salt;
@@ -124,10 +136,8 @@ public class Employee implements Serializable {
             return false;
         }
         Employee other = (Employee) obj;
-        if (id != null) {
-            if (!id.equals(other.id)) {
-                return false;
-            }
+        if (id != other.id) {
+            return false;
         }
         return true;
     }
@@ -136,7 +146,7 @@ public class Employee implements Serializable {
     public int hashCode() {
         final int prime = 31;
         int result = 1;
-        result = prime * result + ((id == null) ? 0 : id.hashCode());
+        result = prime * result + new Long(id).hashCode();
         return result;
     }
 

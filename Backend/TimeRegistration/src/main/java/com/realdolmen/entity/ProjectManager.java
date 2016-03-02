@@ -15,6 +15,14 @@ import java.util.Set;
 })
 public class ProjectManager extends Employee {
 
+    public ProjectManager() {
+    }
+
+    public ProjectManager(Employee employee) {
+        super(employee.getId(), employee.getVersion(), employee.getFirstName(), employee.getLastName(), employee.getUsername(),
+                employee.getEmail(), employee.getHash(), employee.getSalt(), employee.getPassword(), employee.getMemberProjects());
+    }
+
     @OneToMany
     private Set<Project> managedProjects;
 

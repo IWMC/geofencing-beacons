@@ -1,6 +1,7 @@
 package com.realdolmen.service;
 
 import com.realdolmen.entity.Employee;
+import com.realdolmen.entity.PersistenceUnit;
 import com.realdolmen.json.JsonWebToken;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
@@ -10,9 +11,12 @@ import org.jetbrains.annotations.Nullable;
 
 import javax.ejb.Singleton;
 import javax.json.Json;
+import javax.persistence.Entity;
 import javax.persistence.EntityManager;
+import javax.persistence.NoResultException;
 import javax.persistence.PersistenceContext;
 import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Null;
 import java.math.BigInteger;
 import java.nio.charset.Charset;
 import java.security.Key;
@@ -28,6 +32,9 @@ import java.util.Date;
 public class SecurityManager {
 
     private final Key key = MacProvider.generateKey();
+
+    @PersistenceContext(unitName = PersistenceUnit.PRODUCTION_UNIT)
+    private EntityManager entityManager;
 
     public String randomSalt() throws NoSuchAlgorithmException {
         return new BigInteger(32 * 8, SecureRandom.getInstanceStrong()).toString(32);
@@ -61,5 +68,16 @@ public class SecurityManager {
         }
 
         return true;
+    }
+
+    @Nullable
+    public Employee findByJwt(@NotNull JsonWebToken jwt) {
+        try {
+            long id = Long.parseLong(Jwts.parser().setSigningKey(key).parseClaimsJws(jwt.getToken()).getBody().get("id")
+                    .toString());
+            return entityManager.find(Employee.class, id);
+        } catch (NoResultException | SignatureException ex) {
+            return null;
+        }
     }
 }

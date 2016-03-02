@@ -25,7 +25,7 @@ import static org.junit.Assert.*;
 @RunWith(Arquillian.class)
 public class EmployeeTest {
 
-    @PersistenceContext(unitName = "TimeRegistration-test-persistence-unit")
+    @PersistenceContext(unitName = PersistenceUnit.TEST_UNIT)
     private EntityManager em;
 
     @Inject
