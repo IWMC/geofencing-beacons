@@ -11,6 +11,7 @@
             <property name="hibernate.hbm2ddl.auto" value="create-drop"/>
             <property name="hibernate.show_sql" value="true"/>
             <property name="hibernate.format_sql" value="true"/>
+            <property name="hibernate.hbm2ddl.import_files" value="import.sql" />
             <property name="hibernate.transaction.flush_before_completion" value="true"/>
             <property name="hibernate.dialect" value="org.hibernate.dialect.MySQL5InnoDBDialect"/>
         </properties>
@@ -23,7 +24,6 @@
         <exclude-unlisted-classes>false</exclude-unlisted-classes>
         <validation-mode>NONE</validation-mode>
         <properties>
-
             <property name="hibernate.hbm2ddl.auto" value="create-drop"/>
             <property name="hibernate.show_sql" value="true"/>
             <property name="hibernate.format_sql" value="true"/>

@@ -1,0 +1,6 @@
+INSERT INTO employee (id, email, firstName, hash, lastName, salt, username, version) VALUES (1, 'bla@bla.com', 'frederik', '�|A�)�u,\"\"��>�*����|��]S��ӴŬ', 'de smedt', 'nhgtpssbn42ljhct5ig655jqirbf26fd198msuev6lj5vh374ib', 'fds', 0);
+INSERT INTO employee (id, email, firstName, hash, lastName, salt, username, version) VALUES (2, 'bla2@bla.com', 'brent', '�����[ @��83�JW)�B���AG���9Y�', 'couck', 'jit90gc42q5ia29bp6b5tevsc5vsoc6lpbu6va3ekqih5d2iis3', 'bc', 0);
+INSERT INTO project (id, description, name, endDate, projectNr, startDate, version) VALUES (3, 'Project 1 description', 'Project 1', NULL, 9, '2016-03-02', 0);
+INSERT INTO project (id, description, name, endDate, projectNr, startDate, version) VALUES (4, 'Project 2 description', 'Project 1', NULL, 3, '2016-03-02', 0);
+INSERT INTO project (id, description, name, endDate, projectNr, startDate, version) VALUES (5, 'Project 3 description', 'Project 1', NULL, 5, '2016-03-02', 0);
+INSERT INTO employee_project (employee_id, project_id) VALUES (2, 3);
