@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+        "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:f="http://xmlns.jcp.org/jsf/core" xmlns:mp="http://primefaces.org/ui/material">
+<f:view>
+    <ui:composition template="dependency_template.xhtml">
+        <ui:define name="content">
+            <h:body>
+                <ul id="dropdown1" class="dropdown-content">
+                    <li><a href="#!">one</a></li>
+                </ul>
+
+                <nav>
+                    <div class="nav-wrapper realdolmen-red">
+                        <a href="#" class="brand-logo">
+                            <span class="valign-wrapper" id="toolbar-logo-wrapper">
+                                <h:graphicImage styleClass="valign" library="img" name="logo_white.svg"/>
+                            </span>
+                        </a>
+                        <ul class="right" id="nav-mobile">
+                            <li class="hide-on-med-and-down"><a href="employees/search_employees.xhtml">Werknemers</a></li>
+                            <li>
+                                <a class="dropdown-button hide-on-large-only" href="#!" data-activates="dropdown1">
+                                    <mp:icon name="mdi-navigation-more-vert"/>
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
+                </nav>
+                <ui:insert name="body"/>
+            </h:body>
+        </ui:define>
+    </ui:composition>
+</f:view>
+</html>

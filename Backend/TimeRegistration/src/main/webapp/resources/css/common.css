@@ -2,6 +2,10 @@
     background-color: #009AD8;
 }
 
+.realdolmen-red {
+    background-color: #E21E25;
+}
+
 .waves-effect .waves-ripple {
     background-color: rgba(26, 190, 255, 0.6) !important;
 }
@@ -12,4 +16,9 @@
 
 .error {
     color: #F22613;
+}
+
+#toolbar-logo-wrapper {
+    height: 64px;
+    margin-left: 10px;
 }
