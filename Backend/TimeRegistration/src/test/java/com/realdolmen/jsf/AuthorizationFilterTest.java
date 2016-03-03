@@ -50,7 +50,7 @@ public class AuthorizationFilterTest {
         MockitoAnnotations.initMocks(this);
         FilterConfig config = mock(FilterConfig.class);
         when(config.getInitParameter(AuthorizationFilter.INCLUDED_WEB_INIT_PARAM))
-                .thenReturn("/index.xhtml;/page.xhtml");
+                .thenReturn("/index.xhtml;/page.xhtml;/range/.*");
         authorizationFilter.init(config);
     }
 
@@ -112,6 +112,13 @@ public class AuthorizationFilterTest {
     @Test
     public void testChainStopsWithInvalidCredentials() throws Exception {
         when(request.getRequestURI()).thenReturn("/index.xhtml");
+        authorizationFilter.doFilter(request, response, filterChain);
+        verify(filterChain, never()).doFilter(request, response);
+    }
+
+    @Test
+    public void testFilterChecksByRegexMatching() throws Exception {
+        when(request.getRequestURI()).thenReturn("/range/somepage");
         authorizationFilter.doFilter(request, response, filterChain);
         verify(filterChain, never()).doFilter(request, response);
     }

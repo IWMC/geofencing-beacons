@@ -20,10 +20,10 @@
             <h:form styleClass="card valign" id="loginForm">
                 <div class="card-content">
                     <h:graphicImage library="img" name="logo.svg"/>
-                    <mp:input placeholder="Gebruikersnaam" id="username" value="#{login.username}" floatingPlaceholder="false" />
-                    <mp:input type="password" placeholder="Wachtwoord" id="password" value="#{login.password}" floatingPlaceholder="false" />
+                    <mp:input placeholder="Gebruikersnaam" id="username" value="#{loginController.username}" floatingPlaceholder="false" />
+                    <mp:input type="password" placeholder="Wachtwoord" id="password" value="#{loginController.password}" floatingPlaceholder="false" />
                     <h:messages id="messages" showDetail="false" errorClass="error" />
-                    <mp:button id="loginButton" action="#{login.doLogin}" value="Inloggen" update="loginForm:messages" />
+                    <mp:button id="loginButton" action="#{loginController.doLogin}" value="Inloggen" update="loginForm:messages" />
                 </div>
             </h:form>
         </div>

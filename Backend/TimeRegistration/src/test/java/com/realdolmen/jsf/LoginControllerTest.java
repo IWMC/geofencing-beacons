@@ -11,7 +11,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 
 import javax.faces.context.FacesContext;
@@ -24,7 +23,7 @@ import static org.mockito.Mockito.*;
  * Created by BCCAZ45 on 2/03/2016.
  */
 @RunWith(Arquillian.class)
-public class LoginTest {
+public class LoginControllerTest {
 
     @Deployment
     public static WebArchive createDeployment() {
@@ -38,7 +37,7 @@ public class LoginTest {
     private Session session;
 
     @InjectMocks
-    private Login login = new Login();
+    private LoginController loginController = new LoginController();
 
     private Employee employee;
 
@@ -54,9 +53,9 @@ public class LoginTest {
     @Test
     public void testDoLoginWithCorrectCredentialsRedirectsToIndex() throws Exception {
         when(endpoint.loginLocal(any(Employee.class))).thenReturn(Response.ok().entity(employee).build());
-        login.setUsername(employee.getUsername());
-        login.setPassword(employee.getPassword());
-        String redirect = login.doLogin();
+        loginController.setUsername(employee.getUsername());
+        loginController.setPassword(employee.getPassword());
+        String redirect = loginController.doLogin();
         verify(endpoint, times(1)).loginLocal(any());
         verify(session, times(1)).setEmployee(any());
         assertEquals("Correct login should redirect to index page", "index.xhtml?faces-redirect=true", redirect);
@@ -65,9 +64,9 @@ public class LoginTest {
     @Test
     public void testDoLoginWithFalseCredentialsDoesNotRedirect() throws Exception {
         when(endpoint.loginLocal(any(Employee.class))).thenReturn(Response.serverError().build());
-        login.setUsername(employee.getUsername());
-        login.setPassword(employee.getPassword() + "bad");
-        String redirect = login.doLogin();
+        loginController.setUsername(employee.getUsername());
+        loginController.setPassword(employee.getPassword() + "bad");
+        String redirect = loginController.doLogin();
         verify(endpoint, times(1)).loginLocal(any());
         verify(session, never()).setEmployee(any());
         assertEquals("False login should not redirect to anything", "", redirect);

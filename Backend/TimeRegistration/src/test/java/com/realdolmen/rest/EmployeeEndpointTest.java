@@ -206,7 +206,11 @@ public class EmployeeEndpointTest {
 
     @Test
     public void testUpdateByInvalidIdReturns404() throws Exception {
-        Response response = endpoint.update(createInvalidIdRequest(), new Employee());
+        long id = 52;
+        createInvalidIdRequest(id);
+        Employee employee = new Employee();
+        employee.setId(id);
+        Response response = endpoint.update(id, employee);
         assertEquals("response should return 404 status code", 404, response.getStatus());
     }
 

@@ -2,6 +2,8 @@ package com.realdolmen.jsf;
 
 import org.primefaces.util.HTML;
 
+import javax.enterprise.context.RequestScoped;
+import javax.inject.Named;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.util.HashMap;
@@ -10,6 +12,8 @@ import java.util.Map;
 /**
  * Utility class containing constants to all JSF-pages.
  */
+@Named
+@RequestScoped
 public class Pages {
 
     public static Page index() {
@@ -19,6 +23,8 @@ public class Pages {
     public static Page login() {
         return new Page("login.xhtml");
     }
+
+    public static Page searchEmployee() { return new Page("/employees/search-employees.xhtml"); }
 
     public static class Page {
 
@@ -33,6 +39,11 @@ public class Pages {
         public Page param(String key, String value) {
             params.put(key, value);
             return this;
+        }
+
+        public String jsf() {
+            baseUrl = baseUrl.substring(0, baseUrl.lastIndexOf("."));
+            return noRedirect();
         }
 
         public String noRedirect() {
