@@ -4,6 +4,7 @@ import com.realdolmen.entity.Employee;
 import com.realdolmen.entity.PersistenceUnit;
 import com.realdolmen.json.JsonWebToken;
 import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.MalformedJwtException;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.SignatureException;
 import io.jsonwebtoken.impl.crypto.MacProvider;
@@ -77,7 +78,7 @@ public class SecurityManager {
             long id = Long.parseLong(Jwts.parser().setSigningKey(key).parseClaimsJws(jwt.getToken()).getBody().get("id")
                     .toString());
             return entityManager.find(Employee.class, id);
-        } catch (NoResultException | SignatureException ex) {
+        } catch (MalformedJwtException | NoResultException | SignatureException ex) {
             return null;
         }
     }

@@ -1,5 +1,8 @@
 package com.realdolmen.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import org.hibernate.Hibernate;
+
 import javax.persistence.*;
 import javax.xml.bind.annotation.XmlRootElement;
 import java.io.Serializable;
@@ -13,6 +16,18 @@ import java.util.Set;
 @Entity
 @XmlRootElement
 public class Project extends Occupation implements Serializable {
+
+    /**
+     * Initializes all lazy properties and collections of the entity recursively. Expects to be invoked while still running
+     * in a session.
+     *
+     * @param project the project that should be initialized
+     */
+    public static void initialize(Project project) {
+        Hibernate.initialize(project.getSubProjects());
+        project.getSubProjects().forEach(Project::initialize);
+
+    }
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.AUTO)
@@ -37,6 +52,7 @@ public class Project extends Occupation implements Serializable {
 	private Set<Project> subProjects = new HashSet<>();
 
     @ManyToMany(mappedBy = "memberProjects")
+    @JsonIgnore
     private Set<Employee> employees = new HashSet<>();
 
 	public Long getId() {

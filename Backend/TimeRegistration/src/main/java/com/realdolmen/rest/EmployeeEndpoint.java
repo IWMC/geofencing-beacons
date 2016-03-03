@@ -67,7 +67,7 @@ public class EmployeeEndpoint {
 	@GET
 	@Produces({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
     @Authorized(MANAGEMENT)
-	public List<Employee> listAll(@QueryParam("start") Integer startPosition,
+	public Response listAll(@QueryParam("start") Integer startPosition,
 			@QueryParam("max") Integer maxResult) {
 		TypedQuery<Employee> findAllQuery = em.createNamedQuery("Employee.findAll", Employee.class);
 
@@ -78,7 +78,9 @@ public class EmployeeEndpoint {
 			findAllQuery.setMaxResults(maxResult);
 		}
 
-		return findAllQuery.getResultList();
+        List<Employee> employees = findAllQuery.getResultList();
+        employees.forEach(Employee::initialize);
+		return Response.ok().entity(employees).build();
 	}
 
 	@PUT

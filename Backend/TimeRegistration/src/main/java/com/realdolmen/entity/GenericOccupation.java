@@ -2,6 +2,8 @@ package com.realdolmen.entity;
 
 import javax.persistence.*;
 import java.io.Serializable;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * An occupation that an Employee can register, yet it is not a project. For example:
@@ -21,6 +23,9 @@ public class GenericOccupation extends Occupation implements Serializable {
 	@Version
 	@Column(name = "version")
 	private int version;
+
+    @ManyToMany(mappedBy = "occupations")
+    private Set<Employee> employees = new HashSet<>();
 
 	public Long getId() {
 		return this.id;

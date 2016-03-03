@@ -3,6 +3,8 @@ INSERT INTO employee (id, email, firstName, hash, lastName, salt, username, vers
 INSERT INTO project (id, description, name, endDate, projectNr, startDate, version) VALUES (3, 'Project 1 description', 'Project 1', '2016-03-01', 9, '2016-03-02', 0);
 INSERT INTO project (id, description, name, endDate, projectNr, startDate, version) VALUES (4, 'Project 2 description', 'Project 1', '2016-03-01', 3, '2016-03-02', 0);
 INSERT INTO project (id, description, name, endDate, projectNr, startDate, version) VALUES (5, 'Project 3 description', 'Project 1', '2016-03-01', 5, '2016-03-02', 0);
-INSERT INTO employee_project (employee_id, project_id) VALUES (2, 3);
+INSERT INTO employee (id, email, firstName, hash, lastName, salt, username, version) VALUES (6, 'admin@realdolmen.com', 'admin', 'r2Mf9eycuUxWrNr7FFu90ZOZhZO+tT/HDYRDxlydJH0=', 'admin', '1jdbnoiqap5fen2hbb1t6tfpbbtuo9qqjvhj7ela9gdrh1tvkjce', 'admin', 0);
+INSERT INTO employee_project (employees_id, memberProjects_id) VALUES (2, 3);
+INSERT INTO managementemployee VALUES (6);
 TRUNCATE TABLE hibernate_sequence;
-INSERT INTO hibernate_sequence (next_val) VALUES (6), (6), (6);
+INSERT INTO hibernate_sequence (next_val) VALUES (7), (7), (7);

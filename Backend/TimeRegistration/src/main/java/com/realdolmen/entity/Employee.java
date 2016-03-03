@@ -1,6 +1,8 @@
 package com.realdolmen.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.realdolmen.entity.validation.New;
+import org.hibernate.Hibernate;
 
 import javax.inject.Named;
 import javax.persistence.*;
@@ -37,6 +39,17 @@ import javax.xml.bind.annotation.XmlRootElement;
 @Inheritance(strategy = InheritanceType.JOINED)
 public class Employee implements Serializable {
 
+    /**
+     * Initializes all lazy properties and collections of the entity recursively. Expects to be invoked while still running
+     * in a session.
+     *
+     * @param employee the employee that should be initialized
+     */
+    public static void initialize(Employee employee) {
+        Hibernate.initialize(employee.getMemberProjects());
+        employee.getMemberProjects().forEach(Project::initialize);
+    }
+
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private long id;
@@ -66,24 +79,25 @@ public class Employee implements Serializable {
     private String email;
 
     @Column
+    @JsonIgnore
     private String hash;
 
     @Column
+    @JsonIgnore
     private String salt;
 
     @Transient
     @NotNull(message = "password.empty", groups = New.class)
     @Size(min = 6, max = 15, message = "password.length", groups = New.class)
     @Pattern(regexp = "^((?=.*\\d)(?=.*[a-z])(?=.*[A-Z])[0-9a-zA-Z]*)?$", message = "password.pattern")
+    @JsonIgnore
     private String password;
 
     @ManyToMany
-    @JoinTable(
-            name = "employee_project",
-            joinColumns = @JoinColumn(name = "employee_id"),
-            inverseJoinColumns = @JoinColumn(name = "project_id")
-    )
     private Set<Project> memberProjects = new HashSet<>();
+
+    @ManyToMany
+    private Set<GenericOccupation> occupations = new HashSet<>();
 
     public Employee() {
     }
@@ -109,6 +123,11 @@ public class Employee implements Serializable {
         this.username = username;
         this.lastName = lastName;
         this.firstName = firstName;
+    }
+
+    public Employee(Employee employee) {
+        this(employee.getId(), employee.getVersion(), employee.getFirstName(), employee.getLastName(), employee.getUsername(),
+                employee.getEmail(), employee.getHash(), employee.getSalt(), employee.getPassword(), employee.getMemberProjects());
     }
 
     public Long getId() {
