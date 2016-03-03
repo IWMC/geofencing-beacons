@@ -1,6 +1,8 @@
-package com.realdolmen.timeregistration;
+package com.realdolmen.timeregistration.ui.login;
 
 import android.app.ProgressDialog;
+import android.content.Intent;
+import android.os.Vibrator;
 import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -10,9 +12,11 @@ import android.widget.Button;
 import android.widget.EditText;
 
 import com.android.volley.VolleyError;
+import com.realdolmen.timeregistration.R;
 import com.realdolmen.timeregistration.model.Session;
 import com.realdolmen.timeregistration.service.BackendService;
 import com.realdolmen.timeregistration.service.GenericVolleyError;
+import com.realdolmen.timeregistration.ui.dayregistration.DayRegistrationActivity;
 
 import butterknife.Bind;
 import butterknife.ButterKnife;
@@ -21,6 +25,7 @@ import butterknife.OnClick;
 public class LoginActivity extends AppCompatActivity {
 
     private static final String TAG = "LOGIN";
+    private static final boolean DEBUG = true;
     @Bind(R.id.login_username)
     EditText username;
 
@@ -38,6 +43,10 @@ public class LoginActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
         ButterKnife.bind(this);
+        if (DEBUG) {
+            username.setText("bc");
+            password.setText("Bla123");
+        }
     }
 
     @Override
@@ -66,9 +75,8 @@ public class LoginActivity extends AppCompatActivity {
                                 loginProgress.dismiss();
                         }
                     });
-                    Snackbar.make(findViewById(android.R.id.content), "Token received.", Snackbar.LENGTH_LONG).show();
-                    System.out.println("Token: " + data.getJwtToken());
                     loggingIn = false;
+                    startActivity(new Intent(getApplicationContext(), DayRegistrationActivity.class));
                 }
 
                 @Override

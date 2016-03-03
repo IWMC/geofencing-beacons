@@ -1,5 +1,10 @@
 package com.realdolmen.timeregistration.model;
 
+import com.realdolmen.timeregistration.service.BackendService;
+
+import java.util.Date;
+import java.util.List;
+
 /**
  * Created by Brent on 29/02/2016.
  */

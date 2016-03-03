@@ -11,12 +11,16 @@ import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.Volley;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.realdolmen.timeregistration.model.Occupation;
 import com.realdolmen.timeregistration.model.Session;
 
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.util.Arrays;
+import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -50,6 +54,20 @@ public class BackendService {
 
     public static boolean isAuthenticated() {
         return currentSession != null && currentSession.getJwtToken() != null && !currentSession.getJwtToken().isEmpty();
+    }
+
+    public List<Occupation> getOccupationsByDate(Date date) {
+        return Arrays.asList(
+                new Occupation("Occupation 1", "A cool occupation"),
+                new Occupation("Occupation 2", null),
+                new Occupation("Occupation 3", null),
+                new Occupation("Occupation 4", "Test description"),
+                new Occupation("Occupation 5", "What is love?"),
+                new Occupation("Occupation 6", null),
+                new Occupation("Occupation 7", "Baby don't hurt me"),
+                new Occupation("Occupation 8", "Don't hurt me"),
+                new Occupation("Occupation 9", "No more!")
+        );
     }
 
     /**

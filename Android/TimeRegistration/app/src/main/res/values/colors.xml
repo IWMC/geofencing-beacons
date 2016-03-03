@@ -9,8 +9,12 @@
 
     <color name="colorSectionHeaderBackground">#40b4e3</color>
 
+    <color name="colorRippleEffect">#44A5A5A5</color>
+
     <!-- Color scheme for refresh spinner -->
     <color name="refreshSpinnerStartColor">@color/colorPrimary</color>
     <color name="refreshSpinnerMiddleColor">@color/colorAccent</color>
     <color name="refreshSpinnerEndColor">@color/colorH2</color>
+
+    <color name="colorOccupationDescription">#FFA0A0A0</color>
 </resources>

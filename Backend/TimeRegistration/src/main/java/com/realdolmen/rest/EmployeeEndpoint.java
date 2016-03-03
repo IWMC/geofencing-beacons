@@ -1,30 +1,23 @@
 package com.realdolmen.rest;
 
-import java.util.List;
+import com.realdolmen.annotations.Authorized;
+import com.realdolmen.entity.*;
+import org.hibernate.Hibernate;
 
 import javax.ejb.Stateless;
 import javax.persistence.EntityManager;
 import javax.persistence.OptimisticLockException;
 import javax.persistence.PersistenceContext;
 import javax.persistence.TypedQuery;
-import javax.transaction.Transactional;
-import javax.ws.rs.DELETE;
-import javax.ws.rs.GET;
-import javax.ws.rs.PUT;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
-import javax.ws.rs.QueryParam;
+import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
+import java.util.List;
 
-import com.realdolmen.annotations.Authorized;
-import com.realdolmen.annotations.UserGroup;
-import com.realdolmen.entity.*;
-import org.hibernate.Hibernate;
+import static com.realdolmen.annotations.UserGroup.MANAGEMENT;
+import static com.realdolmen.annotations.UserGroup.MANAGEMENT_EMPLOYEE_ONLY;
 
-import static com.realdolmen.annotations.UserGroup.*;
 
 /**
  * Endpoint for managing employees. However management <b>related</b> to employees, such as project manager assignment, is not
@@ -74,7 +67,8 @@ public class EmployeeEndpoint {
 		if (startPosition != null) {
 			findAllQuery.setFirstResult(startPosition);
 		}
-		if (maxResult != null) {
+
+        if (maxResult != null) {
 			findAllQuery.setMaxResults(maxResult);
 		}
 
