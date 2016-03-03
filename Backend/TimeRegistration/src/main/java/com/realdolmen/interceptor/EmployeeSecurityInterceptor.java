@@ -9,6 +9,8 @@ import com.realdolmen.service.SecurityManager;
 
 import javax.annotation.Priority;
 import javax.annotation.Resource;
+import javax.ejb.Stateless;
+import javax.enterprise.context.Dependent;
 import javax.inject.Inject;
 import javax.interceptor.AroundInvoke;
 import javax.interceptor.Interceptor;
@@ -45,7 +47,8 @@ public class EmployeeSecurityInterceptor {
             return ctx.proceed();
         } else {
             JsonWebToken jwt = new JsonWebToken(request.getHeader("Authorization"));
-            return jwt.getToken() == null ? Response.status(Response.Status.FORBIDDEN).build() : ctx.proceed();
+            return jwt.getToken() == null || !securityManager.isValidToken(jwt)
+                    ? Response.status(Response.Status.FORBIDDEN).build() : ctx.proceed();
         }
     }
 }

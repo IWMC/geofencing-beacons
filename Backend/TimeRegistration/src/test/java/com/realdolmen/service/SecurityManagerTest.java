@@ -14,6 +14,7 @@ import org.mockito.Spy;
 import java.nio.charset.Charset;
 import java.security.Key;
 import java.security.MessageDigest;
+import java.util.Base64;
 import java.util.Date;
 
 import static org.junit.Assert.*;
@@ -57,7 +58,7 @@ public class SecurityManagerTest {
     @Test
     public void testGenerateHash() throws Exception {
         String generatedHash = securityManager.generateHash(employee.getSalt(), employee.getPassword());
-        String expectedHash = new String(MessageDigest.getInstance("SHA-256").digest((employee.getSalt() + employee.getPassword()).getBytes()), Charset.forName("UTF-8"));
+        String expectedHash = new String(Base64.getEncoder().encode(MessageDigest.getInstance("SHA-256").digest((employee.getSalt() + employee.getPassword()).getBytes())), Charset.forName("UTF-8"));
         assertEquals(expectedHash, generatedHash);
     }
 

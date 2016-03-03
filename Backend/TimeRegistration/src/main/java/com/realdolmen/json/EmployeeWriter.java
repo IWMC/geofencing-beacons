@@ -24,7 +24,8 @@ import java.lang.annotation.Annotation;
 import java.lang.reflect.Type;
 
 /**
- * Created by FDMAZ46 on 24/02/2016.
+ * Provider that converts {@link Employee}s to valid JSON. This will then automatically be used by JAX-RS when returning
+ * the appropriate entity in JAX-RS resources.
  */
 @Provider
 @Produces(MediaType.APPLICATION_JSON)

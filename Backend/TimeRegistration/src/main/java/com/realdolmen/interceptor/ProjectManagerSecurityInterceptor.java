@@ -9,6 +9,8 @@ import com.realdolmen.service.SecurityManager;
 
 import javax.annotation.Priority;
 import javax.annotation.Resource;
+import javax.ejb.Stateless;
+import javax.enterprise.context.Dependent;
 import javax.inject.Inject;
 import javax.interceptor.AroundInvoke;
 import javax.interceptor.Interceptor;
