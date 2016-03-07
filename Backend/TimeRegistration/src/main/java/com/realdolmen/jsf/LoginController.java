@@ -18,11 +18,11 @@ import java.io.Serializable;
 import java.security.NoSuchAlgorithmException;
 
 /**
- * A helper class accessed by JSF that is used as a controller (MVC) for <code>login.xhtml</code>.
+ * A controller for <code>login.xhtml</code>.
  */
 @Named
 @RequestScoped
-public class Login implements Serializable {
+public class LoginController implements Serializable {
 
     @Inject
     private UserEndpoint endpoint;

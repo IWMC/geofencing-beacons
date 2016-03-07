@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+        "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:f="http://xmlns.jcp.org/jsf/core" xmlns:mp="http://primefaces.org/ui/material">
+<f:view>
+    <ui:composition template="dependency-template.xhtml">
+        <ui:define name="content">
+            <h:body>
+                <h:form>
+                    <ul id="dropdown1" class="dropdown-content" style="min-width: 200px;">
+                        <li><h:commandLink action="#{pages.searchEmployee().jsf()}" value="Werknemers"/></li>
+                    </ul>
+                </h:form>
+
+                <nav>
+                    <div class="nav-wrapper realdolmen-red">
+                        <div class="left brand-logo">
+                            <a href="/index.xhtml">
+                                <span class="left valign-wrapper" id="toolbar-logo-wrapper">
+                                    <h:graphicImage styleClass="valign" library="img" name="logo-white.svg"/>
+                                </span>
+                            </a>
+                            <ui:insert name="toolbar-after-logo"/>
+                        </div>
+
+                        <h:form>
+                            <ul class="right" id="nav-mobile">
+                                <li class="hide-on-med-and-down">
+                                    <h:commandLink action="#{pages.searchEmployee().jsf()}" value="Werknemers"/>
+                                </li>
+                                <li>
+                                    <a class="dropdown-button hide-on-large-only" href="#!" data-activates="dropdown1">
+                                        <mp:icon name="mdi-navigation-more-vert"/>
+                                    </a>
+                                </li>
+                            </ul>
+                        </h:form>
+                        <ui:insert name="toolbar-right"/>
+                    </div>
+                </nav>
+
+                <nav class="hide-on-med-and-up">
+                    <div class="nav-wrapper realdolmen-red">
+                        <ui:insert name="additional-toolbar-full"/>
+                    </div>
+                </nav>
+                <ui:insert name="body"/>
+            </h:body>
+        </ui:define>
+    </ui:composition>
+</f:view>
+</html>
