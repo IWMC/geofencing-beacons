@@ -27,7 +27,7 @@ public class Occupation {
     }
 
     public void setDescription(@Nullable String description) {
-        if(description == null) {
+        if (description == null) {
             description = "";
             return;
         }

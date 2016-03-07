@@ -47,6 +47,7 @@ public class LoginActivity extends AppCompatActivity {
             username.setText("bc");
             password.setText("Bla123");
         }
+
     }
 
     @Override

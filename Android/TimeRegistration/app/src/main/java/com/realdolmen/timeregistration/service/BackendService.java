@@ -28,7 +28,7 @@ import java.util.Map;
  */
 public class BackendService {
 
-    private static final String HOST = "http://10.16.26.89";
+    private static final String HOST = "http://10.16.26.87";
 
     private static final String
             API_LOGIN_URI = HOST + "/api/user/login",
@@ -73,6 +73,7 @@ public class BackendService {
     /**
      * Creates an instance of {@link BackendService} if it does not yet exist for the given
      * {@link Context} or returns it if it does.
+     *
      * @param context The context used in the {@link BackendService}.
      * @return an instance of {@link BackendService} given a {@link Context}.
      */
@@ -93,11 +94,13 @@ public class BackendService {
 
     /**
      * Interface designed to implement callbacks for the UI to respond to network events.
+     *
      * @param <E> Generic type of the onSuccess data parameter.
      */
     public interface RequestCallback<E> {
         /**
          * Called when the request succeeded. A request succeeds when the http response code is in the error range.
+         *
          * @param data The data produced from the successful response.
          */
         void onSuccess(E data);
@@ -105,6 +108,7 @@ public class BackendService {
         /**
          * Called when the request fails. A request can fail if the http response code is in the
          * error range or the response is invalid.
+         *
          * @param error The error produces by Volley. There is also a {@link GenericVolleyError} for
          *              custom errors in case of invalid responses.
          */
@@ -113,7 +117,8 @@ public class BackendService {
 
     /**
      * Sends a login request to the backend. The {@link Session} is converted to JSON using {@link Gson}.
-     * @param session The session that contains the username and password to use for authentication.
+     *
+     * @param session  The session that contains the username and password to use for authentication.
      * @param callback The {@link com.realdolmen.timeregistration.service.BackendService.RequestCallback< Session >}
      *                 used to inform the UI of network events.
      */

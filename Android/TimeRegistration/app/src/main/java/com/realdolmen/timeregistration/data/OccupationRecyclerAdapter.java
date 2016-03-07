@@ -77,5 +77,9 @@ public class OccupationRecyclerAdapter extends RecyclerView.Adapter<OccupationRe
             update();
         }
 
+        @Override
+        public String toString() {
+            return data.getName();
+        }
     }
 }

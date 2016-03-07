@@ -36,4 +36,9 @@
         <item name="android:layout_marginRight">2dp</item>
     </style>
 
+    <style name="ColoredButton" parent="Base.Widget.AppCompat.Button">
+        <item name="android:background">@drawable/colored_button</item>
+        <item name="android:textColor">@android:color/white</item>
+    </style>
+
 </resources>

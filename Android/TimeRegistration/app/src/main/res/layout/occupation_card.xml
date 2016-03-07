@@ -55,7 +55,6 @@
                 android:layout_gravity="center"
                 android:padding="15dp"/>
         </com.andexert.library.RippleView>
-
     </RelativeLayout>
 
 </android.support.v7.widget.CardView>
