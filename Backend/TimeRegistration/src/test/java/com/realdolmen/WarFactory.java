@@ -13,7 +13,7 @@ import java.util.Arrays;
 /**
  * Util for generating a WebArchive compatible with Arquillian.
  */
-public class ArquillianUtil {
+public class WarFactory {
 
     private static WebArchive deployment;
 

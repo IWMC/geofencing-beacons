@@ -1,6 +1,6 @@
 package com.realdolmen.jsf;
 
-import com.realdolmen.ArquillianUtil;
+import com.realdolmen.WarFactory;
 import com.realdolmen.entity.Employee;
 import com.realdolmen.rest.UserEndpoint;
 import org.jboss.arquillian.container.test.api.Deployment;
@@ -27,7 +27,7 @@ public class LoginControllerTest {
 
     @Deployment
     public static WebArchive createDeployment() {
-        return ArquillianUtil.createDeployment();
+        return WarFactory.createDeployment();
     }
 
     @Mock
@@ -58,7 +58,7 @@ public class LoginControllerTest {
         String redirect = loginController.doLogin();
         verify(endpoint, times(1)).loginLocal(any());
         verify(session, times(1)).setEmployee(any());
-        assertEquals("Correct login should redirect to index page", "index.xhtml?faces-redirect=true", redirect);
+        assertEquals("Correct login should redirect to index page", "/index.xhtml?faces-redirect=true", redirect);
     }
 
     @Test

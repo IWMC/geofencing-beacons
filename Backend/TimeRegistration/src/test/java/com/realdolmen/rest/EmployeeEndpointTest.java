@@ -1,21 +1,17 @@
 package com.realdolmen.rest;
 
-import com.realdolmen.ArquillianUtil;
+import com.realdolmen.WarFactory;
 import com.realdolmen.entity.Employee;
 import com.realdolmen.entity.ManagementEmployee;
 import com.realdolmen.jsf.Session;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.shrinkwrap.api.ShrinkWrap;
-import org.jboss.shrinkwrap.api.asset.EmptyAsset;
-import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 
 import javax.inject.Inject;
@@ -25,7 +21,6 @@ import javax.ws.rs.core.Response;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.IntStream;
 
@@ -44,7 +39,7 @@ public class EmployeeEndpointTest {
 
     @Deployment
     public static WebArchive createDeployment() {
-        return ArquillianUtil.createDeployment();
+        return WarFactory.createDeployment();
     }
 
     @Inject

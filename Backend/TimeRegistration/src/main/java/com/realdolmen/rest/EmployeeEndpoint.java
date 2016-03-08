@@ -7,7 +7,6 @@ import javax.persistence.EntityManager;
 import javax.persistence.OptimisticLockException;
 import javax.persistence.PersistenceContext;
 import javax.persistence.TypedQuery;
-import javax.transaction.Transactional;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
 import javax.ws.rs.PUT;
@@ -20,7 +19,6 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
 import com.realdolmen.annotations.Authorized;
-import com.realdolmen.annotations.UserGroup;
 import com.realdolmen.entity.*;
 import org.hibernate.Hibernate;
 
@@ -34,7 +32,7 @@ import static com.realdolmen.annotations.UserGroup.*;
 @Path("/employees")
 public class EmployeeEndpoint {
 
-	@PersistenceContext(unitName = PersistenceUnit.PRODUCTION_UNIT)
+	@PersistenceContext(unitName = PersistenceUnit.PRODUCTION)
 	private EntityManager em;
 
 	@DELETE

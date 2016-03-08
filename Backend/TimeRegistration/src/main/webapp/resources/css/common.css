@@ -23,3 +23,11 @@
     margin-left: 10px;
     padding-right: 20px;
 }
+
+.lookup-form input {
+    margin-left: 0px !important;
+}
+
+.lookup-form i.active {
+    color: #444444 !important;
+}

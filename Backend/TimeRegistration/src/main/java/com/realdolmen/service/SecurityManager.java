@@ -11,13 +11,11 @@ import io.jsonwebtoken.impl.crypto.MacProvider;
 import org.jetbrains.annotations.Nullable;
 
 import javax.ejb.Singleton;
-import javax.json.Json;
-import javax.persistence.Entity;
+import javax.inject.Inject;
 import javax.persistence.EntityManager;
 import javax.persistence.NoResultException;
 import javax.persistence.PersistenceContext;
 import javax.validation.constraints.NotNull;
-import javax.validation.constraints.Null;
 import java.math.BigInteger;
 import java.nio.charset.Charset;
 import java.security.Key;
@@ -35,7 +33,7 @@ public class SecurityManager {
 
     private final Key key = MacProvider.generateKey();
 
-    @PersistenceContext(unitName = PersistenceUnit.PRODUCTION_UNIT)
+    @PersistenceContext(unitName = PersistenceUnit.PRODUCTION)
     private EntityManager entityManager;
 
     public String randomSalt() throws NoSuchAlgorithmException {

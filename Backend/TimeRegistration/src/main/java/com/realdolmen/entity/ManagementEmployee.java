@@ -1,5 +1,7 @@
 package com.realdolmen.entity;
 
+import org.hibernate.search.annotations.Indexed;
+
 import javax.persistence.Entity;
 import javax.persistence.NamedQueries;
 import javax.persistence.NamedQuery;
@@ -12,6 +14,7 @@ import javax.persistence.NamedQuery;
         @NamedQuery(name = "ManagementEmployee.findAll", query = "SELECT me FROM ManagementEmployee me")
 })
 @Entity
+@Indexed
 public class ManagementEmployee extends Employee {
 
     public ManagementEmployee() {

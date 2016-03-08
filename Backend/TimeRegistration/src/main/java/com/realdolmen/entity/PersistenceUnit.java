@@ -6,6 +6,6 @@ package com.realdolmen.entity;
  */
 public interface PersistenceUnit {
 
-    public static final String PRODUCTION_UNIT = "TimeRegistration-persistence-unit";
-    public static final String TEST_UNIT = "TimeRegistration-test-persistence-unit";
+    String PRODUCTION = "TimeRegistration-persistence-unit";
+    String TEST = "TimeRegistration-test-persistence-unit";
 }

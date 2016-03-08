@@ -17,11 +17,11 @@ import java.util.Map;
 public class Pages {
 
     public static Page index() {
-        return new Page("index.xhtml");
+        return new Page("/index.xhtml");
     }
 
     public static Page login() {
-        return new Page("login.xhtml");
+        return new Page("/login.xhtml");
     }
 
     public static Page searchEmployee() { return new Page("/employees/search-employees.xhtml"); }

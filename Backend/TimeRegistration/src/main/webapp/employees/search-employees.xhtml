@@ -12,20 +12,16 @@
             <p>Hello world</p>
         </ui:define>
         <ui:define name="toolbar-after-logo">
-            <h:form styleClass="right show-on-medium-and-up">
-                <div class="input-field">
-                    <input id="search" type="search"/>
-                    <label for="search"><mp:icon name="mdi-action-search"/></label>
-                    <mp:icon name="mdi-navigation-close"/>
-                </div>
+            <h:form styleClass="right show-on-medium-and-up lookup-form">
+                <mp:input id="search" type="search" value="#{employeeSearch.searchTerms}" icon="mdi-action-search"/>
+                <h:commandButton id="searchButton" value="Zoeken" style="display: none;" update=":search-results"/>
             </h:form>
         </ui:define>
         <ui:define name="additional-toolbar-full">
-            <h:form>
+            <h:form styleClass="lookup-form">
                 <div class="input-field">
-                    <input id="search" type="search"/>
-                    <label for="search"><mp:icon name="mdi-action-search"/></label>
-                    <mp:icon name="mdi-navigation-close"/>
+                    <mp:input id="search" type="search" value="#{employeeSearch.searchTerms}" icon="mdi-action-search"/>
+                    <h:commandButton id="searchButton" value="Zoeken" style="display: none;" update=":search-results"/>
                 </div>
             </h:form>
         </ui:define>
@@ -33,17 +29,20 @@
             <div class="container">
                 <div class="row">
                     <div class="col s12 cards-container">
-                        <c:forEach items="#{employeeSearch.employees}" var="employee" varStatus="loop">
-                            <div class="card">
-                                <div class="card-content">
-                                    <h:outputText styleClass="card-title" value="#{employee.username}"/><br/>
-                                    <h:outputText value="#{employee.email}"/>
+                        <h:form id="search-results">
+                            <c:forEach items="#{employeeSearch.employees}"
+                                       var="employee">
+                                <div class="card">
+                                    <div class="card-content">
+                                        <h:outputText styleClass="card-title" value="#{employee.username}"/><br/>
+                                        <h:outputText value="#{employee.email}"/>
+                                    </div>
+                                    <div class="card-action">
+                                        <a href="#">Bekijk details</a>
+                                    </div>
                                 </div>
-                                <div class="card-action">
-                                    <a href="#">Bekijk details</a>
-                                </div>
-                            </div>
-                        </c:forEach>
+                            </c:forEach>
+                        </h:form>
                     </div>
                 </div>
             </div>

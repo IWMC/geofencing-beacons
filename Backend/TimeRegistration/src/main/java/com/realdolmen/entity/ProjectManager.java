@@ -1,5 +1,7 @@
 package com.realdolmen.entity;
 
+import org.hibernate.search.annotations.Indexed;
+
 import javax.persistence.Entity;
 import javax.persistence.NamedQueries;
 import javax.persistence.NamedQuery;
@@ -13,6 +15,7 @@ import java.util.Set;
 @NamedQueries({
         @NamedQuery(name = "ProjectManager.findAll", query = "SELECT DISTINCT e FROM ProjectManager e ORDER BY e.id")
 })
+@Indexed
 public class ProjectManager extends Employee {
 
     public ProjectManager() {

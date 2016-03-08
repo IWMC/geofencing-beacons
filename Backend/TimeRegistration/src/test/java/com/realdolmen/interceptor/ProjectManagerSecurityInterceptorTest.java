@@ -1,6 +1,6 @@
 package com.realdolmen.interceptor;
 
-import com.realdolmen.ArquillianUtil;
+import com.realdolmen.WarFactory;
 import com.realdolmen.entity.Employee;
 import com.realdolmen.entity.ManagementEmployee;
 import com.realdolmen.entity.ProjectManager;
@@ -45,7 +45,7 @@ public class ProjectManagerSecurityInterceptorTest {
 
     @Deployment
     public static WebArchive createDeployment() {
-        return ArquillianUtil.createDeployment();
+        return WarFactory.createDeployment();
     }
 
     @Before

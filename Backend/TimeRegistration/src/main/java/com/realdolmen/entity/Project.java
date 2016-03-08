@@ -2,6 +2,10 @@ package com.realdolmen.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import org.hibernate.Hibernate;
+import org.hibernate.search.annotations.DateBridge;
+import org.hibernate.search.annotations.Field;
+import org.hibernate.search.annotations.Indexed;
+import org.hibernate.search.annotations.Resolution;
 
 import javax.persistence.*;
 import javax.xml.bind.annotation.XmlRootElement;
@@ -15,6 +19,7 @@ import java.util.Set;
  */
 @Entity
 @XmlRootElement
+@Indexed
 public class Project extends Occupation implements Serializable {
 
     /**
@@ -33,19 +38,25 @@ public class Project extends Occupation implements Serializable {
 	@GeneratedValue(strategy = GenerationType.AUTO)
 	@Column(name = "id", updatable = false, nullable = false)
 	private Long id;
+
 	@Version
 	@Column(name = "version")
 	private int version;
 
 	@Column(name = "startDate", nullable = false)
 	@Temporal(TemporalType.DATE)
+    @Field
+    @DateBridge(resolution = Resolution.DAY)
 	private Date startDate;
 
 	@Column
 	@Temporal(TemporalType.DATE)
+    @Field
+    @DateBridge(resolution = Resolution.DAY)
 	private Date endDate;
 
 	@Column
+    @Field
 	private int projectNr;
 
 	@OneToMany

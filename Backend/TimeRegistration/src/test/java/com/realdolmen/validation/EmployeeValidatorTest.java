@@ -1,20 +1,14 @@
 package com.realdolmen.validation;
 
-import com.realdolmen.ArquillianUtil;
+import com.realdolmen.WarFactory;
 import com.realdolmen.entity.Employee;
 import com.realdolmen.entity.validation.Existing;
 import com.realdolmen.entity.validation.New;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.arquillian.test.impl.enricher.resource.ArquillianResourceTestEnricher;
-import org.jboss.shrinkwrap.api.ShrinkWrap;
-import org.jboss.shrinkwrap.api.asset.EmptyAsset;
-import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.jboss.weld.util.collections.Arrays2;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.InjectMocks;
 
 import javax.inject.Inject;
 
@@ -38,7 +32,7 @@ public class EmployeeValidatorTest {
 
     @Deployment
     public static WebArchive createDeployment() {
-        return ArquillianUtil.createDeployment();
+        return WarFactory.createDeployment();
     }
 
     private void assertNoValidationExceptions(ValidationResult result) {

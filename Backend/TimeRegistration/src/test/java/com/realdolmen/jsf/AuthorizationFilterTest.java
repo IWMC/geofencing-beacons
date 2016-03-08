@@ -1,6 +1,6 @@
 package com.realdolmen.jsf;
 
-import com.realdolmen.ArquillianUtil;
+import com.realdolmen.WarFactory;
 import com.realdolmen.entity.Employee;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
@@ -27,7 +27,7 @@ public class AuthorizationFilterTest {
 
     @Deployment
     public static WebArchive createDeployment() {
-        return ArquillianUtil.createDeployment();
+        return WarFactory.createDeployment();
     }
 
     @Inject

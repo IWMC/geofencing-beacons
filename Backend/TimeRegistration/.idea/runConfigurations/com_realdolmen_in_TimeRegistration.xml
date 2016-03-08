@@ -2,7 +2,7 @@
   <configuration default="false" name="com.realdolmen in TimeRegistration" type="JUnit" factoryName="JUnit" nameIsGenerated="true">
     <extension name="coverage" enabled="false" merge="false" sample_coverage="true" runner="idea">
       <pattern>
-        <option name="PATTERN" value="com.realdolmen.rest.*" />
+        <option name="PATTERN" value="com.realdolmen.config.*" />
         <option name="ENABLED" value="true" />
       </pattern>
     </extension>

@@ -3,6 +3,9 @@ package com.realdolmen.entity;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.realdolmen.entity.validation.New;
 import org.hibernate.Hibernate;
+import org.hibernate.search.annotations.Field;
+import org.hibernate.search.annotations.Indexed;
+import org.hibernate.search.annotations.IndexedEmbedded;
 
 import javax.inject.Named;
 import javax.persistence.*;
@@ -28,6 +31,7 @@ import javax.xml.bind.annotation.XmlRootElement;
  * </p>
  */
 @Entity
+@Indexed
 @XmlRootElement
 @NamedQueries({
         @NamedQuery(name = "Employee.findAll", query = "SELECT e FROM Employee e"),
@@ -61,21 +65,25 @@ public class Employee implements Serializable {
     @Column(length = 50)
     @NotNull(message = "firstName.empty")
     @Size(min = 1, max = 50, message = "firstName.length")
+    @Field
     private String firstName;
 
     @Column(length = 50)
     @NotNull(message = "lastName.empty")
     @Size(min = 1, max = 50, message = "lastName.length")
+    @Field
     private String lastName;
 
     @Column(length = 15)
     @NotNull(message = "username.empty")
     @Size(min = 1, max = 15, message = "username.length")
+    @Field
     private String username;
 
     @Column(length = 100)
     @NotNull(message = "email.empty")
     @Pattern(message = "email.pattern", regexp = "[a-z0-9]+[_a-z0-9\\.-]*[a-z0-9]+@[a-z0-9-]+(\\.[a-z0-9-]+)*(\\.[a-z]{2,4})")
+    @Field
     private String email;
 
     @Column

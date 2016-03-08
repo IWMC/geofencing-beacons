@@ -5,7 +5,6 @@ import com.realdolmen.annotations.UserGroup;
 import com.realdolmen.entity.Employee;
 import com.realdolmen.entity.PersistenceUnit;
 import com.realdolmen.entity.validation.New;
-import com.realdolmen.json.JsonWebToken;
 import com.realdolmen.service.SecurityManager;
 import com.realdolmen.validation.ValidationResult;
 import com.realdolmen.validation.Validator;
@@ -16,7 +15,6 @@ import javax.ejb.Stateless;
 import javax.inject.Inject;
 import javax.persistence.EntityManager;
 import javax.persistence.NoResultException;
-import javax.persistence.Persistence;
 import javax.persistence.PersistenceContext;
 import javax.validation.constraints.NotNull;
 import javax.ws.rs.Consumes;
@@ -42,7 +40,7 @@ public class UserEndpoint {
     @Inject
     private SecurityManager securityManager;
 
-    @PersistenceContext(unitName = PersistenceUnit.PRODUCTION_UNIT)
+    @PersistenceContext(unitName = PersistenceUnit.PRODUCTION)
     private EntityManager em;
 
     @POST

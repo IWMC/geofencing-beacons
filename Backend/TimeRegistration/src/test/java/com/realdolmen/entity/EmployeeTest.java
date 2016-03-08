@@ -1,6 +1,6 @@
 package com.realdolmen.entity;
 
-import com.realdolmen.ArquillianUtil;
+import com.realdolmen.WarFactory;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
@@ -25,7 +25,7 @@ import static org.junit.Assert.*;
 @RunWith(Arquillian.class)
 public class EmployeeTest {
 
-    @PersistenceContext(unitName = PersistenceUnit.TEST_UNIT)
+    @PersistenceContext(unitName = PersistenceUnit.TEST)
     private EntityManager em;
 
     @Inject
@@ -37,7 +37,7 @@ public class EmployeeTest {
 
     @Deployment
     public static WebArchive createDeployment() {
-        return ArquillianUtil.createDeployment();
+        return WarFactory.createDeployment();
     }
 
     @Before
