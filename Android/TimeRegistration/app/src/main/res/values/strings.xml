@@ -10,7 +10,6 @@
     <string name="login_retry">Retry</string>
     <string name="login_server_unreachable">Could not contact server!</string>
     <string name="login_generic_error">Failed to login due to a server error!</string>
-
-    <!-- TODO: Remove or change this placeholder text -->
-    <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="day_registration_empty_state">No registered occupations today!</string>
+    <string name="day_registration_title">Time Registration</string>
 </resources>

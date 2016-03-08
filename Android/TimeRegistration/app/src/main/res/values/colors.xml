@@ -17,4 +17,7 @@
     <color name="refreshSpinnerEndColor">@color/colorH2</color>
 
     <color name="colorOccupationDescription">#FFA0A0A0</color>
+    <color name="colorEmptyList">@color/colorOccupationDescription</color>
+    <color name="colorConfirmFab">#00B16A</color>
+    <color name="colorTabIconColor">@android:color/white</color>
 </resources>

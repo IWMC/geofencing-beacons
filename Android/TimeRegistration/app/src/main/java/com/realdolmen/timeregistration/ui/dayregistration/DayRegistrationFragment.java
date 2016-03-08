@@ -1,25 +1,32 @@
 package com.realdolmen.timeregistration.ui.dayregistration;
 
 
-import android.app.Activity;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.databinding.ObservableArrayList;
+import android.databinding.ObservableList;
 import android.os.Bundle;
-import android.support.design.widget.TabLayout;
 import android.support.v4.app.Fragment;
 import android.support.v7.app.AlertDialog;
-import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.support.v7.widget.Toolbar;
 import android.support.v7.widget.helper.ItemTouchHelper;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.LinearLayout;
+import android.widget.Toast;
 
+import com.android.volley.VolleyError;
 import com.realdolmen.timeregistration.R;
-import com.realdolmen.timeregistration.data.OccupationRecyclerAdapter;
+import com.realdolmen.timeregistration.model.Occupation;
+import com.realdolmen.timeregistration.util.OccupationRecyclerAdapter;
+import com.realdolmen.timeregistration.util.SimpleObservableCallback;
+import com.realdolmen.timeregistration.model.RegisteredOccupation;
 import com.realdolmen.timeregistration.service.BackendService;
+
+import java.util.Date;
+import java.util.List;
 
 import butterknife.Bind;
 import butterknife.ButterKnife;
@@ -32,7 +39,24 @@ public class DayRegistrationFragment extends Fragment {
     @Bind(R.id.day_registration_card_recycler)
     RecyclerView recyclerView;
 
+    @Bind(R.id.day_registration_emptyState)
+    LinearLayout emptyStateLabel;
+
     private DayRegistrationActivity parent;
+
+    private OccupationRecyclerAdapter.AdapterState state;
+
+    public static final String DATE_PARAM = "DATE";
+
+    private Date selectedDate;
+
+    public OccupationRecyclerAdapter.AdapterState getState() {
+        return state;
+    }
+
+    public void setState(OccupationRecyclerAdapter.AdapterState state) {
+        this.state = state;
+    }
 
     public DayRegistrationFragment() {
 
@@ -41,7 +65,7 @@ public class DayRegistrationFragment extends Fragment {
     @Override
     public void onAttach(Context context) {
         super.onAttach(context);
-        if(context instanceof DayRegistrationActivity) {
+        if (context instanceof DayRegistrationActivity) {
             parent = (DayRegistrationActivity) context;
         }
     }
@@ -49,9 +73,59 @@ public class DayRegistrationFragment extends Fragment {
     @Override
     public void onViewCreated(View view, Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-        recyclerView.setAdapter(new OccupationRecyclerAdapter(parent.getDataForCurrentDate()));
+        if(getArguments() != null && !getArguments().isEmpty()) {
+            selectedDate = (Date) getArguments().getSerializable(DATE_PARAM);
+        } else {
+            throw new IllegalStateException("DayRegistrationFragment requires a date argument.");
+        }
+        state = new OccupationRecyclerAdapter.NewlyEmptyState();
+        final ObservableArrayList<RegisteredOccupation> list = new ObservableArrayList<>();
+        final OccupationRecyclerAdapter adapter = new OccupationRecyclerAdapter(list);
+        recyclerView.setAdapter(adapter);
+        state.doNotify(this, adapter);
+        parent.getDataForDate(selectedDate, new BackendService.RequestCallback<List<RegisteredOccupation>>() {
+            @Override
+            public void onSuccess(List<RegisteredOccupation> data) {
+                list.addOnListChangedCallback(new SimpleObservableCallback() {
+                    @Override
+                    public void onChanged(ObservableList sender) {
+                        checkState();
+                    }
+
+                    @Override
+                    public void onItemRangeInserted(ObservableList sender, int positionStart, int itemCount) {
+                        checkState();
+                    }
+
+                    @Override
+                    public void onItemRangeRemoved(ObservableList sender, int positionStart, int itemCount) {
+                        checkState();
+                    }
+                });
+                list.addAll(data);
+                Occupation o = new Occupation("Lunch");
+                RegisteredOccupation ro = new RegisteredOccupation();
+                ro.setOccupation(o);
+                list.add(ro);
+                list.add(ro);
+                list.add(ro);
+                list.add(ro);
+                list.add(ro);
+                list.add(ro);
+            }
+
+            @Override
+            public void onError(VolleyError error) {
+                if (error.networkResponse != null)
+                    Toast.makeText(getContext(), "" + error.networkResponse.statusCode, Toast.LENGTH_LONG).show();
+                else {
+                    Toast.makeText(getContext(), error.getMessage(), Toast.LENGTH_LONG).show();
+                    error.printStackTrace();
+                }
+            }
+        });
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext(), LinearLayoutManager.VERTICAL, false));
-        ItemTouchHelper.SimpleCallback simpleItemTouchCallback = new ItemTouchHelper.SimpleCallback(0,ItemTouchHelper.RIGHT) {
+        ItemTouchHelper.SimpleCallback simpleItemTouchCallback = new ItemTouchHelper.SimpleCallback(0, ItemTouchHelper.RIGHT) {
             @Override
             public boolean onMove(RecyclerView recyclerView, RecyclerView.ViewHolder viewHolder, RecyclerView.ViewHolder target) {
                 return false;
@@ -59,7 +133,7 @@ public class DayRegistrationFragment extends Fragment {
 
             @Override
             public void onSwiped(final RecyclerView.ViewHolder viewHolder, int swipeDir) {
-                if(swipeDir != ItemTouchHelper.RIGHT) {
+                if (swipeDir != ItemTouchHelper.RIGHT) {
                     return;
                 }
                 new AlertDialog.Builder(getContext()).setTitle("Delete?").setMessage("Do you want to delete " + viewHolder + "?").setIcon(R.drawable.ic_delete_24dp).setNegativeButton("No", new DialogInterface.OnClickListener() {
@@ -71,8 +145,8 @@ public class DayRegistrationFragment extends Fragment {
                 }).setPositiveButton("Yes", new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
-                        recyclerView.getAdapter().notifyItemRemoved(viewHolder.getAdapterPosition());
                         //TODO: remove item from datase
+                        ((OccupationRecyclerAdapter) recyclerView.getAdapter()).removeItemAt(viewHolder.getAdapterPosition());
                         dialog.dismiss();
                     }
                 }).setOnCancelListener(new DialogInterface.OnCancelListener() {
@@ -97,4 +171,21 @@ public class DayRegistrationFragment extends Fragment {
         return v;
     }
 
+    public void showEmptyLabel() {
+        emptyStateLabel.setVisibility(View.VISIBLE);
+        recyclerView.setVisibility(View.GONE);
+    }
+
+    public void showRecycler() {
+        emptyStateLabel.setVisibility(View.GONE);
+        recyclerView.setVisibility(View.VISIBLE);
+    }
+
+    private void checkState() {
+        if(state != null) {
+            state.doNotify(this, ((OccupationRecyclerAdapter) recyclerView.getAdapter()));
+        } else {
+            System.err.println("State should not be null");
+        }
+    }
 }

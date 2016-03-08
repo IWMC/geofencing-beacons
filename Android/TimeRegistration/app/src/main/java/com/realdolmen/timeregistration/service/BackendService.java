@@ -11,7 +11,8 @@ import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.Volley;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import com.realdolmen.timeregistration.model.Occupation;
+import com.realdolmen.timeregistration.data.GsonObjectRequest;
+import com.realdolmen.timeregistration.model.RegisteredOccupation;
 import com.realdolmen.timeregistration.model.Session;
 
 import org.json.JSONException;
@@ -32,7 +33,7 @@ public class BackendService {
 
     private static final String
             API_LOGIN_URI = HOST + "/api/user/login",
-            API_LIST_EMPLOYEES = HOST + "/api/employees";
+            API_GET_OCCUPATIONS = HOST + "/api/occupations/?start=%d&end=%d";
 
     private Context context;
 
@@ -56,18 +57,25 @@ public class BackendService {
         return currentSession != null && currentSession.getJwtToken() != null && !currentSession.getJwtToken().isEmpty();
     }
 
-    public List<Occupation> getOccupationsByDate(Date date) {
-        return Arrays.asList(
-                new Occupation("Occupation 1", "A cool occupation"),
-                new Occupation("Occupation 2", null),
-                new Occupation("Occupation 3", null),
-                new Occupation("Occupation 4", "Test description"),
-                new Occupation("Occupation 5", "What is love?"),
-                new Occupation("Occupation 6", null),
-                new Occupation("Occupation 7", "Baby don't hurt me"),
-                new Occupation("Occupation 8", "Don't hurt me"),
-                new Occupation("Occupation 9", "No more!")
-        );
+    public String params(String url, Object... args) {
+        return String.format(url, args);
+    }
+
+    public void getOccupationsInDateRange(Date start, Date end, final RequestCallback<List<RegisteredOccupation>> callback) {
+        GsonObjectRequest req = new GsonObjectRequest<>(params(API_GET_OCCUPATIONS, start.getTime(), end.getTime()), RegisteredOccupation[].class
+                , auth(), new Response.Listener<RegisteredOccupation[]>() {
+            @Override
+            public void onResponse(RegisteredOccupation[] response) {
+                callback.onSuccess(Arrays.asList(response));
+            }
+        }, new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(VolleyError error) {
+                callback.onError(error);
+            }
+        });
+
+        requestQueue.add(req);
     }
 
     /**
@@ -148,5 +156,17 @@ public class BackendService {
         });
 
         requestQueue.add(request);
+    }
+
+    private Map<String, String> auth(Map<String, String> originalHeaders) {
+        Map<String, String> headers = new HashMap<>();
+        if (isAuthenticated()) {
+            headers.put("Authorization", currentSession.getJwtToken());
+        }
+        return headers;
+    }
+
+    private Map<String, String> auth() {
+        return auth(null);
     }
 }

@@ -2,6 +2,7 @@ package com.realdolmen.service;
 
 import com.realdolmen.entity.Employee;
 import com.realdolmen.entity.PersistenceUnit;
+import com.realdolmen.jsf.Session;
 import com.realdolmen.json.JsonWebToken;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.MalformedJwtException;
@@ -11,11 +12,13 @@ import io.jsonwebtoken.impl.crypto.MacProvider;
 import org.jetbrains.annotations.Nullable;
 
 import javax.ejb.Singleton;
+import javax.inject.Inject;
 import javax.json.Json;
 import javax.persistence.Entity;
 import javax.persistence.EntityManager;
 import javax.persistence.NoResultException;
 import javax.persistence.PersistenceContext;
+import javax.servlet.http.HttpServletRequest;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Null;
 import java.math.BigInteger;
@@ -26,6 +29,7 @@ import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 import java.util.Base64;
 import java.util.Date;
+import java.util.Optional;
 
 /**
  * A stateless EJB used as a collection of security functions.
@@ -34,6 +38,12 @@ import java.util.Date;
 public class SecurityManager {
 
     private final Key key = MacProvider.generateKey();
+
+    @Inject
+    private HttpServletRequest request;
+
+    @Inject
+    private Session session;
 
     @PersistenceContext(unitName = PersistenceUnit.PRODUCTION_UNIT)
     private EntityManager entityManager;
@@ -70,6 +80,10 @@ public class SecurityManager {
         }
 
         return true;
+    }
+
+    public Employee findEmployee() {
+        return Optional.ofNullable(session.getEmployee()).orElse(findByJwt(new JsonWebToken(request.getHeader("Authorization"))));
     }
 
     @Nullable

@@ -33,7 +33,8 @@ import javax.xml.bind.annotation.XmlRootElement;
         @NamedQuery(name = "Employee.findAll", query = "SELECT e FROM Employee e"),
         @NamedQuery(name = "Employee.findByUsername", query = "SELECT e FROM Employee e WHERE e.username = :username"),
         @NamedQuery(name = "Management.findByUsername", query = "SELECT e FROM Employee e WHERE e.username = :username " +
-                "AND TYPE(e) IN (ProjectManager, ManagementEmployee)")
+                "AND TYPE(e) IN (ProjectManager, ManagementEmployee)"),
+        @NamedQuery(name = "RegisteredOccupation.findOccupationsInRange", query = "SELECT r FROM RegisteredOccupation r WHERE r.registeredStart > :start AND r.registrar.id = :employeeId")
 })
 @Named
 @Inheritance(strategy = InheritanceType.JOINED)
@@ -96,10 +97,14 @@ public class Employee implements Serializable {
     @ManyToMany
     private Set<Project> memberProjects = new HashSet<>();
 
-    @ManyToMany
-    private Set<GenericOccupation> occupations = new HashSet<>();
+    @OneToMany(mappedBy = "registrar")
+    private Set<RegisteredOccupation> registeredOccupations = new HashSet<>();
 
     public Employee() {
+    }
+
+    public Set<RegisteredOccupation> getRegisteredOccupations() {
+        return registeredOccupations;
     }
 
     public Employee(long id, int version, String firstName, String lastName, String username, String email, String hash, String salt, String password, Set<Project> memberProjects) {

@@ -11,4 +11,6 @@
     <string name="login_retry">Opnieuw</string>
     <string name="login_server_unreachable">Server kon niet gecontacteerd worden!</string>
     <string name="login_generic_error">Kon niet aanmelden door een server fout!</string>
+    <string name="day_registration_empty_state">Geen geregistreerde bezigheden vandaag!</string>
+    <string name="day_registration_title">Tijdsregistratie</string>
 </resources>

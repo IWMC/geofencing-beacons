@@ -26,14 +26,32 @@
         <android.support.design.widget.TabLayout
             android:id="@+id/day_registration_tabbar"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            app:tabMode="scrollable" />
+            android:layout_height="70dp"
+            app:tabMode="scrollable"
+            app:tabPaddingEnd="25dp"
+            app:tabPaddingStart="25dp" />
 
     </android.support.design.widget.AppBarLayout>
 
-    <FrameLayout
-        android:id="@+id/day_registration_fragment_container"
+    <!--<FrameLayout-->
+    <!--android:id="@+id/day_registration_fragment_container"-->
+    <!--android:layout_width="match_parent"-->
+    <!--android:layout_height="match_parent"-->
+    <!--app:layout_behavior="@string/appbar_scrolling_view_behavior" />-->
+    <com.realdolmen.timeregistration.ui.CustomViewPager
+        android:id="@+id/day_registration_viewpager"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
+        android:layout_height="wrap_content"
         app:layout_behavior="@string/appbar_scrolling_view_behavior" />
+
+    <android.support.design.widget.FloatingActionButton
+        app:backgroundTint="@color/colorConfirmFab"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="end|bottom"
+        android:layout_margin="16dp"
+        android:clickable="true"
+        android:longClickable="true"
+        android:src="@drawable/ic_done_24dp" />
+
 </android.support.design.widget.CoordinatorLayout>

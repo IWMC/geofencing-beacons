@@ -1,7 +1,6 @@
 package com.realdolmen.timeregistration.ui.dayregistration;
 
 import android.os.Handler;
-import android.os.PersistableBundle;
 import android.support.design.widget.TabLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -10,12 +9,19 @@ import android.view.Menu;
 import android.view.MenuInflater;
 import android.widget.Toast;
 
+import com.android.volley.VolleyError;
 import com.realdolmen.timeregistration.R;
-import com.realdolmen.timeregistration.model.Occupation;
+import com.realdolmen.timeregistration.util.DateUtil;
+import com.realdolmen.timeregistration.util.DayRegistrationFragmentPagerAdapter;
+import com.realdolmen.timeregistration.model.RegisteredOccupation;
 import com.realdolmen.timeregistration.service.BackendService;
+import com.realdolmen.timeregistration.ui.CustomViewPager;
 
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import butterknife.Bind;
 import butterknife.ButterKnife;
@@ -29,38 +35,48 @@ public class DayRegistrationActivity extends AppCompatActivity {
     @Bind(R.id.day_registration_tabbar)
     TabLayout tabLayout;
 
-    private DayRegistrationFragment dayRegistrationFragment;
+    @Bind(R.id.day_registration_viewpager)
+    CustomViewPager viewPager;
 
     private boolean doubleBack;
+
+    private DayRegistrationFragmentPagerAdapter pagerAdapter;
+
+    private Map<Date, List<RegisteredOccupation>> registeredOccupations = new HashMap<>();
+    
+    private List<Date> dates = new ArrayList<>();
+
+    public static final String SELECTED_DAY = "SELECTED_DAY";
+
+    //region Initialization methods
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_day_registration);
         ButterKnife.bind(this);
-        setSupportActionBar(bar);
-        getSupportActionBar().setTitle("Registration");
-        generateDayTabs();
-        if(savedInstanceState != null) {
-            dayRegistrationFragment = (DayRegistrationFragment) getSupportFragmentManager().getFragment(savedInstanceState, "dayRegistration");
-        }
+        initSupportActionBar();
+        initViewPager();
+        refreshTabIcons();
+        selectToday();
+    }
 
-        if (dayRegistrationFragment == null) {
-            dayRegistrationFragment = new DayRegistrationFragment();
-            getSupportFragmentManager().beginTransaction().add(R.id.day_registration_fragment_container, dayRegistrationFragment)
-                    .setCustomAnimations(android.R.anim.fade_in, 0, 0, android.R.anim.fade_out).commit();
-        }
+    private void initSupportActionBar() {
+        setSupportActionBar(bar);
+        getSupportActionBar().setTitle(R.string.day_registration_title);
         getSupportActionBar().setDisplayHomeAsUpEnabled(false);
         getSupportActionBar().setDisplayShowHomeEnabled(true);
         getSupportActionBar().setIcon(R.drawable.ic_home_24dp);
-
     }
 
-    private void generateDayTabs() {
-        tabLayout.addTab(tabLayout.newTab().setText(""));
-        tabLayout.addTab(tabLayout.newTab().setText("Today"));
-        tabLayout.addTab(tabLayout.newTab().setText("Today"));
+    private void initViewPager() {
+        viewPager.setSwipePagingEnabled(false);
+        dates = DateUtil.pastWorkWeek();
+        pagerAdapter = new DayRegistrationFragmentPagerAdapter(this, getSupportFragmentManager(), dates);
+        viewPager.setAdapter(pagerAdapter);
+        tabLayout.setupWithViewPager(viewPager);
     }
+
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -71,7 +87,7 @@ public class DayRegistrationActivity extends AppCompatActivity {
 
     @Override
     public void onBackPressed() {
-        if(doubleBack) {
+        if (doubleBack) {
             finishAffinity();
             return;
         } else {
@@ -96,14 +112,69 @@ public class DayRegistrationActivity extends AppCompatActivity {
             getSupportFragmentManager().popBackStack();
         }
     }
+    //endregion
 
-    public List<Occupation> getDataForCurrentDate() {
-        return BackendService.with(this).getOccupationsByDate(new Date());
+    //region Data methods
+    public void getDataForDate(final Date date, final BackendService.RequestCallback<List<RegisteredOccupation>> callback) {
+        if (registeredOccupations.containsKey(date)) {
+            callback.onSuccess(registeredOccupations.get(date));
+            return;
+        }
+        BackendService.with(this).getOccupationsInDateRange(date, date, new BackendService.RequestCallback<List<RegisteredOccupation>>() {
+            @Override
+            public void onSuccess(List<RegisteredOccupation> data) {
+                registeredOccupations.put(date, data);
+                callback.onSuccess(data);
+            }
+
+            @Override
+            public void onError(VolleyError error) {
+                callback.onError(error);
+            }
+        });
     }
 
+    public boolean isDateConfirmed(Date date) {
+        if (DateUtil.isToday(date)) {
+            return false;
+        }
+        return true;
+    }
+
+    public int getStateIcon(Date date) {
+        int icon = 0;
+        if(isDateConfirmed(date)) {
+            icon = R.drawable.ic_assignment_turned_in_24dp;
+        } else {
+            icon = R.drawable.ic_assignment_late_24dp;
+        }
+
+        return icon;
+    }
+
+    private void selectToday() {
+        viewPager.setCurrentItem(tabLayout.getTabCount() - 1);
+    }
+    //endregion
+
+    public void refreshTabIcons() {
+        for (int i = 0; i < tabLayout.getTabCount(); i++) {
+            TabLayout.Tab tab = tabLayout.getTabAt(i);
+            tab.setIcon(getStateIcon(dates.get(i)));
+        }
+    }
+
+    //region Save Instance State
     @Override
     public void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
-        getSupportFragmentManager().putFragment(outState, "dayRegistration", dayRegistrationFragment);
+        outState.putInt(SELECTED_DAY, tabLayout.getSelectedTabPosition());
     }
+
+    @Override
+    protected void onRestoreInstanceState(Bundle savedInstanceState) {
+        super.onRestoreInstanceState(savedInstanceState);
+        viewPager.setCurrentItem(savedInstanceState.getInt(SELECTED_DAY));
+    }
+    //endregion
 }
