@@ -71,12 +71,12 @@ public class OccupationRecyclerAdapter extends RecyclerView.Adapter<OccupationRe
 
         public void update() {
             title.setText(data.getOccupation().getName());
-            if (data.getOccupation().getDescription().isEmpty()) {
-                description.setVisibility(View.GONE);
-            } else {
-                description.setVisibility(View.VISIBLE);
-            }
-
+//            if (data.getOccupation().getDescription().isEmpty()) {
+//                description.setVisibility(View.GONE);
+//            } else {
+//                description.setVisibility(View.VISIBLE);
+//            }
+            description.setVisibility(View.VISIBLE);
             if (data.getRegisteredStart() != null)
                 description.setText(dateFormat.format(data.getRegisteredStart()) + " - " + (data.getRegisteredEnd() == null ? "Ongoing..." : dateFormat.format(data.getRegisteredEnd())));
             else

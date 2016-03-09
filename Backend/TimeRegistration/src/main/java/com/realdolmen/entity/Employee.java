@@ -34,7 +34,7 @@ import javax.xml.bind.annotation.XmlRootElement;
         @NamedQuery(name = "Employee.findByUsername", query = "SELECT e FROM Employee e WHERE e.username = :username"),
         @NamedQuery(name = "Management.findByUsername", query = "SELECT e FROM Employee e WHERE e.username = :username " +
                 "AND TYPE(e) IN (ProjectManager, ManagementEmployee)"),
-        @NamedQuery(name = "RegisteredOccupation.findOccupationsInRange", query = "SELECT r FROM RegisteredOccupation r WHERE r.registeredStart > :start AND r.registrar.id = :employeeId")
+        @NamedQuery(name = "RegisteredOccupation.findOccupationsInRange", query = "SELECT r FROM RegisteredOccupation r WHERE r.registeredStart >= :start AND r.registeredEnd <= :end AND r.registrar.id = :employeeId")
 })
 @Named
 @Inheritance(strategy = InheritanceType.JOINED)

@@ -1,9 +1,9 @@
 package com.realdolmen.timeregistration.ui.dayregistration;
 
+import android.os.Bundle;
 import android.os.Handler;
 import android.support.design.widget.TabLayout;
 import android.support.v7.app.AppCompatActivity;
-import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -11,11 +11,11 @@ import android.widget.Toast;
 
 import com.android.volley.VolleyError;
 import com.realdolmen.timeregistration.R;
-import com.realdolmen.timeregistration.util.DateUtil;
-import com.realdolmen.timeregistration.util.DayRegistrationFragmentPagerAdapter;
 import com.realdolmen.timeregistration.model.RegisteredOccupation;
 import com.realdolmen.timeregistration.service.BackendService;
 import com.realdolmen.timeregistration.ui.CustomViewPager;
+import com.realdolmen.timeregistration.util.DateUtil;
+import com.realdolmen.timeregistration.util.DayRegistrationFragmentPagerAdapter;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -43,7 +43,7 @@ public class DayRegistrationActivity extends AppCompatActivity {
     private DayRegistrationFragmentPagerAdapter pagerAdapter;
 
     private Map<Date, List<RegisteredOccupation>> registeredOccupations = new HashMap<>();
-    
+
     private List<Date> dates = new ArrayList<>();
 
     public static final String SELECTED_DAY = "SELECTED_DAY";

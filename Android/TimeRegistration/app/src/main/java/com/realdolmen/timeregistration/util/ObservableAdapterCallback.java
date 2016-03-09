@@ -38,6 +38,6 @@ public class ObservableAdapterCallback extends ObservableList.OnListChangedCallb
 
     @Override
     public void onItemRangeRemoved(ObservableArrayList<RegisteredOccupation> sender, int positionStart, int itemCount) {
-        adapter.notifyItemRangeChanged(positionStart, itemCount);
+        adapter.notifyItemRangeRemoved(positionStart, itemCount);
     }
 }

@@ -25,6 +25,8 @@ import com.realdolmen.timeregistration.util.SimpleObservableCallback;
 import com.realdolmen.timeregistration.model.RegisteredOccupation;
 import com.realdolmen.timeregistration.service.BackendService;
 
+import org.apache.commons.lang3.time.DateUtils;
+
 import java.util.Date;
 import java.util.List;
 
@@ -105,13 +107,22 @@ public class DayRegistrationFragment extends Fragment {
                 list.addAll(data);
                 Occupation o = new Occupation("Lunch");
                 RegisteredOccupation ro = new RegisteredOccupation();
+                ro.setId(1);
                 ro.setOccupation(o);
+
+                RegisteredOccupation ro2 = new RegisteredOccupation();
+                ro2.setRegisteredStart(DateUtils.addHours(new Date(), -3));
+                ro2.setRegisteredEnd(new Date());
+                ro2.setId(2);
+                ro2.setOccupation(o);
                 list.add(ro);
-                list.add(ro);
-                list.add(ro);
-                list.add(ro);
-                list.add(ro);
-                list.add(ro);
+                list.add(ro2);
+                list.add(ro2);
+                list.add(ro2);
+                list.add(ro2);
+                list.add(ro2);
+                list.add(ro2);
+                list.add(ro2);
             }
 
             @Override
