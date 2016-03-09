@@ -4,7 +4,7 @@ import android.content.Context;
 import android.os.Build;
 
 import com.realdolmen.timeregistration.BuildConfig;
-import com.realdolmen.timeregistration.LoginActivity;
+import com.realdolmen.timeregistration.ui.login.LoginActivity;
 import com.realdolmen.timeregistration.UITestActivity;
 
 import org.junit.Assert;

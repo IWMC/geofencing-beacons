@@ -1,7 +1,5 @@
 package com.realdolmen.jsf;
 
-import org.primefaces.util.HTML;
-
 import javax.enterprise.context.RequestScoped;
 import javax.inject.Named;
 import java.io.UnsupportedEncodingException;

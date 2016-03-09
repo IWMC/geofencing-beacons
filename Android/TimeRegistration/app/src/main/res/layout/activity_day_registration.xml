@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.design.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    tools:context=".ui.dayregistration.DayRegistrationActivity">
+
+    <android.support.design.widget.AppBarLayout
+        android:id="@+id/day_registration_appbar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar">
+
+        <android.support.v7.widget.Toolbar
+            android:id="@+id/day_registration_toolbar"
+            android:layout_width="match_parent"
+            android:layout_height="?attr/actionBarSize"
+            android:background="?attr/colorPrimary"
+            app:layout_scrollFlags="scroll|enterAlways|snap"
+            app:popupTheme="@style/ThemeOverlay.AppCompat.Light">
+
+        </android.support.v7.widget.Toolbar>
+
+        <android.support.design.widget.TabLayout
+            android:id="@+id/day_registration_tabbar"
+            android:layout_width="match_parent"
+            android:layout_height="70dp"
+            app:tabMode="scrollable"
+            app:tabPaddingEnd="25dp"
+            app:tabPaddingStart="25dp" />
+
+    </android.support.design.widget.AppBarLayout>
+
+    <!--<FrameLayout-->
+    <!--android:id="@+id/day_registration_fragment_container"-->
+    <!--android:layout_width="match_parent"-->
+    <!--android:layout_height="match_parent"-->
+    <!--app:layout_behavior="@string/appbar_scrolling_view_behavior" />-->
+    <com.realdolmen.timeregistration.ui.dayregistration.CustomViewPager
+        android:id="@+id/day_registration_viewpager"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:layout_behavior="@string/appbar_scrolling_view_behavior" />
+
+    <android.support.design.widget.FloatingActionButton
+        app:backgroundTint="@color/colorConfirmFab"
+        android:id="@+id/day_registration_fab"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_margin="16dp"
+        android:clickable="true"
+        android:longClickable="true"
+        android:src="@drawable/ic_done_24dp"
+        app:layout_behavior="com.realdolmen.timeregistration.util.ScrollAwareFabBehavior"
+        android:layout_gravity="bottom|right|end"/>
+
+</android.support.design.widget.CoordinatorLayout>
