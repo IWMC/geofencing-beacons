@@ -1,9 +1,9 @@
 .realdolmen-blue {
-    background-color: #009AD8;
+    background-color: #009AD8 !important;
 }
 
 .realdolmen-red {
-    background-color: #E21E25;
+    background-color: #E21E25 !important;
 }
 
 .waves-effect .waves-ripple {
@@ -28,6 +28,25 @@
     margin-left: 0px !important;
 }
 
+.lookup-form.show-on-medium-and-up input {
+    margin-left: -10px !important;
+}
+
 .lookup-form i.active {
     color: #444444 !important;
+}
+
+body {
+    display: flex;
+    min-height: 100vh;
+    flex-direction: column;
+}
+
+main {
+    flex: 1 0 auto;
+}
+
+footer {
+    padding-top: 15px !important;
+    padding-bottom: 15px !important;
 }

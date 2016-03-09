@@ -15,18 +15,24 @@
               href="https://cdnjs.cloudflare.com/ajax/libs/materialize/0.97.5/css/materialize.min.css"/>
         <title>Aanmelden</title>
     </h:head>
-    <h:body styleClass="valign-wrapper container" style="max-width: 380px; height: 90vh">
-        <div class="center-align">
-            <h:form styleClass="card valign" id="loginForm">
-                <div class="card-content">
-                    <h:graphicImage library="img" name="logo.svg"/>
-                    <mp:input placeholder="Gebruikersnaam" id="username" value="#{loginController.username}" floatingPlaceholder="false" />
-                    <mp:input type="password" placeholder="Wachtwoord" id="password" value="#{loginController.password}" floatingPlaceholder="false" />
-                    <h:messages id="messages" showDetail="false" errorClass="error" />
-                    <mp:button id="loginButton" action="#{loginController.doLogin}" value="Inloggen" update="loginForm:messages" />
-                </div>
-            </h:form>
+    <h:body styleClass="container">
+        <div class="valign-wrapper">
+            <div class="center-align valign">
+                <h:form styleClass="card" id="loginForm">
+                    <div class="card-content">
+                        <h:graphicImage library="img" name="logo.svg"/>
+                        <mp:input placeholder="Gebruikersnaam" id="username" value="#{loginController.username}"
+                                  floatingPlaceholder="false"/>
+                        <mp:input type="password" placeholder="Wachtwoord" id="password"
+                                  value="#{loginController.password}" floatingPlaceholder="false"/>
+                        <h:messages id="messages" showDetail="false" errorClass="error"/>
+                        <mp:button id="loginButton" action="#{loginController.doLogin}" value="Inloggen"
+                                   update="loginForm:messages"/>
+                    </div>
+                </h:form>
+            </div>
         </div>
+        <h:outputStylesheet library="css" name="login.css"/>
         <script type="javascript"
                 src="https://cdnjs.cloudflare.com/ajax/libs/materialize/0.97.5/js/materialize.min.js"></script>
     </h:body>

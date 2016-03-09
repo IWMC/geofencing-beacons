@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+        "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:of="http://omnifaces.org/functions" xmlns:mp="http://primefaces.org/ui/material">
+<f:view>
+    <f:metadata>
+        <f:viewParam name="id" value="#{employeeDetails.userId}"/>
+        <f:event type="preRenderView" listener="#{employeeDetails.onPreRender}"/>
+    </f:metadata>
+    <ui:composition template="../page-template.xhtml">
+        <ui:define name="body">
+            <div class="container">
+                <div class="card">
+                    <div class="card-content text-center">
+                        <h1 class="thin">
+                            <h:outputText
+                                    value="#{employeeDetails.employee.firstName} #{employeeDetails.employee.lastName}"/><br/>
+                        </h1>
+                        <p>
+                            <h:outputText value="#{employeeDetails.employee.email}"/>
+                            (<b><h:outputText value="#{employeeDetails.employee.username}"/></b>)
+                        </p>
+                        <br/>
+                        <br/>
+                        <h:panelGroup layout="block" rendered="#{employeeDetails.employee.memberProjects.size() == 0}">
+                            <mp:icon name=""/>
+                            <h4 class="thin"><h:outputText value="Geen actieve projecten!"/></h4>
+                        </h:panelGroup>
+                        <h:panelGroup layout="block" rendered="#{employeeDetails.employee.memberProjects.size() > 0}">
+                            <h4 class="thin"><h:outputText value="Actieve projecten"/></h4>
+                            <div class="collection">
+                                <ui:repeat value="#{of:setToList(employeeDetails.employee.memberProjects)}"
+                                           var="project">
+                                    <h:link styleClass="collection-item" value="#{project.name}"/>
+                                </ui:repeat>
+                            </div>
+                        </h:panelGroup>
+                    </div>
+                    <div class="card-action">
+                        <a href="#">Wijzigen</a>
+                        <a class="right red-text lighten-1" href="#">Verwijderen</a>
+                    </div>
+                </div>
+                <h:panelGroup layout="block" rendered="#{employeeDetails.employee.memberProjects.size() > 0}">
+                    <div class="row">
+                        <div class="col s12 cards-container">
+                            <div class="card">
+                            </div>
+                        </div>
+                    </div>
+                </h:panelGroup>
+            </div>
+        </ui:define>
+    </ui:composition>
+</f:view>
+</html>

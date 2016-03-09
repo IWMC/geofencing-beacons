@@ -6,17 +6,14 @@ import com.realdolmen.entity.ManagementEmployee;
 import com.realdolmen.entity.PersistenceUnit;
 import com.realdolmen.jsf.Session;
 import com.realdolmen.rest.EmployeeEndpoint;
-import org.hibernate.search.Search;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 
 import javax.inject.Inject;
@@ -35,13 +32,13 @@ import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.*;
 
 @RunWith(Arquillian.class)
-public class SearchControllerTest {
+public class EmployeeSearchControllerTest {
 
     @InjectMocks
-    private SearchController controller = new SearchController();
+    private EmployeeSearchController controller = new EmployeeSearchController();
 
     @Inject
-    private SearchController realController;
+    private EmployeeSearchController realController;
 
     @Inject
     private Session session;

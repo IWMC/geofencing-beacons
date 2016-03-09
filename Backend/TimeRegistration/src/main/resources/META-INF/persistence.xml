@@ -14,7 +14,7 @@
             <property name="hibernate.transaction.flush_before_completion" value="true"/>
             <property name="hibernate.dialect" value="org.hibernate.dialect.MySQL5InnoDBDialect"/>
             <property name="hibernate.search.default.directory_provider" value="filesystem"/>
-            <property name="hibernate.search.default.indexBase" value="indexes"/>
+            <property name="hibernate.search.default.indexBase" value="${env.JBOSS_HOME}/indexes"/>
         </properties>
     </persistence-unit>
 

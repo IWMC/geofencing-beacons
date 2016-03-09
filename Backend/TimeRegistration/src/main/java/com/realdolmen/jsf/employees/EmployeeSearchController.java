@@ -21,7 +21,7 @@ import java.util.List;
  */
 @Named("employeeSearch")
 @RequestScoped
-public class SearchController implements Serializable {
+public class EmployeeSearchController implements Serializable {
 
     @Inject
     private EmployeeEndpoint endpoint;
@@ -43,7 +43,7 @@ public class SearchController implements Serializable {
                 .buildQueryBuilder().forEntity(Employee.class).get();
         org.apache.lucene.search.Query luceneQuery = qb
                 .bool().should(qb.keyword().onField("username").matching(searchTerms).createQuery())
-                .should(qb.phrase().onField("email").boostedTo(2).sentence(searchTerms).createQuery())
+                .should(qb.phrase().onField("email").sentence(searchTerms).createQuery())
                 .should(qb.keyword().onFields("firstName", "lastName").matching(searchTerms).createQuery())
                 .createQuery();
 

@@ -3,8 +3,8 @@
     <container qualifier="jboss" default="true">
         <protocol type="Servlet 3.0"/>
         <configuration>
-            <property name="jbossHome">C:\Users\bccaz45\Documents\wildfly-10.0.0.Final</property>
-            <property name="modulePath">C:\Users\bccaz45\Documents\wildfly-10.0.0.Final\modules</property>
+            <property name="jbossHome">${env.JBOSS_HOME}</property>
+            <property name="modulePath">${env.JBOSS_HOME}\modules</property>
             <property name="javaVmArguments">-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=5005</property>
             <property name="allowConnectingToRunningServer">true</property>
         </configuration>

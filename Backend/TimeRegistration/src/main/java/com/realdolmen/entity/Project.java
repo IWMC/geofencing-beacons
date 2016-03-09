@@ -31,7 +31,6 @@ public class Project extends Occupation implements Serializable {
     public static void initialize(Project project) {
         Hibernate.initialize(project.getSubProjects());
         project.getSubProjects().forEach(Project::initialize);
-
     }
 
 	@Id

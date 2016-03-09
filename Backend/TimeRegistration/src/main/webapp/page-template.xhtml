@@ -9,45 +9,55 @@
     <ui:composition template="dependency-template.xhtml">
         <ui:define name="content">
             <h:body>
-                <h:form>
-                    <ul id="dropdown1" class="dropdown-content" style="min-width: 200px;">
-                        <li><h:commandLink action="#{pages.searchEmployee().jsf()}" value="Werknemers"/></li>
-                    </ul>
-                </h:form>
+                <main>
+                    <h:form>
+                        <ul id="dropdown1" class="dropdown-content" style="min-width: 200px;">
+                            <li><h:commandLink action="#{pages.searchEmployee().jsf()}" value="Werknemers"/></li>
+                        </ul>
+                    </h:form>
 
-                <nav>
-                    <div class="nav-wrapper realdolmen-red">
-                        <div class="left brand-logo">
-                            <a href="/index.xhtml">
+                    <nav>
+                        <div class="nav-wrapper realdolmen-red">
+                            <div class="left brand-logo">
+                                <a href="/index.xhtml">
                                 <span class="left valign-wrapper" id="toolbar-logo-wrapper">
                                     <h:graphicImage styleClass="valign" library="img" name="logo-white.svg"/>
                                 </span>
-                            </a>
-                            <ui:insert name="toolbar-after-logo"/>
+                                </a>
+                                <ui:insert name="toolbar-after-logo"/>
+                            </div>
+
+                            <h:form>
+                                <ul class="right" id="nav-mobile">
+                                    <li class="hide-on-med-and-down">
+                                        <h:commandLink action="#{pages.searchEmployee().jsf()}" value="Werknemers"/>
+                                    </li>
+                                    <li>
+                                        <a class="dropdown-button hide-on-large-only" href="#!"
+                                           data-activates="dropdown1">
+                                            <mp:icon name="mdi-navigation-more-vert"/>
+                                        </a>
+                                    </li>
+                                </ul>
+                            </h:form>
+                            <ui:insert name="toolbar-right"/>
                         </div>
+                    </nav>
 
-                        <h:form>
-                            <ul class="right" id="nav-mobile">
-                                <li class="hide-on-med-and-down">
-                                    <h:commandLink action="#{pages.searchEmployee().jsf()}" value="Werknemers"/>
-                                </li>
-                                <li>
-                                    <a class="dropdown-button hide-on-large-only" href="#!" data-activates="dropdown1">
-                                        <mp:icon name="mdi-navigation-more-vert"/>
-                                    </a>
-                                </li>
-                            </ul>
-                        </h:form>
-                        <ui:insert name="toolbar-right"/>
+                    <nav class="hide-on-med-and-up">
+                        <div class="nav-wrapper realdolmen-red">
+                            <ui:insert name="additional-toolbar-full"/>
+                        </div>
+                    </nav>
+                    <ui:insert name="body"/>
+                </main>
+                <footer class="page-footer realdolmen-blue">
+                    <div class="container">
+                        <span class="white-text light">© 2016 RealDolmen</span>
+                        <a class="light grey-text text-lighten-4 right"
+                           href="http://www.realdolmen.com">realdolmen.com</a>
                     </div>
-                </nav>
-
-                <nav class="hide-on-med-and-up">
-                    <div class="nav-wrapper realdolmen-red">
-                        <ui:insert name="additional-toolbar-full"/>
-                    </div>
-                </nav>
-                <ui:insert name="body"/>
+                </footer>
             </h:body>
         </ui:define>
     </ui:composition>

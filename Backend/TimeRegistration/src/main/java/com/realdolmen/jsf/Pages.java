@@ -26,6 +26,8 @@ public class Pages {
 
     public static Page searchEmployee() { return new Page("/employees/search-employees.xhtml"); }
 
+    public static Page detailsEmployee() { return new Page("/employees/employee-details.xhtml"); }
+
     public static class Page {
 
         private String baseUrl;

@@ -1,0 +1,9 @@
+body.container {
+    max-width: 380px;
+    height: 90vh;
+}
+
+body.container > div {
+    position: relative;
+    height: 100%;
+}
