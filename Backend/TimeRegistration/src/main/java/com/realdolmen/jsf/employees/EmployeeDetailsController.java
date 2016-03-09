@@ -4,6 +4,7 @@ import com.realdolmen.entity.Employee;
 import com.realdolmen.entity.PersistenceUnit;
 import com.realdolmen.jsf.Pages;
 import org.jboss.logging.Logger;
+import org.jetbrains.annotations.TestOnly;
 import org.omnifaces.util.Faces;
 
 import javax.annotation.PostConstruct;
@@ -19,6 +20,7 @@ import javax.inject.Named;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.transaction.*;
+import java.io.IOException;
 
 /**
  * A controller for <code>/employees/employee-details.xhtml</code>.
@@ -35,19 +37,28 @@ public class EmployeeDetailsController {
 
     private Employee employee = new Employee();
 
+    private FacesContext facesContext = FacesContext.getCurrentInstance();
+
     @Transactional
     public void onPreRender() {
         try {
             if (userId != null) {
                 long id = Long.parseLong(userId);
                 employee = em.find(Employee.class, id);
-                Employee.initialize(employee);
+                if (employee != null) {
+                    try {
+                        Employee.initialize(employee);
+                    } catch (Exception e) {
+                        Logger.getLogger(EmployeeDetailsController.class).error("couldn't initialize lazy collection from employee", e);
+                    }
+                }
             } else {
-                FacesContext.getCurrentInstance().getExternalContext().redirect(Pages.searchEmployee().noRedirect());
+                (facesContext == null ? FacesContext.getCurrentInstance() : facesContext)
+                        .getExternalContext().redirect(Pages.searchEmployee().noRedirect());
             }
         } catch (NumberFormatException nfex) {
-        } catch (Exception e) {
-            Logger.getLogger(EmployeeDetailsController.class).error("couldn't initialize lazy collection from employee", e);
+        } catch (IOException e) {
+            Logger.getLogger(EmployeeDetailsController.class).error("couldn't redirect with FacesContext", e);
         }
     }
 
@@ -65,5 +76,10 @@ public class EmployeeDetailsController {
 
     public void setEmployee(Employee employee) {
         this.employee = employee;
+    }
+
+    @TestOnly
+    public void setFacesContext(FacesContext context) {
+        this.facesContext = context;
     }
 }

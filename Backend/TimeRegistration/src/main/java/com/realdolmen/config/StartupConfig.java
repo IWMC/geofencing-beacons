@@ -35,7 +35,6 @@ public class StartupConfig {
     private JPAImportConfig importConfig;
 
     @PostConstruct
-    @Asynchronous
     public void startup() {
         importConfig.startup();
         FullTextEntityManager fullTextEntityManager = Search.getFullTextEntityManager(entityManager);
