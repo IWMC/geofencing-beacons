@@ -17,38 +17,38 @@ import com.realdolmen.timeregistration.R;
 @SuppressWarnings("unused")
 public class ScrollAwareFabBehavior extends FloatingActionButton.Behavior {
 
-    private int toolbarHeight;
+	private int toolbarHeight;
 
-    public ScrollAwareFabBehavior(Context context, AttributeSet set) {
-        super();
-        this.toolbarHeight = getToolbarHeight(context);
-    }
+	public ScrollAwareFabBehavior(Context context, AttributeSet set) {
+		super();
+		this.toolbarHeight = getToolbarHeight(context);
+	}
 
-    int getToolbarHeight(Context context) {
-        final TypedArray styledAttributes = context.getTheme().obtainStyledAttributes(
-                new int[]{R.attr.actionBarSize});
-        int toolbarHeight = (int) styledAttributes.getDimension(0, 0);
-        styledAttributes.recycle();
+	int getToolbarHeight(Context context) {
+		final TypedArray styledAttributes = context.getTheme().obtainStyledAttributes(
+				new int[]{R.attr.actionBarSize});
+		int toolbarHeight = (int) styledAttributes.getDimension(0, 0);
+		styledAttributes.recycle();
 
-        return toolbarHeight;
-    }
+		return toolbarHeight;
+	}
 
 
-    @Override
-    public boolean layoutDependsOn(CoordinatorLayout parent, FloatingActionButton child, View dependency) {
-        return dependency instanceof AppBarLayout;
-    }
+	@Override
+	public boolean layoutDependsOn(CoordinatorLayout parent, FloatingActionButton child, View dependency) {
+		return dependency instanceof AppBarLayout;
+	}
 
-    @Override
-    public boolean onDependentViewChanged(CoordinatorLayout parent, FloatingActionButton fab, View dependency) {
-        if (dependency instanceof AppBarLayout) {
-            CoordinatorLayout.LayoutParams lp = (CoordinatorLayout.LayoutParams) fab.getLayoutParams();
-            int fabBottomMargin = lp.bottomMargin;
-            int distanceToScroll = fab.getHeight() + fabBottomMargin;
-            float ratio = (float)dependency.getY()/(float)toolbarHeight;
-            fab.setTranslationY(-distanceToScroll * ratio);
-        }
-        return true;
-    }
+	@Override
+	public boolean onDependentViewChanged(CoordinatorLayout parent, FloatingActionButton fab, View dependency) {
+		if (dependency instanceof AppBarLayout) {
+			CoordinatorLayout.LayoutParams lp = (CoordinatorLayout.LayoutParams) fab.getLayoutParams();
+			int fabBottomMargin = lp.bottomMargin;
+			int distanceToScroll = fab.getHeight() + fabBottomMargin;
+			float ratio = (float) dependency.getY() / (float) toolbarHeight;
+			fab.setTranslationY(-distanceToScroll * ratio);
+		}
+		return true;
+	}
 
 }

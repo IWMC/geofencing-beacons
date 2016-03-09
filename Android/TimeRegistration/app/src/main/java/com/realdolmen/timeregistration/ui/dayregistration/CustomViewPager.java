@@ -10,31 +10,32 @@ import android.view.MotionEvent;
  */
 public class CustomViewPager extends ViewPager {
 
-    private boolean enabled;
+	private boolean enabled;
 
-    public CustomViewPager(Context context, AttributeSet attrs) {
-        super(context, attrs);
-        this.enabled = true;
-    }
+	public CustomViewPager(Context context, AttributeSet attrs) {
+		super(context, attrs);
+		this.enabled = true;
+	}
 
-    @Override
-    public boolean onTouchEvent(MotionEvent event) {
-        if (this.enabled) {
-            return super.onTouchEvent(event);
-        }
+	@Override
+	public boolean onTouchEvent(MotionEvent event) {
+		if (this.enabled) {
+			return super.onTouchEvent(event);
+		}
 
-        return false;
-    }
+		return false;
+	}
 
-    @Override
-    public boolean onInterceptTouchEvent(MotionEvent event) {
-        if (this.enabled) {
-            return super.onInterceptTouchEvent(event);
-        }
+	@Override
+	public boolean onInterceptTouchEvent(MotionEvent event) {
+		if (this.enabled) {
+			return super.onInterceptTouchEvent(event);
+		}
 
-        return false;
-    }
+		return false;
+	}
 
-    public void setSwipePagingEnabled(boolean enabled) {
-        this.enabled = enabled;
-    } }
+	public void setSwipePagingEnabled(boolean enabled) {
+		this.enabled = enabled;
+	}
+}

@@ -7,43 +7,43 @@ import java.util.Date;
  */
 public class RegisteredOccupation {
 
-    private Occupation occupation;
+	private Occupation occupation;
 
-    private Date registeredStart;
+	private Date registeredStart;
 
-    private Date registeredEnd;
+	private Date registeredEnd;
 
-    private long id;
+	private long id;
 
-    public long getId() {
-        return id;
-    }
+	public long getId() {
+		return id;
+	}
 
-    public Occupation getOccupation() {
-        return occupation;
-    }
+	public Occupation getOccupation() {
+		return occupation;
+	}
 
-    public void setOccupation(Occupation occupation) {
-        this.occupation = occupation;
-    }
+	public void setOccupation(Occupation occupation) {
+		this.occupation = occupation;
+	}
 
-    public Date getRegisteredStart() {
-        return registeredStart;
-    }
+	public Date getRegisteredStart() {
+		return registeredStart;
+	}
 
-    public void setRegisteredStart(Date registeredStart) {
-        this.registeredStart = registeredStart;
-    }
+	public void setRegisteredStart(Date registeredStart) {
+		this.registeredStart = registeredStart;
+	}
 
-    public Date getRegisteredEnd() {
-        return registeredEnd;
-    }
+	public Date getRegisteredEnd() {
+		return registeredEnd;
+	}
 
-    public void setRegisteredEnd(Date registeredEnd) {
-        this.registeredEnd = registeredEnd;
-    }
+	public void setRegisteredEnd(Date registeredEnd) {
+		this.registeredEnd = registeredEnd;
+	}
 
-    public void setId(long id) {
-        this.id = id;
-    }
+	public void setId(long id) {
+		this.id = id;
+	}
 }

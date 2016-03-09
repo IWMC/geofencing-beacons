@@ -6,19 +6,12 @@ import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.TextView;
 
 import com.realdolmen.timeregistration.R;
 import com.realdolmen.timeregistration.model.RegisteredOccupation;
-import com.realdolmen.timeregistration.ui.dayregistration.DayRegistrationFragment;
 import com.realdolmen.timeregistration.util.ObservableAdapterCallback;
-import com.realdolmen.timeregistration.util.adapters.dayregistration.CardViewHolder;
 
-import java.text.SimpleDateFormat;
 import java.util.List;
-
-import butterknife.Bind;
-import butterknife.ButterKnife;
 
 public class OccupationRecyclerAdapter extends RecyclerView.Adapter<CardViewHolder> {
 

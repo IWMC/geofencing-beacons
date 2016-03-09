@@ -12,34 +12,34 @@ import com.realdolmen.timeregistration.util.adapters.dayregistration.OccupationR
  */
 public class ObservableAdapterCallback extends ObservableList.OnListChangedCallback<ObservableArrayList<RegisteredOccupation>> {
 
-    private OccupationRecyclerAdapter adapter;
+	private OccupationRecyclerAdapter adapter;
 
-    public ObservableAdapterCallback(OccupationRecyclerAdapter adapter) {
-        this.adapter = adapter;
-    }
+	public ObservableAdapterCallback(OccupationRecyclerAdapter adapter) {
+		this.adapter = adapter;
+	}
 
-    @Override
-    public void onChanged(ObservableArrayList<RegisteredOccupation> sender) {
-        adapter.notifyDataSetChanged();
-    }
+	@Override
+	public void onChanged(ObservableArrayList<RegisteredOccupation> sender) {
+		adapter.notifyDataSetChanged();
+	}
 
-    @Override
-    public void onItemRangeChanged(ObservableArrayList<RegisteredOccupation> sender, int positionStart, int itemCount) {
-        adapter.notifyItemRangeChanged(positionStart, itemCount);
-    }
+	@Override
+	public void onItemRangeChanged(ObservableArrayList<RegisteredOccupation> sender, int positionStart, int itemCount) {
+		adapter.notifyItemRangeChanged(positionStart, itemCount);
+	}
 
-    @Override
-    public void onItemRangeInserted(ObservableArrayList<RegisteredOccupation> sender, int positionStart, int itemCount) {
-        adapter.notifyItemRangeInserted(positionStart, itemCount);
-    }
+	@Override
+	public void onItemRangeInserted(ObservableArrayList<RegisteredOccupation> sender, int positionStart, int itemCount) {
+		adapter.notifyItemRangeInserted(positionStart, itemCount);
+	}
 
-    @Override
-    public void onItemRangeMoved(ObservableArrayList<RegisteredOccupation> sender, int fromPosition, int toPosition, int itemCount) {
-        adapter.notifyItemMoved(fromPosition, toPosition);
-    }
+	@Override
+	public void onItemRangeMoved(ObservableArrayList<RegisteredOccupation> sender, int fromPosition, int toPosition, int itemCount) {
+		adapter.notifyItemMoved(fromPosition, toPosition);
+	}
 
-    @Override
-    public void onItemRangeRemoved(ObservableArrayList<RegisteredOccupation> sender, int positionStart, int itemCount) {
-        adapter.notifyItemRangeRemoved(positionStart, itemCount);
-    }
+	@Override
+	public void onItemRangeRemoved(ObservableArrayList<RegisteredOccupation> sender, int positionStart, int itemCount) {
+		adapter.notifyItemRangeRemoved(positionStart, itemCount);
+	}
 }

@@ -1,19 +1,10 @@
 package com.realdolmen.timeregistration.util.adapters.dayregistration;
 
-import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
-import android.text.Spannable;
-import android.text.SpannableString;
-import android.text.style.ImageSpan;
-import android.view.LayoutInflater;
-import android.view.View;
-import android.widget.ImageView;
-import android.widget.TextView;
 
-import com.realdolmen.timeregistration.R;
 import com.realdolmen.timeregistration.ui.dayregistration.DayRegistrationActivity;
 import com.realdolmen.timeregistration.ui.dayregistration.DayRegistrationFragment;
 import com.realdolmen.timeregistration.util.DateUtil;
@@ -26,27 +17,27 @@ import java.util.List;
  */
 public class DayRegistrationFragmentPagerAdapter extends FragmentPagerAdapter {
 
-    private List<Date> dates;
+	private List<Date> dates;
 
-    private DayRegistrationActivity activity;
+	private DayRegistrationActivity activity;
 
-    public DayRegistrationFragmentPagerAdapter(DayRegistrationActivity activity, FragmentManager fm, List<Date> dates) {
-        super(fm);
-        this.dates = dates;
-        this.activity = activity;
-    }
+	public DayRegistrationFragmentPagerAdapter(DayRegistrationActivity activity, FragmentManager fm, List<Date> dates) {
+		super(fm);
+		this.dates = dates;
+		this.activity = activity;
+	}
 
-    @Override
-    public Fragment getItem(int position) {
-        DayRegistrationFragment fragment = new DayRegistrationFragment();
-        Bundle args = new Bundle();
-        args.putSerializable(DayRegistrationFragment.DATE_PARAM, dates.get(position));
-        fragment.setArguments(args);
-        return fragment;
-    }
+	@Override
+	public Fragment getItem(int position) {
+		DayRegistrationFragment fragment = new DayRegistrationFragment();
+		Bundle args = new Bundle();
+		args.putSerializable(DayRegistrationFragment.DATE_PARAM, dates.get(position));
+		fragment.setArguments(args);
+		return fragment;
+	}
 
-    @Override
-    public CharSequence getPageTitle(int position) {
+	@Override
+	public CharSequence getPageTitle(int position) {
 //        Drawable icon = null;
 //        if(activity.isDateConfirmed(dates.get(position))) {
 //            icon = activity.getResources().getDrawable(R.drawable.ic_assignment_turned_in_24dp);
@@ -58,11 +49,11 @@ public class DayRegistrationFragmentPagerAdapter extends FragmentPagerAdapter {
 //        ImageSpan imageSpan = new ImageSpan(icon, ImageSpan.ALIGN_BOTTOM);
 //        sb.setSpan(imageSpan, 0, 1, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
 //        return sb;
-        return DateUtil.nameForDate(dates.get(position));
-    }
+		return DateUtil.nameForDate(dates.get(position));
+	}
 
-    @Override
-    public int getCount() {
-        return dates.size();
-    }
+	@Override
+	public int getCount() {
+		return dates.size();
+	}
 }

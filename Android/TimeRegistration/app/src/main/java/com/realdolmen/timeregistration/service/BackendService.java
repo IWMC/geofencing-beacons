@@ -72,8 +72,8 @@ public class BackendService {
 	/**
 	 * Makes a network request to retrieve all the user's occupations between a start and end date.
 	 *
-	 * @param start The starting date
-	 * @param end The end date
+	 * @param start    The starting date
+	 * @param end      The end date
 	 * @param callback {@link com.realdolmen.timeregistration.service.BackendService.RequestCallback#onSuccess(Object)}
 	 *                 is called when the server returned 200 OK. When the {@link GsonObjectRequest} could not parse the answer
 	 *                 {@link com.realdolmen.timeregistration.service.BackendService.RequestCallback#onError(VolleyError)}

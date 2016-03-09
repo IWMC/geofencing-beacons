@@ -5,6 +5,7 @@ import android.databinding.ObservableList;
 /**
  * Simple implementation of {@link android.databinding.ObservableList.OnListChangedCallback} so you
  * don't have to always implement all methods.
+ *
  * @param <E> The type of the sender
  */
 public class SimpleObservableCallback<E extends ObservableList<?>> extends ObservableList.OnListChangedCallback<E> {
