@@ -1,16 +1,20 @@
-package com.realdolmen.timeregistration.util;
+package com.realdolmen.timeregistration.util.adapters.dayregistration;
 
 import android.content.Context;
 import android.content.res.TypedArray;
 import android.support.design.widget.AppBarLayout;
 import android.support.design.widget.CoordinatorLayout;
 import android.support.design.widget.FloatingActionButton;
-import android.support.v7.widget.Toolbar;
 import android.util.AttributeSet;
 import android.view.View;
 
 import com.realdolmen.timeregistration.R;
 
+/**
+ * Behavior used to hide the FAB when scrolling down in a
+ * {@link com.realdolmen.timeregistration.ui.dayregistration.DayRegistrationFragment}.
+ */
+@SuppressWarnings("unused")
 public class ScrollAwareFabBehavior extends FloatingActionButton.Behavior {
 
     private int toolbarHeight;

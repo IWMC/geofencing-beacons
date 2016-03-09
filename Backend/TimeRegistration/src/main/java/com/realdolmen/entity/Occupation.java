@@ -7,8 +7,7 @@ import java.util.Date;
 
 /**
  * Entity to be used in the ORM to store data about an occupation. An occupation
- * can be anything the user can do for a limited period. Occupations can be
- * divided into two classes: {@link Project}s and {@link GenericOccupation}s.
+ * can be anything the user can do for a limited period.
  */
 @Entity
 @Inheritance(strategy = InheritanceType.JOINED)

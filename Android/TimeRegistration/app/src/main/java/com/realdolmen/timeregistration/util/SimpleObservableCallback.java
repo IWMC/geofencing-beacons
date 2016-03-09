@@ -3,31 +3,33 @@ package com.realdolmen.timeregistration.util;
 import android.databinding.ObservableList;
 
 /**
- * Created by BCCAZ45 on 7/03/2016.
+ * Simple implementation of {@link android.databinding.ObservableList.OnListChangedCallback} so you
+ * don't have to always implement all methods.
+ * @param <E> The type of the sender
  */
 public class SimpleObservableCallback<E extends ObservableList<?>> extends ObservableList.OnListChangedCallback<E> {
-    @Override
-    public void onChanged(E sender) {
-        System.out.println("");
-    }
+	@Override
+	public void onChanged(E sender) {
+		return;
+	}
 
-    @Override
-    public void onItemRangeChanged(E sender, int positionStart, int itemCount) {
-        System.out.println("");
-    }
+	@Override
+	public void onItemRangeChanged(E sender, int positionStart, int itemCount) {
+		return;
+	}
 
-    @Override
-    public void onItemRangeInserted(E sender, int positionStart, int itemCount) {
-        System.out.println("");
-    }
+	@Override
+	public void onItemRangeInserted(E sender, int positionStart, int itemCount) {
+		return;
+	}
 
-    @Override
-    public void onItemRangeMoved(E sender, int fromPosition, int toPosition, int itemCount) {
-        System.out.println("");
-    }
+	@Override
+	public void onItemRangeMoved(E sender, int fromPosition, int toPosition, int itemCount) {
+		return;
+	}
 
-    @Override
-    public void onItemRangeRemoved(E sender, int positionStart, int itemCount) {
-        System.out.println("");
-    }
+	@Override
+	public void onItemRangeRemoved(E sender, int positionStart, int itemCount) {
+		return;
+	}
 }

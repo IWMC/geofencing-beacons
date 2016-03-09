@@ -31,15 +31,23 @@ public class OccupationEndpoint {
     @Inject
     private SecurityManager sm;
 
+    public static final long MINIMUM_EPOCH;
+
+    static {
+        Calendar c = Calendar.getInstance();
+        c.set(Calendar.YEAR, 2015);
+        MINIMUM_EPOCH = c.getTime().getTime();
+    }
+
     @GET
     @Authorized
     @Produces("application/json")
     public Response getOccupations(@QueryParam("start") @DefaultValue("-1") long start, @QueryParam("end") @DefaultValue("-1") long end) {
-        if (start == -1) {
-            return Response.status(400).entity("Start date must be filled in").build();
+        if (start <= MINIMUM_EPOCH) {
+            return Response.status(400).entity("Start date must be after " + MINIMUM_EPOCH + " but is " + start).build();
         }
 
-        if (end == -1) {
+        if (end <= MINIMUM_EPOCH) {
             end = start;
         }
         Calendar startDate = Calendar.getInstance();
@@ -57,8 +65,8 @@ public class OccupationEndpoint {
         endDate.clear(Calendar.SECOND);
         endDate.clear(Calendar.MILLISECOND);
 
-        if(sm.findEmployee().getId() == null || sm.findEmployee().getId() == 0) {
-            return Response.status(400).entity("Bad employee ID: " + sm.findEmployee().getId()).build();
+        if (sm.findEmployee() == null || sm.findEmployee().getId() == null || sm.findEmployee().getId() == 0) {
+            return Response.status(400).entity("Bad employee ID: " + sm.findEmployee() != null ? sm.findEmployee().getId() : "Unknown").build();
         }
 
         TypedQuery<RegisteredOccupation> query = em.createNamedQuery("RegisteredOccupation.findOccupationsInRange", RegisteredOccupation.class);

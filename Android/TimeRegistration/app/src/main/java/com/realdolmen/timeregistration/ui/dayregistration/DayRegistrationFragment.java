@@ -19,13 +19,11 @@ import android.widget.Toast;
 
 import com.android.volley.VolleyError;
 import com.realdolmen.timeregistration.R;
-import com.realdolmen.timeregistration.model.Occupation;
-import com.realdolmen.timeregistration.util.OccupationRecyclerAdapter;
+import com.realdolmen.timeregistration.util.adapters.dayregistration.OccupationRecyclerAdapter;
 import com.realdolmen.timeregistration.util.SimpleObservableCallback;
 import com.realdolmen.timeregistration.model.RegisteredOccupation;
 import com.realdolmen.timeregistration.service.BackendService;
-
-import org.apache.commons.lang3.time.DateUtils;
+import com.realdolmen.timeregistration.util.adapters.dayregistration.AdapterState;
 
 import java.util.Date;
 import java.util.List;
@@ -46,20 +44,21 @@ public class DayRegistrationFragment extends Fragment {
 
     private DayRegistrationActivity parent;
 
-    private OccupationRecyclerAdapter.AdapterState state;
+    private AdapterState state;
 
     public static final String DATE_PARAM = "DATE";
 
     private Date selectedDate;
 
-    public OccupationRecyclerAdapter.AdapterState getState() {
+    public AdapterState getState() {
         return state;
     }
 
-    public void setState(OccupationRecyclerAdapter.AdapterState state) {
+    public void setState(AdapterState state) {
         this.state = state;
     }
 
+    //Required empty constructor
     public DayRegistrationFragment() {
 
     }
@@ -80,7 +79,7 @@ public class DayRegistrationFragment extends Fragment {
         } else {
             throw new IllegalStateException("DayRegistrationFragment requires a date argument.");
         }
-        state = new OccupationRecyclerAdapter.NewlyEmptyState();
+        state = new AdapterState.NewlyEmptyState();
         final ObservableArrayList<RegisteredOccupation> list = new ObservableArrayList<>();
         final OccupationRecyclerAdapter adapter = new OccupationRecyclerAdapter(list);
         recyclerView.setAdapter(adapter);
@@ -105,24 +104,6 @@ public class DayRegistrationFragment extends Fragment {
                     }
                 });
                 list.addAll(data);
-                Occupation o = new Occupation("Lunch");
-                RegisteredOccupation ro = new RegisteredOccupation();
-                ro.setId(1);
-                ro.setOccupation(o);
-
-                RegisteredOccupation ro2 = new RegisteredOccupation();
-                ro2.setRegisteredStart(DateUtils.addHours(new Date(), -3));
-                ro2.setRegisteredEnd(new Date());
-                ro2.setId(2);
-                ro2.setOccupation(o);
-                list.add(ro);
-                list.add(ro2);
-                list.add(ro2);
-                list.add(ro2);
-                list.add(ro2);
-                list.add(ro2);
-                list.add(ro2);
-                list.add(ro2);
             }
 
             @Override

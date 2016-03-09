@@ -13,9 +13,8 @@ import com.android.volley.VolleyError;
 import com.realdolmen.timeregistration.R;
 import com.realdolmen.timeregistration.model.RegisteredOccupation;
 import com.realdolmen.timeregistration.service.BackendService;
-import com.realdolmen.timeregistration.ui.CustomViewPager;
 import com.realdolmen.timeregistration.util.DateUtil;
-import com.realdolmen.timeregistration.util.DayRegistrationFragmentPagerAdapter;
+import com.realdolmen.timeregistration.util.adapters.dayregistration.DayRegistrationFragmentPagerAdapter;
 
 import java.util.ArrayList;
 import java.util.Date;

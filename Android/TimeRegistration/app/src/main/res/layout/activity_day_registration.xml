@@ -38,7 +38,7 @@
     <!--android:layout_width="match_parent"-->
     <!--android:layout_height="match_parent"-->
     <!--app:layout_behavior="@string/appbar_scrolling_view_behavior" />-->
-    <com.realdolmen.timeregistration.ui.CustomViewPager
+    <com.realdolmen.timeregistration.ui.dayregistration.CustomViewPager
         android:id="@+id/day_registration_viewpager"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"

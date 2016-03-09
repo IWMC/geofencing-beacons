@@ -11,14 +11,12 @@ import java.util.Date;
 import java.util.TimeZone;
 
 /**
- * Created by BCCAZ45 on 7/03/2016.
+ * Deserializes dates in a specific manner.
  */
-
 public class DateDeserializer implements JsonDeserializer<Date> {
 
     @Override
     public Date deserialize(JsonElement element, Type arg1, JsonDeserializationContext arg2) throws JsonParseException {
-        System.out.println("SFHSKJFQHSFJQS " + element.getAsLong());
         long date = element.getAsLong();
         Date d = new Date(date);
         return d;

@@ -14,8 +14,10 @@ import java.io.UnsupportedEncodingException;
 import java.util.Date;
 import java.util.Map;
 
+
 /**
- * Created by BCCAZ45 on 7/03/2016.
+ * JsonObjectRequest that uses Gson as the deserializer.
+ * @param <T> The class type of the target deserialized class.
  */
 public class GsonObjectRequest<T> extends Request<T> {
     private final Gson gson = new GsonBuilder().registerTypeAdapter(Date.class, new DateDeserializer()).create();

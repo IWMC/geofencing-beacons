@@ -2,17 +2,18 @@ package com.realdolmen.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
-import javax.persistence.Entity;
-import javax.persistence.Id;
-import javax.persistence.ManyToOne;
+import javax.persistence.*;
 import javax.xml.bind.annotation.XmlRootElement;
 import java.util.Date;
 
 /**
- * Created by BCCAZ45 on 7/03/2016.
+ * An entity class that represents a single time registration about an {@link Occupation} for a single {@link Employee}.
  */
 @Entity
 @XmlRootElement
+@NamedQueries(
+        @NamedQuery(name = "RegisteredOccupation.findOccupationsInRange", query = "SELECT r FROM RegisteredOccupation r WHERE r.registeredStart >= :start AND r.registeredEnd <= :end AND r.registrar.id = :employeeId")
+)
 public class RegisteredOccupation {
 
     @ManyToOne
