@@ -104,10 +104,14 @@ public class Employee implements Serializable {
     @ManyToMany
     private Set<Project> memberProjects = new HashSet<>();
 
-    @ManyToMany
-    private Set<GenericOccupation> occupations = new HashSet<>();
+    @OneToMany(mappedBy = "registrar")
+    private Set<RegisteredOccupation> registeredOccupations = new HashSet<>();
 
     public Employee() {
+    }
+
+    public Set<RegisteredOccupation> getRegisteredOccupations() {
+        return registeredOccupations;
     }
 
     public Employee(long id, int version, String firstName, String lastName, String username, String email, String hash, String salt, String password, Set<Project> memberProjects) {

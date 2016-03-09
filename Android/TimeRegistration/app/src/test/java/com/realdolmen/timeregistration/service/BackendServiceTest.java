@@ -1,6 +1,5 @@
 package com.realdolmen.timeregistration.service;
 
-import android.app.DownloadManager;
 import android.content.Context;
 import android.os.Build;
 
@@ -8,17 +7,15 @@ import com.android.volley.Request;
 import com.android.volley.RequestQueue;
 import com.android.volley.toolbox.JsonObjectRequest;
 import com.realdolmen.timeregistration.BuildConfig;
-import com.realdolmen.timeregistration.LoginActivity;
+import com.realdolmen.timeregistration.ui.login.LoginActivity;
 import com.realdolmen.timeregistration.UITestActivity;
 import com.realdolmen.timeregistration.model.Session;
 
-import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;

@@ -2,6 +2,7 @@ package com.realdolmen.service;
 
 import com.realdolmen.entity.Employee;
 import com.realdolmen.entity.PersistenceUnit;
+import com.realdolmen.jsf.Session;
 import com.realdolmen.json.JsonWebToken;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.MalformedJwtException;
@@ -15,6 +16,7 @@ import javax.inject.Inject;
 import javax.persistence.EntityManager;
 import javax.persistence.NoResultException;
 import javax.persistence.PersistenceContext;
+import javax.servlet.http.HttpServletRequest;
 import javax.validation.constraints.NotNull;
 import java.math.BigInteger;
 import java.nio.charset.Charset;
@@ -24,6 +26,7 @@ import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 import java.util.Base64;
 import java.util.Date;
+import java.util.Optional;
 
 /**
  * A stateless EJB used as a collection of security functions.
@@ -35,6 +38,12 @@ public class SecurityManager {
 
     @PersistenceContext(unitName = PersistenceUnit.PRODUCTION)
     private EntityManager entityManager;
+
+    @Inject
+    private HttpServletRequest request;
+
+    @Inject
+    private Session session;
 
     public String randomSalt() throws NoSuchAlgorithmException {
         return new BigInteger(32 * 8, SecureRandom.getInstanceStrong()).toString(32);
@@ -68,6 +77,10 @@ public class SecurityManager {
         }
 
         return true;
+    }
+
+    public Employee findEmployee() {
+        return Optional.ofNullable(session.getEmployee()).orElse(findByJwt(new JsonWebToken(request.getHeader("Authorization"))));
     }
 
     @Nullable
