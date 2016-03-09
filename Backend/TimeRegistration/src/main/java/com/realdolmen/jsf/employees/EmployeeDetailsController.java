@@ -3,34 +3,34 @@ package com.realdolmen.jsf.employees;
 import com.realdolmen.entity.Employee;
 import com.realdolmen.entity.PersistenceUnit;
 import com.realdolmen.jsf.Pages;
+import com.realdolmen.rest.EmployeeEndpoint;
 import org.jboss.logging.Logger;
 import org.jetbrains.annotations.TestOnly;
-import org.omnifaces.util.Faces;
 
-import javax.annotation.PostConstruct;
 import javax.enterprise.context.RequestScoped;
 import javax.faces.bean.ManagedProperty;
-import javax.faces.bean.SessionScoped;
 import javax.faces.context.FacesContext;
-import javax.faces.convert.IntegerConverter;
-import javax.faces.convert.LongConverter;
-import javax.faces.view.ViewScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
-import javax.transaction.*;
+import javax.transaction.Transactional;
+import javax.ws.rs.core.Response;
 import java.io.IOException;
+import java.io.Serializable;
 
 /**
  * A controller for <code>/employees/employee-details.xhtml</code>.
  */
 @RequestScoped
 @Named("employeeDetails")
-public class EmployeeDetailsController {
+public class EmployeeDetailsController implements Serializable {
 
     @ManagedProperty(value = "#{param.userId}")
     private String userId;
+
+    @Inject
+    private EmployeeEndpoint employeeEndpoint;
 
     @PersistenceContext(unitName = PersistenceUnit.PRODUCTION)
     private EntityManager em;
@@ -44,18 +44,15 @@ public class EmployeeDetailsController {
         try {
             if (userId != null) {
                 long id = Long.parseLong(userId);
-                employee = em.find(Employee.class, id);
+                Response response = employeeEndpoint.findById(id);
+                employee = response.getStatus() == 200 ? (Employee) response.getEntity() : null;
                 if (employee != null) {
-                    try {
-                        Employee.initialize(employee);
-                    } catch (Exception e) {
-                        Logger.getLogger(EmployeeDetailsController.class).error("couldn't initialize lazy collection from employee", e);
-                    }
+                    return;
                 }
-            } else {
-                (facesContext == null ? FacesContext.getCurrentInstance() : facesContext)
-                        .getExternalContext().redirect(Pages.searchEmployee().noRedirect());
             }
+
+            (facesContext == null ? FacesContext.getCurrentInstance() : facesContext)
+                    .getExternalContext().redirect(Pages.searchEmployee().noRedirect());
         } catch (NumberFormatException nfex) {
         } catch (IOException e) {
             Logger.getLogger(EmployeeDetailsController.class).error("couldn't redirect with FacesContext", e);
@@ -81,5 +78,19 @@ public class EmployeeDetailsController {
     @TestOnly
     public void setFacesContext(FacesContext context) {
         this.facesContext = context;
+    }
+
+    @Transactional
+    public String removeUser() {
+        if (employee != null) {
+            if (userId != null) {
+                try {
+                    employeeEndpoint.deleteById(Long.parseLong(userId));
+                } catch (NumberFormatException nfex) {
+                }
+            }
+        }
+
+        return Pages.searchEmployee().redirect();
     }
 }

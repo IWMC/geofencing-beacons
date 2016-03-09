@@ -26,13 +26,13 @@
                         </p>
                         <br/>
                         <br/>
-                        <h:panelGroup layout="block" rendered="#{employeeDetails.employee.memberProjects.size() == 0}">
+                        <h:panelGroup rendered="#{employeeDetails.employee.memberProjects.size() == 0}">
                             <mp:icon name=""/>
                             <h4 class="thin"><h:outputText value="Geen actieve projecten!"/></h4>
                         </h:panelGroup>
-                        <h:panelGroup layout="block" rendered="#{employeeDetails.employee.memberProjects.size() > 0}">
+                        <h:panelGroup rendered="#{employeeDetails.employee.memberProjects.size() > 0}">
                             <h4 class="thin"><h:outputText value="Actieve projecten"/></h4>
-                            <div class="collection">
+                            <div class="collection small-collection center-block">
                                 <ui:repeat value="#{of:setToList(employeeDetails.employee.memberProjects)}"
                                            var="project">
                                     <h:link styleClass="collection-item" value="#{project.name}"/>
@@ -41,18 +41,28 @@
                         </h:panelGroup>
                     </div>
                     <div class="card-action">
-                        <a href="#">Wijzigen</a>
-                        <a class="right red-text lighten-1" href="#">Verwijderen</a>
-                    </div>
-                </div>
-                <h:panelGroup layout="block" rendered="#{employeeDetails.employee.memberProjects.size() > 0}">
-                    <div class="row">
-                        <div class="col s12 cards-container">
-                            <div class="card">
+                        <a class="waves-effect waves-orange card-action-flat" href="#">Wijzigen</a>
+                        <a class="red-text text-lighten-1 right modal-trigger waves-effect waves-red card-action-flat"
+                           href="#remove-warning">Verwijderen</a>
+
+                        <div id="remove-warning" class="modal">
+                            <div class="modal-content">
+                                <h4>Pas op!</h4>
+                                <p>Bent u zeker dat u deze werknemer wilt verwijderen? Wanneer u dit doet zullen alle gegevens van deze werknemer verloren gaan.</p>
+                            </div>
+                            <div class="modal-footer">
+                                <h:form>
+                                    <a href="#!"
+                                       class="green-text modal-action modal-close waves-effect waves-green btn-flat">Nee</a>
+                                    <h:commandLink
+                                            styleClass="red-text modal-action modal-close waves-effect waves-red btn-flat"
+                                            value="Ja"
+                                            action="#{employeeDetails.removeUser()}"/>
+                                </h:form>
                             </div>
                         </div>
                     </div>
-                </h:panelGroup>
+                </div>
             </div>
         </ui:define>
     </ui:composition>

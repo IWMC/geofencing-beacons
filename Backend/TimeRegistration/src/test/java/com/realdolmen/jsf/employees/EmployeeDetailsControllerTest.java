@@ -2,8 +2,11 @@ package com.realdolmen.jsf.employees;
 
 import com.realdolmen.WarFactory;
 import com.realdolmen.entity.Employee;
+import com.realdolmen.entity.ManagementEmployee;
 import com.realdolmen.entity.PersistenceUnit;
 import com.realdolmen.jsf.Pages;
+import com.realdolmen.jsf.Session;
+import com.realdolmen.rest.EmployeeEndpoint;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
@@ -43,6 +46,15 @@ public class EmployeeDetailsControllerTest {
     
     private Employee employee = new Employee();
 
+    @Inject
+    private Session session;
+
+    @Mock
+    private EmployeeEndpoint endpoint = new EmployeeEndpoint();
+
+    @InjectMocks
+    private EmployeeDetailsController notInjectedController = new EmployeeDetailsController();
+
     @Deployment
     public static WebArchive createDeployment() {
         return WarFactory.createDeployment();
@@ -59,6 +71,7 @@ public class EmployeeDetailsControllerTest {
         em.persist(employee);
         utx.commit();
         controller.setFacesContext(facesContext);
+        session.setEmployee(new ManagementEmployee());
     }
 
     @Test
@@ -79,5 +92,21 @@ public class EmployeeDetailsControllerTest {
         controller.onPreRender();
         Assert.assertEquals("controller should set the correct active employee", employee, controller.getEmployee());
         verify(externalContext, never()).redirect(any());
+    }
+
+    @Test
+    public void testControllerRemovesEmployeeAndRedirectsWhenEmployeeIsPresent() throws Exception {
+        notInjectedController.setUserId(employee.getId().toString());
+        String result = notInjectedController.removeUser();
+        verify(endpoint, times(1)).deleteById(employee.getId());
+        Assert.assertEquals("controller should redirect to search employees page", Pages.searchEmployee().redirect(), result);
+    }
+
+    @Test
+    public void testControllerRedirectsWhenEmployeeIsNotPresent() throws Exception {
+        notInjectedController.setUserId(null);
+        String result = notInjectedController.removeUser();
+        verify(endpoint, never()).deleteById(anyLong());
+        Assert.assertEquals("controller should redirect to search employees page", Pages.searchEmployee().redirect(), result);
     }
 }

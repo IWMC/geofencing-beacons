@@ -9,10 +9,8 @@
       xmlns:p="http://primefaces.org/ui">
 <f:view locale="nl">
     <h:head>
-        <meta name="viewport" content="width=device-width, initial-scale=0.9"/>
-        <h:outputStylesheet library="css" name="common.css"/>
-        <link rel="stylesheet"
-              href="https://cdnjs.cloudflare.com/ajax/libs/materialize/0.97.5/css/materialize.min.css"/>
+        <meta name="viewport" content="width=device-width, initial-scale=0.9" />
+        <h:outputStylesheet library="css" name="common.css" />
         <title>Aanmelden</title>
     </h:head>
     <h:body styleClass="container">
@@ -26,8 +24,9 @@
                         <mp:input type="password" placeholder="Wachtwoord" id="password"
                                   value="#{loginController.password}" floatingPlaceholder="false"/>
                         <h:messages id="messages" showDetail="false" errorClass="error"/>
-                        <mp:button id="loginButton" action="#{loginController.doLogin}" value="Inloggen"
-                                   update="loginForm:messages"/>
+                        <h:commandButton styleClass="btn realdolmen-blue waves-effect waves-realdolmen-blue"
+                                         id="loginButton" action="#{loginController.doLogin}" value="Inloggen"
+                                         update="loginForm:messages"/>
                     </div>
                 </h:form>
             </div>

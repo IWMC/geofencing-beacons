@@ -3,7 +3,6 @@ package com.realdolmen.jsf;
 import com.realdolmen.entity.Employee;
 import com.realdolmen.json.JsonWebToken;
 import com.realdolmen.rest.UserEndpoint;
-import org.primefaces.material.application.ToastService;
 
 import javax.enterprise.context.RequestScoped;
 import javax.faces.application.FacesMessage;

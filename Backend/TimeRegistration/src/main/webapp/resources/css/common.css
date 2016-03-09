@@ -6,6 +6,14 @@
     background-color: #E21E25 !important;
 }
 
+.realdolmen-blue-text {
+    color: #009AD8 !important;
+}
+
+.realdolmen-red-text {
+    color: #E21E25 !important;
+}
+
 .waves-effect .waves-ripple {
     background-color: rgba(26, 190, 255, 0.6) !important;
 }
@@ -49,4 +57,49 @@ main {
 footer {
     padding-top: 15px !important;
     padding-bottom: 15px !important;
+}
+
+.small-collection {
+    max-width: 450px;
+}
+
+.waves-effect.waves-light .waves-ripple {
+    background-color: rgba(255, 255, 255, 0.45) !important;
+}
+
+.waves-effect.waves-red .waves-ripple {
+    background-color: rgba(244, 67, 54, 0.7) !important;
+}
+
+.waves-effect.waves-yellow .waves-ripple {
+    background-color: rgba(255, 235, 59, 0.7) !important;
+}
+
+.waves-effect.waves-orange .waves-ripple {
+    background-color: rgba(255, 152, 0, 0.7) !important;
+}
+
+.waves-effect.waves-purple .waves-ripple {
+    background-color: rgba(156, 39, 176, 0.7) !important;
+}
+
+.waves-effect.waves-green .waves-ripple {
+    background-color: rgba(76, 175, 80, 0.7) !important;
+}
+
+.waves-effect.waves-teal .waves-ripple {
+    background-color: rgba(0, 150, 136, 0.7) !important;
+}
+
+.waves-effect.waves-realdolmen-blue .waves-ripple {
+    background-color: #B2009AD8 !important;
+}
+
+.waves-effect.waves-realdolmen-red .waves-ripple {
+    background-color: #B2E21E25 !important;
+}
+
+.card-action-flat {
+    padding: 10px;
+    margin: -8px 0px;
 }
