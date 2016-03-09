@@ -1,6 +1,7 @@
 package com.realdolmen.rest;
 
 import com.realdolmen.annotations.Authorized;
+import com.realdolmen.entity.Occupation;
 import com.realdolmen.entity.PersistenceUnit;
 import com.realdolmen.entity.RegisteredOccupation;
 import com.realdolmen.service.SecurityManager;
@@ -65,8 +66,41 @@ public class OccupationEndpoint {
         }
 
         TypedQuery<RegisteredOccupation> query = em.createNamedQuery("RegisteredOccupation.findOccupationsInRange", RegisteredOccupation.class);
-        query.setParameter("start", startDate).setParameter("employeeId", sm.findEmployee().getId()).setParameter("end", endDate);
+        query.setParameter("start", startDate.getTime()).setParameter("employeeId", sm.findEmployee().getId()).setParameter("end", endDate.getTime());
         List<RegisteredOccupation> occupations = query.getResultList();
+        addTestData(occupations);
         return Response.ok(occupations).build();
+    }
+
+    private void addTestData(List<RegisteredOccupation> list) {
+        Occupation o = new Occupation();
+        o.setName("Test occupation");
+        RegisteredOccupation ro = new RegisteredOccupation();
+        ro.setOccupation(o);
+        list.add(ro);
+        list.add(ro);
+        list.add(ro);
+        list.add(ro);
+        list.add(ro);
+        list.add(ro);
+        list.add(ro);
+        list.add(ro);
+        list.add(ro);
+        list.add(ro);
+        list.add(ro);
+        list.add(ro);
+        list.add(ro);
+        list.add(ro);
+        list.add(ro);
+        list.add(ro);
+        list.add(ro);
+        list.add(ro);
+        list.add(ro);
+        list.add(ro);
+        list.add(ro);
+        list.add(ro);
+        list.add(ro);
+        list.add(ro);
+        list.add(ro);
     }
 }

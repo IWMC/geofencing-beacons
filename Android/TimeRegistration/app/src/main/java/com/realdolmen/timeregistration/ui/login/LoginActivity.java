@@ -43,7 +43,7 @@ public class LoginActivity extends AppCompatActivity {
 		setContentView(R.layout.activity_login);
 		ButterKnife.bind(this);
 		if (DEBUG) {
-			username.setText("bc");
+			username.setText("brentc");
 			password.setText("Bla123");
 		}
 
