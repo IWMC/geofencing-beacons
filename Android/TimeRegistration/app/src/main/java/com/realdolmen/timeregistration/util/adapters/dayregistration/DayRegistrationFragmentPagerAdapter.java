@@ -17,13 +17,10 @@ import java.util.List;
  */
 public class DayRegistrationFragmentPagerAdapter extends FragmentPagerAdapter {
 
-	private List<Date> dates;
-
 	private DayRegistrationActivity activity;
 
-	public DayRegistrationFragmentPagerAdapter(DayRegistrationActivity activity, FragmentManager fm, List<Date> dates) {
+	public DayRegistrationFragmentPagerAdapter(DayRegistrationActivity activity, FragmentManager fm) {
 		super(fm);
-		this.dates = dates;
 		this.activity = activity;
 	}
 
@@ -31,29 +28,19 @@ public class DayRegistrationFragmentPagerAdapter extends FragmentPagerAdapter {
 	public Fragment getItem(int position) {
 		DayRegistrationFragment fragment = new DayRegistrationFragment();
 		Bundle args = new Bundle();
-		args.putSerializable(DayRegistrationFragment.DATE_PARAM, dates.get(position));
+		args.putSerializable(DayRegistrationFragment.DATE_PARAM, activity.getDates().get(position));
 		fragment.setArguments(args);
 		return fragment;
 	}
 
 	@Override
 	public CharSequence getPageTitle(int position) {
-//        Drawable icon = null;
-//        if(activity.isDateConfirmed(dates.get(position))) {
-//            icon = activity.getResources().getDrawable(R.drawable.ic_assignment_turned_in_24dp);
-//        } else {
-//            icon = activity.getResources().getDrawable(R.drawable.ic_assignment_late_24dp);
-//        }
-//        icon.setBounds(0, 0, icon.getIntrinsicWidth(), icon.getIntrinsicHeight());
-//        SpannableString sb = new SpannableString("   " + DateUtil.nameForDate(dates.get(position)));
-//        ImageSpan imageSpan = new ImageSpan(icon, ImageSpan.ALIGN_BOTTOM);
-//        sb.setSpan(imageSpan, 0, 1, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
-//        return sb;
-		return DateUtil.nameForDate(dates.get(position));
+		return DateUtil.nameForDate(activity.getDates().get(position));
 	}
 
 	@Override
 	public int getCount() {
-		return dates.size();
+		return activity.getDates().size();
 	}
+
 }

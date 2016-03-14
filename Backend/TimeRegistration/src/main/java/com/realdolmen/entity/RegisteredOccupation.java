@@ -3,6 +3,7 @@ package com.realdolmen.entity;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import javax.persistence.*;
+import javax.validation.constraints.NotNull;
 import javax.xml.bind.annotation.XmlRootElement;
 import java.util.Date;
 
@@ -17,8 +18,10 @@ import java.util.Date;
 public class RegisteredOccupation {
 
     @ManyToOne
+    @NotNull(message = "occupation.empty")
     private Occupation occupation;
 
+    @NotNull(message = "registeredStart.empty")
     private Date registeredStart;
 
     private Date registeredEnd;
@@ -26,6 +29,9 @@ public class RegisteredOccupation {
     @JsonIgnore
     @ManyToOne
     private Employee registrar;
+
+
+    private boolean confirmed = false;
 
     @Id
     private long id;
@@ -69,4 +75,13 @@ public class RegisteredOccupation {
     public void setId(long id) {
         this.id = id;
     }
+
+    public void confirm() {
+        confirmed = true;
+    }
+
+    public boolean isConfirmed() {
+        return confirmed;
+    }
+
 }

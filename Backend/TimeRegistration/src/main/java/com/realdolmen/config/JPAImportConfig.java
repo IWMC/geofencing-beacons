@@ -1,8 +1,8 @@
 package com.realdolmen.config;
 
-import com.realdolmen.entity.ManagementEmployee;
-import com.realdolmen.entity.PersistenceUnit;
+import com.realdolmen.entity.*;
 import com.realdolmen.service.SecurityManager;
+import org.apache.commons.lang3.time.DateUtils;
 import org.infinispan.persistence.manager.PersistenceManager;
 import org.jboss.logging.Logger;
 
@@ -14,6 +14,7 @@ import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.transaction.Transactional;
 import java.security.NoSuchAlgorithmException;
+import java.util.Date;
 import java.util.concurrent.Future;
 
 /**
@@ -46,6 +47,24 @@ public class JPAImportConfig {
         }
 
         entityManager.persist(employee);
+
+        Occupation o = new Occupation();
+        o.setName("Lunch");
+        o.setDescription("Lunch time");
+
+        Project project = new Project();
+        project.setProjectNr(8);
+        project.setStartDate(new Date());
+        project.setName("Project X");
+        project.setEndDate(DateUtils.addMonths(new Date(), 3));
+
+        entityManager.persist(o);
+        entityManager.persist(project);
+
+        Employee employee1 = entityManager.createNamedQuery("Employee.findByUsername", Employee.class).setParameter("username", "brentc").getSingleResult();
+        employee1.getMemberProjects().add(project);
+        entityManager.merge(employee1);
+
         Logger.getLogger(JPAImportConfig.class).info("Succesfully added admin account: 'admin'");
     }
 }

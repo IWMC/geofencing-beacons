@@ -1,9 +1,9 @@
 package com.realdolmen.timeregistration.model;
 
-import java.util.Date;
+		import java.util.Date;
 
 /**
- * Created by BCCAZ45 on 7/03/2016.
+ * An entity class that represents a single time registration about an {@link Occupation} for a single Employee.
  */
 public class RegisteredOccupation {
 
@@ -12,6 +12,8 @@ public class RegisteredOccupation {
 	private Date registeredStart;
 
 	private Date registeredEnd;
+
+	private boolean confirmed = false;
 
 	private long id;
 
@@ -23,20 +25,20 @@ public class RegisteredOccupation {
 		return occupation;
 	}
 
-	public void setOccupation(Occupation occupation) {
-		this.occupation = occupation;
-	}
-
 	public Date getRegisteredStart() {
 		return registeredStart;
 	}
 
-	public void setRegisteredStart(Date registeredStart) {
-		this.registeredStart = registeredStart;
-	}
-
 	public Date getRegisteredEnd() {
 		return registeredEnd;
+	}
+
+	public void setOccupation(Occupation occupation) {
+		this.occupation = occupation;
+	}
+
+	public void setRegisteredStart(Date registeredStart) {
+		this.registeredStart = registeredStart;
 	}
 
 	public void setRegisteredEnd(Date registeredEnd) {
@@ -46,4 +48,13 @@ public class RegisteredOccupation {
 	public void setId(long id) {
 		this.id = id;
 	}
+
+	public void confirm() {
+		confirmed = true;
+	}
+
+	public boolean isConfirmed() {
+		return confirmed;
+	}
+
 }

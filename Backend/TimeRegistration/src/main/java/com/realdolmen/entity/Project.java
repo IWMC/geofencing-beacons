@@ -1,6 +1,7 @@
 package com.realdolmen.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import org.hibernate.Hibernate;
 import org.hibernate.search.annotations.DateBridge;
 import org.hibernate.search.annotations.Field;
@@ -49,7 +50,9 @@ public class Project extends Occupation implements Serializable {
     @Field
     private int projectNr;
 
-    private transient final int DTYPE = 3;
+    @Transient
+    @JsonProperty("DTYPE")
+    private final int DTYPE = 2;
 
     @OneToMany
     private Set<Project> subProjects = new HashSet<>();

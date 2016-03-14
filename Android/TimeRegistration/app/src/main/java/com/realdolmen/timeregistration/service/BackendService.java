@@ -4,6 +4,7 @@ import android.content.Context;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
+import com.android.volley.AuthFailureError;
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
 import com.android.volley.Response;
@@ -12,7 +13,7 @@ import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.Volley;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import com.realdolmen.timeregistration.data.GsonObjectRequest;
+import com.realdolmen.timeregistration.util.json.GsonObjectRequest;
 import com.realdolmen.timeregistration.model.RegisteredOccupation;
 import com.realdolmen.timeregistration.model.Session;
 
@@ -30,11 +31,13 @@ import java.util.Map;
  */
 public class BackendService {
 
-	private static final String HOST = "http://10.16.26.87";
+	private static final String HOST = "http://10.16.26.90";
 
 	private static final String
 			API_LOGIN_URI = HOST + "/api/user/login",
-			API_GET_OCCUPATIONS = HOST + "/api/occupations/?start=%d&end=%d";
+			API_GET_REGISTERED_OCCUPATIONS = HOST + "/api/occupations/registration/?start=%d&end=%d",
+			API_CONFIRM_OCCUPATIONS = HOST + "/api/occupations/registration/%d/confirm",
+			API_ADD_OCCUPATION_REGISTRATION = HOST + "/api/occupations/registration";
 
 	private Context context;
 
@@ -74,13 +77,13 @@ public class BackendService {
 	 *
 	 * @param start    The starting date
 	 * @param end      The end date
-	 * @param callback {@link com.realdolmen.timeregistration.service.BackendService.RequestCallback#onSuccess(Object)}
+	 * @param callback {@link RequestCallback#onSuccess(Object)}
 	 *                 is called when the server returned 200 OK. When the {@link GsonObjectRequest} could not parse the answer
-	 *                 {@link com.realdolmen.timeregistration.service.BackendService.RequestCallback#onError(VolleyError)}
+	 *                 {@link RequestCallback#onError(VolleyError)}
 	 *                 is returned.
 	 */
 	public void getOccupationsInDateRange(Date start, Date end, final RequestCallback<List<RegisteredOccupation>> callback) {
-		GsonObjectRequest req = new GsonObjectRequest<>(params(API_GET_OCCUPATIONS, start.getTime(), end.getTime()), RegisteredOccupation[].class
+		GsonObjectRequest req = new GsonObjectRequest<>(params(API_GET_REGISTERED_OCCUPATIONS, start.getTime(), end.getTime()), RegisteredOccupation[].class
 				, auth(), new Response.Listener<RegisteredOccupation[]>() {
 			@Override
 			public void onResponse(RegisteredOccupation[] response) {
@@ -119,33 +122,10 @@ public class BackendService {
 	}
 
 	/**
-	 * Interface designed to implement callbacks for the UI to respond to network events.
-	 *
-	 * @param <E> Generic type of the onSuccess data parameter.
-	 */
-	public interface RequestCallback<E> {
-		/**
-		 * Called when the request succeeded. A request succeeds when the http response code is in the error range.
-		 *
-		 * @param data The data produced from the successful response.
-		 */
-		void onSuccess(E data);
-
-		/**
-		 * Called when the request fails. A request can fail if the http response code is in the
-		 * error range or the response is invalid.
-		 *
-		 * @param error The error produces by Volley. There is also a {@link GenericVolleyError} for
-		 *              custom errors in case of invalid responses.
-		 */
-		void onError(VolleyError error);
-	}
-
-	/**
 	 * Sends a login request to the backend. The {@link Session} is converted to JSON using {@link Gson}.
 	 *
 	 * @param session  The session that contains the username and password to use for authentication.
-	 * @param callback The {@link com.realdolmen.timeregistration.service.BackendService.RequestCallback< Session >}
+	 * @param callback The {@link RequestCallback< Session >}
 	 *                 used to inform the UI of network events.
 	 */
 	public void login(@NonNull final Session session, final @NonNull RequestCallback<Session> callback) {
@@ -184,11 +164,39 @@ public class BackendService {
 	 */
 	private Map<String, String> auth(@Nullable Map<String, String> originalHeaders) {
 		Map<String, String> headers = new HashMap<>();
+
+		if(originalHeaders != null && !originalHeaders.isEmpty()) {
+			for(Map.Entry<String, String> entry : originalHeaders.entrySet()) {
+				headers.put(entry.getKey(), entry.getValue());
+			}
+		}
+
 		if (isAuthenticated()) {
 			headers.put("Authorization", currentSession.getJwtToken());
 		}
-		//TODO: merge original headers if there are any
+
 		return headers;
+	}
+
+	public void confirmOccupations(Date date, final RequestCallback callback) {
+		JsonObjectRequest req = new JsonObjectRequest(Request.Method.PUT, params(API_CONFIRM_OCCUPATIONS, date.getTime()), "", new Response.Listener() {
+			@Override
+			public void onResponse(Object response) {
+				callback.onSuccess(response);
+			}
+		}, new Response.ErrorListener() {
+			@Override
+			public void onErrorResponse(VolleyError error) {
+				callback.onError(error);
+			}
+		}) {
+			@Override
+			public Map<String, String> getHeaders() throws AuthFailureError {
+				return auth(super.getHeaders());
+			}
+		};
+
+		requestQueue.add(req);
 	}
 
 	private Map<String, String> auth() {

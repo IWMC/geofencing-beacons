@@ -18,6 +18,8 @@ import com.realdolmen.timeregistration.R;
 @SuppressWarnings("unused")
 public class ScrollAwareFabBehavior extends FabBehavior {
 
+	//TODO: make scroll less fast
+
 	private int toolbarHeight;
 
 	public ScrollAwareFabBehavior(Context context, AttributeSet set) {

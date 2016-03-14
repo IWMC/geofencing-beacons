@@ -1,6 +1,10 @@
 package com.realdolmen.entity;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+import org.hibernate.Hibernate;
+
 import javax.persistence.*;
+import javax.transaction.Transactional;
 import javax.validation.constraints.NotNull;
 import javax.xml.bind.annotation.XmlRootElement;
 import java.util.Date;
@@ -11,7 +15,22 @@ import java.util.Date;
  */
 @Entity
 @Inheritance(strategy = InheritanceType.JOINED)
+@NamedQueries(
+        @NamedQuery(name = "Occupation.FindAvailableByEmployee", query = "SELECT o FROM Occupation o")
+)
 public class Occupation {
+
+    /**
+     * Initializes all lazy properties and collections of the entity recursively. Expects to be invoked while still running
+     * in a session.
+     *
+     * @param occupation the occupation that should be initialized
+     */
+    public static void initialize(Occupation occupation) {
+        if (occupation instanceof Project) {
+            Project.initialize((Project) occupation);
+        }
+    }
 
     @Column
     @NotNull(message = "name")
@@ -40,7 +59,9 @@ public class Occupation {
         this.description = description;
     }
 
-    private transient final int DTYPE = 1;
+    @Transient
+    @JsonProperty("DTYPE")
+    private final int DTYPE = 1;
 
     @Override
     public String toString() {

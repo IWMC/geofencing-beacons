@@ -21,6 +21,7 @@ import com.android.volley.VolleyError;
 import com.realdolmen.timeregistration.R;
 import com.realdolmen.timeregistration.model.RegisteredOccupation;
 import com.realdolmen.timeregistration.service.BackendService;
+import com.realdolmen.timeregistration.service.RequestCallback;
 import com.realdolmen.timeregistration.util.SimpleObservableCallback;
 import com.realdolmen.timeregistration.util.adapters.dayregistration.AdapterState;
 import com.realdolmen.timeregistration.util.adapters.dayregistration.OccupationRecyclerAdapter;
@@ -80,11 +81,12 @@ public class DayRegistrationFragment extends Fragment {
 			throw new IllegalStateException("DayRegistrationFragment requires a date argument.");
 		}
 		state = new AdapterState.NewlyEmptyState();
+		parent.setCurrentDate(selectedDate);
 		final ObservableArrayList<RegisteredOccupation> list = new ObservableArrayList<>();
 		final OccupationRecyclerAdapter adapter = new OccupationRecyclerAdapter(list);
 		recyclerView.setAdapter(adapter);
 		state.doNotify(this, adapter);
-		parent.getDataForDate(selectedDate, new BackendService.RequestCallback<List<RegisteredOccupation>>() {
+		parent.getDataForDate(selectedDate, new RequestCallback<List<RegisteredOccupation>>() {
 			@Override
 			public void onSuccess(List<RegisteredOccupation> data) {
 				list.addOnListChangedCallback(new SimpleObservableCallback() {

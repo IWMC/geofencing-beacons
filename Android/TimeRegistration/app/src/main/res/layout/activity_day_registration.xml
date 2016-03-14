@@ -54,37 +54,24 @@
         app:menu_icon="@drawable/ic_apps_24dp">
 
         <com.github.clans.fab.FloatingActionButton
-            android:id="@+id/menu_item1"
+            android:id="@+id/day_registration_confirm_fab"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:src="@drawable/ic_done_24dp"
-            app:fab_label="Confirm registration"
+            app:fab_label="@string/day_registration_confirm"
             app:fab_size="mini"
             app:menu_backgroundColor="@color/colorConfirmFab"
             app:fab_colorNormal="@color/colorConfirmFab"
-            app:fab_progress_indeterminate="true"
             app:fab_progress_showBackground="false"
             app:fab_progress_color="@color/colorPrimary"/>
 
         <com.github.clans.fab.FloatingActionButton
-            android:id="@+id/menu_item2"
+            android:id="@+id/day_registration_add_fab"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:src="@drawable/fab_add"
-            app:fab_label="Add occupation"
+            app:fab_label="@string/day_registration_add_occupation"
             app:fab_size="mini"/>
     </com.github.clans.fab.FloatingActionMenu>
-
-    <!--<android.support.design.widget.FloatingActionButton-->
-    <!--android:id="@+id/day_registration_fab"-->
-    <!--android:layout_width="wrap_content"-->
-    <!--android:layout_height="wrap_content"-->
-    <!--android:layout_gravity="bottom|right|end"-->
-    <!--android:layout_margin="16dp"-->
-    <!--android:clickable="true"-->
-    <!--android:longClickable="true"-->
-    <!--android:src="@drawable/ic_done_24dp"-->
-    <!--app:backgroundTint="@color/colorConfirmFab"-->
-    <!--app:layout_behavior="com.realdolmen.timeregistration.util.ScrollAwareFabBehavior"/>-->
 
 </android.support.design.widget.CoordinatorLayout>

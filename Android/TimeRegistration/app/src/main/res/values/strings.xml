@@ -12,4 +12,7 @@
     <string name="login_generic_error">Failed to login due to a server error!</string>
     <string name="day_registration_empty_state">No registered occupations today!</string>
     <string name="day_registration_title">Time Registration</string>
+    <string name="day_registration_add_occupation">Add occupation</string>
+    <string name="day_registration_confirm">Confirm registrations</string>
+    <string name="day_registration_confirm_message">Your registrations have been confirmed</string>
 </resources>

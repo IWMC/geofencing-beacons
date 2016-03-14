@@ -1,4 +1,4 @@
-package com.realdolmen.timeregistration.data;
+package com.realdolmen.timeregistration.util.json;
 
 import com.android.volley.AuthFailureError;
 import com.android.volley.NetworkResponse;
