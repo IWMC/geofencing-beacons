@@ -7,11 +7,11 @@
       xmlns:f="http://xmlns.jcp.org/jsf/core"
       xmlns:mp="http://primefaces.org/ui/material"
       xmlns:p="http://primefaces.org/ui">
-<f:view locale="nl">
+<f:view>
     <h:head>
         <meta name="viewport" content="width=device-width, initial-scale=0.9" />
         <h:outputStylesheet library="css" name="common.css" />
-        <title>Aanmelden</title>
+        <title><h:outputText value="#{msg['login.title']}"/></title>
     </h:head>
     <h:body styleClass="container">
         <div class="valign-wrapper">
@@ -19,13 +19,13 @@
                 <h:form styleClass="card" id="loginForm">
                     <div class="card-content">
                         <h:graphicImage library="img" name="logo.svg"/>
-                        <mp:input placeholder="Gebruikersnaam" id="username" value="#{loginController.username}"
+                        <mp:input placeholder="#{msg['username']}" id="username" value="#{loginController.username}"
                                   floatingPlaceholder="false"/>
-                        <mp:input type="password" placeholder="Wachtwoord" id="password"
+                        <mp:input type="password" placeholder="#{msg['password']}" id="password"
                                   value="#{loginController.password}" floatingPlaceholder="false"/>
                         <h:messages id="messages" showDetail="false" errorClass="error"/>
                         <h:commandButton styleClass="btn realdolmen-blue waves-effect waves-realdolmen-blue"
-                                         id="loginButton" action="#{loginController.doLogin}" value="Inloggen"
+                                         id="loginButton" action="#{loginController.doLogin}" value="#{msg['login.login_action']}"
                                          update="loginForm:messages"/>
                     </div>
                 </h:form>

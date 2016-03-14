@@ -17,14 +17,13 @@ import javax.persistence.PersistenceContext;
 import javax.transaction.Transactional;
 import javax.ws.rs.core.Response;
 import java.io.IOException;
-import java.io.Serializable;
 
 /**
  * A controller for <code>/employees/employee-details.xhtml</code>.
  */
 @RequestScoped
 @Named("employeeDetails")
-public class EmployeeDetailsController implements Serializable {
+public class EmployeeDetailsController {
 
     @ManagedProperty(value = "#{param.userId}")
     private String userId;
@@ -54,6 +53,12 @@ public class EmployeeDetailsController implements Serializable {
             (facesContext == null ? FacesContext.getCurrentInstance() : facesContext)
                     .getExternalContext().redirect(Pages.searchEmployee().noRedirect());
         } catch (NumberFormatException nfex) {
+            try {
+                (facesContext == null ? FacesContext.getCurrentInstance() : facesContext)
+                        .getExternalContext().redirect(Pages.searchEmployee().noRedirect());
+            } catch (IOException e) {
+                Logger.getLogger(EmployeeDetailsController.class).error("couldn't redirect with FacesContext", e);
+            }
         } catch (IOException e) {
             Logger.getLogger(EmployeeDetailsController.class).error("couldn't redirect with FacesContext", e);
         }

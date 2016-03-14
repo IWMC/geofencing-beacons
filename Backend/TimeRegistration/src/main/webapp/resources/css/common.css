@@ -103,3 +103,49 @@ footer {
     padding: 10px;
     margin: -8px 0px;
 }
+
+.nav-wrapper #subtitle {
+    line-height: 64px;
+    margin-top: 0px;
+    margin-bottom: 0px;
+}
+
+@media only screen and (max-width: 600px) {
+    .s0 {
+       width: 0px;
+    }
+
+    .sl0 {
+        margin-left: 0px !important;
+    }
+
+    .sr0 {
+        margin-rightt: 0px !important;
+    }
+}
+@media only screen and (min-width: 601px) {
+    .m0 {
+        width: 0px;
+    }
+    
+    .ml0 {
+        margin-left: 0px !important;
+    }
+
+    .mr0 {
+        margin-rightt: 0px !important;
+    }
+}
+@media only screen and (min-width: 993px) {
+    .l0 {
+        width: 0px;
+    }
+
+    .ll0 {
+        margin-left: 0px !important;
+    }
+
+    .lr0 {
+        margin-rightt: 0px !important;
+    }
+}

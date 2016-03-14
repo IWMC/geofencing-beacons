@@ -1,0 +1,17 @@
+#account-circle {
+    font-size: 128px;
+}
+
+#password-lock-icon {
+    font-size: 25px;
+}
+
+* > #password-lock-icon {
+    padding-left: 0px;
+    padding-right: 5px;
+}
+
+.edit-big {
+    font-size: 45px !important;
+    margin-bottom: 45px !important;
+}

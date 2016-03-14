@@ -8,7 +8,7 @@
             <default-locale>nl</default-locale>
         </locale-config>
         <resource-bundle>
-            <base-name>com.realdolmen.messages</base-name>
+            <base-name>Messages</base-name>
             <var>msg</var>
         </resource-bundle>
     </application>
