@@ -14,7 +14,9 @@ import java.util.List;
 public class DateUtil {
 
 	private static final SimpleDateFormat nameOfDayDateFormat = new SimpleDateFormat("EEEE");
-	private static final SimpleDateFormat hourFormat = new SimpleDateFormat("HH:mm");
+	private static final SimpleDateFormat hourFormat24Hours = new SimpleDateFormat("HH:mm");
+	private static final SimpleDateFormat hourFormatAmPm = new SimpleDateFormat("hh:mm a");
+	private static final SimpleDateFormat dayFormat = new SimpleDateFormat("EEEE dd MMMM");
 
 	/**
 	 * Uses the current time to check whether the specified date is on the same day.
@@ -51,7 +53,11 @@ public class DateUtil {
 	}
 
 	public static String formatToHours(@NonNull Date date) {
-		return hourFormat.format(date);
+		return hourFormat24Hours.format(date);
+	}
+
+	public static String formatToHours(@NonNull Date date, boolean is24Hours) {
+		return is24Hours ? hourFormat24Hours.format(date) : hourFormatAmPm.format(date);
 	}
 
 	public static String nameForDate(@NonNull Date date) {
@@ -59,5 +65,9 @@ public class DateUtil {
 			return "Today";
 		}
 		return nameOfDayDateFormat.format(date);
+	}
+
+	public static String formatToDay(Date date) {
+		return dayFormat.format(date);
 	}
 }

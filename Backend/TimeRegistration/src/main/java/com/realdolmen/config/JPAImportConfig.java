@@ -15,7 +15,9 @@ import javax.persistence.PersistenceContext;
 import javax.transaction.Transactional;
 import java.security.NoSuchAlgorithmException;
 import java.util.Date;
+import java.util.Random;
 import java.util.concurrent.Future;
+import java.util.concurrent.ThreadLocalRandom;
 
 /**
  * Configuration adding, editing or removing entities that should be present in the database at startup. Should be
@@ -57,6 +59,15 @@ public class JPAImportConfig {
         project.setStartDate(new Date());
         project.setName("Project X");
         project.setEndDate(DateUtils.addMonths(new Date(), 3));
+
+        for (int i = 0; i < 20; i++) {
+            Occupation oo = new Occupation();
+            oo.setName("Occupation " + ThreadLocalRandom.current().nextInt(100));
+            if(i % 4 == 0) {
+                oo.setDescription("Description for #" + i);
+            }
+            entityManager.persist(oo);
+        }
 
         entityManager.persist(o);
         entityManager.persist(project);

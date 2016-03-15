@@ -22,4 +22,5 @@
     <color name="colorTabIconColor">@android:color/white</color>
 
     <color name="background_dim_overlay">#88333333</color>
+    <color name="colorSelectedCard">#2000FF00</color>
 </resources>

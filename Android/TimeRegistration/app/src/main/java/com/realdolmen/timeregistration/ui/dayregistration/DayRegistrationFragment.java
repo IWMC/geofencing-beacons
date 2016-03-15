@@ -20,11 +20,10 @@ import android.widget.Toast;
 import com.android.volley.VolleyError;
 import com.realdolmen.timeregistration.R;
 import com.realdolmen.timeregistration.model.RegisteredOccupation;
-import com.realdolmen.timeregistration.service.BackendService;
 import com.realdolmen.timeregistration.service.RequestCallback;
 import com.realdolmen.timeregistration.util.SimpleObservableCallback;
 import com.realdolmen.timeregistration.util.adapters.dayregistration.AdapterState;
-import com.realdolmen.timeregistration.util.adapters.dayregistration.OccupationRecyclerAdapter;
+import com.realdolmen.timeregistration.util.adapters.dayregistration.RegisteredOccupationRecyclerAdapter;
 
 import java.util.Date;
 import java.util.List;
@@ -83,7 +82,7 @@ public class DayRegistrationFragment extends Fragment {
 		state = new AdapterState.NewlyEmptyState();
 		parent.setCurrentDate(selectedDate);
 		final ObservableArrayList<RegisteredOccupation> list = new ObservableArrayList<>();
-		final OccupationRecyclerAdapter adapter = new OccupationRecyclerAdapter(list);
+		final RegisteredOccupationRecyclerAdapter adapter = new RegisteredOccupationRecyclerAdapter(list);
 		recyclerView.setAdapter(adapter);
 		state.doNotify(this, adapter);
 		parent.getDataForDate(selectedDate, new RequestCallback<List<RegisteredOccupation>>() {
@@ -140,7 +139,7 @@ public class DayRegistrationFragment extends Fragment {
 					@Override
 					public void onClick(DialogInterface dialog, int which) {
 						//TODO: remove item from datase
-						((OccupationRecyclerAdapter) recyclerView.getAdapter()).removeItemAt(viewHolder.getAdapterPosition());
+						((RegisteredOccupationRecyclerAdapter) recyclerView.getAdapter()).removeItemAt(viewHolder.getAdapterPosition());
 						dialog.dismiss();
 					}
 				}).setOnCancelListener(new DialogInterface.OnCancelListener() {
@@ -177,7 +176,7 @@ public class DayRegistrationFragment extends Fragment {
 
 	private void checkState() {
 		if (state != null) {
-			state.doNotify(this, ((OccupationRecyclerAdapter) recyclerView.getAdapter()));
+			state.doNotify(this, ((RegisteredOccupationRecyclerAdapter) recyclerView.getAdapter()));
 		} else {
 			System.err.println("State should not be null");
 		}

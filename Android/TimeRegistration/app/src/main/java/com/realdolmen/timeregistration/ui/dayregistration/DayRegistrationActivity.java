@@ -1,5 +1,6 @@
 package com.realdolmen.timeregistration.ui.dayregistration;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.annotation.NonNull;
@@ -180,6 +181,13 @@ public class DayRegistrationActivity extends AppCompatActivity {
 	@OnClick(R.id.day_registration_confirm_fab)
 	public void doConfirm() {
 		confirm(currentDate, null);
+	}
+
+	@OnClick(R.id.day_registration_add_fab)
+	public void openAddOccupation() {
+		Intent i = new Intent(this, AddOccupationActivity.class);
+		i.putExtra(AddOccupationActivity.BASE_DATE, dates.get(viewPager.getCurrentItem()));
+		startActivity(i);
 	}
 
 	public void setCurrentDate(Date currentDate) {

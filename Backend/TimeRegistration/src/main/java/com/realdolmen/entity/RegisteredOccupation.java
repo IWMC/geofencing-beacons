@@ -30,7 +30,6 @@ public class RegisteredOccupation {
     @ManyToOne
     private Employee registrar;
 
-
     private boolean confirmed = false;
 
     @Id

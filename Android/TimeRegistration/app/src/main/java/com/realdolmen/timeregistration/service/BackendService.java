@@ -13,9 +13,10 @@ import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.Volley;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import com.realdolmen.timeregistration.util.json.GsonObjectRequest;
+import com.realdolmen.timeregistration.model.Occupation;
 import com.realdolmen.timeregistration.model.RegisteredOccupation;
 import com.realdolmen.timeregistration.model.Session;
+import com.realdolmen.timeregistration.util.json.GsonObjectRequest;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -37,7 +38,8 @@ public class BackendService {
 			API_LOGIN_URI = HOST + "/api/user/login",
 			API_GET_REGISTERED_OCCUPATIONS = HOST + "/api/occupations/registration/?start=%d&end=%d",
 			API_CONFIRM_OCCUPATIONS = HOST + "/api/occupations/registration/%d/confirm",
-			API_ADD_OCCUPATION_REGISTRATION = HOST + "/api/occupations/registration";
+			API_ADD_OCCUPATION_REGISTRATION = HOST + "/api/occupations/registration",
+			API_GET_OCCUPATIONS = HOST + "/api/occupations";
 
 	private Context context;
 
@@ -165,8 +167,8 @@ public class BackendService {
 	private Map<String, String> auth(@Nullable Map<String, String> originalHeaders) {
 		Map<String, String> headers = new HashMap<>();
 
-		if(originalHeaders != null && !originalHeaders.isEmpty()) {
-			for(Map.Entry<String, String> entry : originalHeaders.entrySet()) {
+		if (originalHeaders != null && !originalHeaders.isEmpty()) {
+			for (Map.Entry<String, String> entry : originalHeaders.entrySet()) {
 				headers.put(entry.getKey(), entry.getValue());
 			}
 		}
@@ -201,5 +203,22 @@ public class BackendService {
 
 	private Map<String, String> auth() {
 		return auth(null);
+	}
+
+	public void getRelevantOccupations(final RequestCallback<List<Occupation>> requestCallback) {
+		GsonObjectRequest req = new GsonObjectRequest<>(API_GET_OCCUPATIONS, Occupation[].class
+				, auth(), new Response.Listener<Occupation[]>() {
+			@Override
+			public void onResponse(Occupation[] response) {
+				requestCallback.onSuccess(Arrays.asList(response));
+			}
+		}, new Response.ErrorListener() {
+			@Override
+			public void onErrorResponse(VolleyError error) {
+				requestCallback.onError(error);
+			}
+		});
+
+		requestQueue.add(req);
 	}
 }

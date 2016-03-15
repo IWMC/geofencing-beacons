@@ -16,7 +16,7 @@ import java.util.Date;
 @Entity
 @Inheritance(strategy = InheritanceType.JOINED)
 @NamedQueries(
-        @NamedQuery(name = "Occupation.FindAvailableByEmployee", query = "SELECT o FROM Occupation o")
+        @NamedQuery(name = "Occupation.FindAvailableByEmployee", query = "SELECT o FROM Occupation o ORDER BY o.name")
 )
 public class Occupation {
 
