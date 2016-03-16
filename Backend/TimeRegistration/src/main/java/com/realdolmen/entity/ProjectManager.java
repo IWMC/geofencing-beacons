@@ -2,10 +2,7 @@ package com.realdolmen.entity;
 
 import org.hibernate.search.annotations.Indexed;
 
-import javax.persistence.Entity;
-import javax.persistence.NamedQueries;
-import javax.persistence.NamedQuery;
-import javax.persistence.OneToMany;
+import javax.persistence.*;
 import java.util.Set;
 
 /**
@@ -16,6 +13,7 @@ import java.util.Set;
         @NamedQuery(name = "ProjectManager.findAll", query = "SELECT DISTINCT e FROM ProjectManager e ORDER BY e.id")
 })
 @Indexed
+@Table(name = "projectmanager")
 public class ProjectManager extends Employee {
 
     public ProjectManager() {

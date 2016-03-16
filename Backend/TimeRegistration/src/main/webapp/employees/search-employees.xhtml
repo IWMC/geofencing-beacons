@@ -5,12 +5,10 @@
       xmlns:h="http://xmlns.jcp.org/jsf/html"
       xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
       xmlns:f="http://xmlns.jcp.org/jsf/core" xmlns:mp="http://primefaces.org/ui/material"
-      xmlns:c="http://java.sun.com/jsp/jstl/core" xmlns:p="http://primefaces.org/ui">
+      xmlns:c="http://java.sun.com/jsp/jstl/core" xmlns:p="http://primefaces.org/ui"
+      xmlns:a="http://xmlns.jcp.org/jsf/passthrough">
 <f:view>
     <ui:composition template="../page-template.xhtml">
-        <ui:define name="body">
-            <p>Hello world</p>
-        </ui:define>
         <ui:define name="toolbar-after-logo">
             <h:form styleClass="right show-on-medium-and-up">
                 <div class="input-field">
@@ -37,6 +35,11 @@
         </ui:define>
         <ui:define name="body">
             <div class="container">
+                <div class="fixed-action-btn">
+                    <h:link outcome="#{pages.addEmployee().jsf()}" styleClass="btn-floating btn-large red">
+                        <i class="large material-icons">add</i>
+                    </h:link>
+                </div>
                 <h:panelGroup id="search-results">
                     <div class="row">
                         <ui:repeat value="#{employeeSearch.employees}"

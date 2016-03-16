@@ -25,7 +25,6 @@ import javax.inject.Inject;
 import javax.persistence.EntityManager;
 import javax.transaction.UserTransaction;
 import javax.ws.rs.core.Response;
-import java.io.IOException;
 
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyLong;
@@ -78,7 +77,7 @@ public class EmployeeEditControllerTest {
     }
 
     @Test
-    public void testControllerUpdatesUser() throws IOException {
+    public void testControllerUpdatesUser() throws Exception {
         controller.setUserId(employee.getId().toString());
         controller.setEmployee(employee);
         when(endpoint.update(employee.getId(), employee)).thenReturn(Response.noContent().build());
@@ -89,7 +88,7 @@ public class EmployeeEditControllerTest {
     }
 
     @Test
-    public void testControllerRedirectsOnUserUpdate() throws IOException {
+    public void testControllerRedirectsOnUserUpdate() throws Exception {
         controller.setUserId(employee.getId().toString());
         controller.setEmployee(employee);
         when(endpoint.update(employee.getId(), employee)).thenReturn(Response.noContent().build());

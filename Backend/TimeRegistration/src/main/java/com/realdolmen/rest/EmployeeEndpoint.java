@@ -9,6 +9,7 @@ import com.realdolmen.service.SecurityManager;
 import com.realdolmen.validation.ValidationResult;
 import com.realdolmen.validation.Validator;
 import org.hibernate.Hibernate;
+import org.hibernate.Session;
 
 import javax.ejb.Stateless;
 import javax.inject.Inject;
@@ -32,8 +33,8 @@ import static com.realdolmen.annotations.UserGroup.*;
 @Path("/employees")
 public class EmployeeEndpoint {
 
-	@PersistenceContext(unitName = PersistenceUnit.PRODUCTION)
-	private EntityManager em;
+    @PersistenceContext(unitName = PersistenceUnit.PRODUCTION)
+    private EntityManager em;
 
     @Inject
     private Validator<EmployeePasswordCredentials> credentialsValidator;
@@ -44,52 +45,52 @@ public class EmployeeEndpoint {
     @Inject
     private SecurityManager securityManager;
 
-	@DELETE
-	@Path("/{id:[0-9]+}")
+    @DELETE
+    @Path("/{id:[0-9]+}")
     @Authorized(MANAGEMENT_EMPLOYEE_ONLY)
-	public Response deleteById(@PathParam("id") Long id) {
-		Employee entity = em.find(Employee.class, id);
-		if (entity == null) {
-			return Response.status(Status.NOT_FOUND).build();
-		}
-		em.remove(entity);
-		return Response.noContent().build();
-	}
+    public Response deleteById(@PathParam("id") Long id) {
+        Employee entity = em.find(Employee.class, id);
+        if (entity == null) {
+            return Response.status(Status.NOT_FOUND).build();
+        }
+        em.remove(entity);
+        return Response.noContent().build();
+    }
 
-	@GET
-	@Path("/{id:[0-9]+}")
-	@Produces({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
+    @GET
+    @Path("/{id:[0-9]+}")
+    @Produces({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
     @Authorized(MANAGEMENT)
-	public Response findById(@PathParam("id") Long id) {
-		Employee entity = em.find(Employee.class, id);
+    public Response findById(@PathParam("id") Long id) {
+        Employee entity = em.find(Employee.class, id);
 
-		if (entity == null) {
-			return Response.status(Status.NOT_FOUND).build();
-		}
+        if (entity == null) {
+            return Response.status(Status.NOT_FOUND).build();
+        }
 
         Hibernate.initialize(entity.getMemberProjects());
-		return Response.ok(entity).build();
-	}
+        return Response.ok(entity).build();
+    }
 
-	@GET
-	@Produces({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
+    @GET
+    @Produces({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
     @Authorized(MANAGEMENT)
-	public Response listAll(@QueryParam("start") Integer startPosition,
-			@QueryParam("max") Integer maxResult) {
-		TypedQuery<Employee> findAllQuery = em.createNamedQuery("Employee.findAll", Employee.class);
+    public Response listAll(@QueryParam("start") Integer startPosition,
+                            @QueryParam("max") Integer maxResult) {
+        TypedQuery<Employee> findAllQuery = em.createNamedQuery("Employee.findAll", Employee.class);
 
-		if (startPosition != null) {
-			findAllQuery.setFirstResult(startPosition);
-		}
+        if (startPosition != null) {
+            findAllQuery.setFirstResult(startPosition);
+        }
 
         if (maxResult != null) {
-			findAllQuery.setMaxResults(maxResult);
-		}
+            findAllQuery.setMaxResults(maxResult);
+        }
 
         List<Employee> employees = findAllQuery.getResultList();
         employees.forEach(Employee::initialize);
-		return Response.ok().entity(employees).build();
-	}
+        return Response.ok().entity(employees).build();
+    }
 
     @PUT
     @Path("/{id:[0-9]+}")
@@ -111,51 +112,51 @@ public class EmployeeEndpoint {
         return Response.noContent().build();
     }
 
-	@PUT
-	@Path("/{id:[0-9]+}")
-	@Produces({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
+    @PUT
+    @Path("/{id:[0-9]+}")
+    @Produces({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
     @Authorized(MANAGEMENT_EMPLOYEE_ONLY)
-	public Response update(@PathParam("id") Long id, Employee entity) {
-		if (entity == null) {
-			return Response.status(Status.BAD_REQUEST).build();
-		}
-		if (id == null) {
-			return Response.status(Status.BAD_REQUEST).build();
-		}
-		if (!id.equals(entity.getId())) {
-			return Response.status(Status.CONFLICT).entity(entity).build();
-		}
+    public Response update(@PathParam("id") Long id, Employee entity) {
+        if (entity == null) {
+            return Response.status(Status.BAD_REQUEST).build();
+        }
+        if (id == null) {
+            return Response.status(Status.BAD_REQUEST).build();
+        }
+        if (!id.equals(entity.getId())) {
+            return Response.status(Status.CONFLICT).entity(entity).build();
+        }
 
         Employee dbEmployee = em.find(Employee.class, id);
-		if (dbEmployee == null) {
-			return Response.status(Status.NOT_FOUND).build();
-		}
+        if (dbEmployee == null) {
+            return Response.status(Status.NOT_FOUND).build();
+        }
 
         ValidationResult validationResult = employeeValidator.validate(entity, Existing.class);
-        if (validationResult != null) {
+        if (!validationResult.isValid()) {
             return Response.status(Status.BAD_REQUEST).entity(validationResult).build();
         }
 
         entity.setSalt(dbEmployee.getSalt());
         entity.setHash(dbEmployee.getHash());
 
-		try {
+        try {
             em.merge(entity);
-		} catch (OptimisticLockException e) {
-			return Response.status(Response.Status.CONFLICT)
-					.entity(e.getEntity()).build();
-		} catch (NonUniqueResultException nure) {
+        } catch (OptimisticLockException e) {
+            return Response.status(Response.Status.CONFLICT)
+                    .entity(e.getEntity()).build();
+        } catch (NonUniqueResultException nure) {
             return Response.status(Response.Status.CONFLICT).build();
         }
 
-		return Response.noContent().build();
-	}
+        return Response.noContent().build();
+    }
 
     @PUT
     @Path("/{id:[0-9]+}/upgrade/management-employee")
     @Produces({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
     @Authorized(MANAGEMENT_EMPLOYEE_ONLY)
-    public Response upgradeManagementEmployee(@PathParam("id") Long id) {
+    public Response upgradeManagementEmployee(@PathParam("id") Long id) throws Exception {
         if (id == null) {
             return Response.status(Status.BAD_REQUEST).build();
         }
@@ -166,16 +167,18 @@ public class EmployeeEndpoint {
             return Response.status(Status.NOT_FOUND).build();
         }
 
-        ManagementEmployee newManager = new ManagementEmployee(employee);
-        employee.getMemberProjects().stream().map(Project::getEmployees).forEach(e -> {
-            e.remove(employee);
-            e.add(newManager);
-        });
-        employee.getRegisteredOccupations().stream().forEach(o -> o.setRegistrar(newManager));
-        em.remove(employee);
+        em.unwrap(Session.class).evict(employee);
 
         try {
-            em.persist(newManager);
+            String deleteFromManagementEmployee = "DELETE FROM managementemployee WHERE id=" + id + ";";
+            String deleteFromProjectManager = "DELETE FROM projectmanager WHERE id=" + id + ";";
+            String deleteFromProjectManagerProjectRelationship = "DELETE FROM projectmanager_project WHERE ProjectManager_id=" + id + ";";
+            String addToManagementEmployee = "INSERT INTO managementemployee VALUES (" + id + ");";
+
+            em.createNativeQuery(deleteFromManagementEmployee).executeUpdate();
+            em.createNativeQuery(deleteFromProjectManagerProjectRelationship).executeUpdate();
+            em.createNativeQuery(deleteFromProjectManager).executeUpdate();
+            em.createNativeQuery(addToManagementEmployee).executeUpdate();
         } catch (OptimisticLockException e) {
             return Response.status(Response.Status.CONFLICT)
                     .entity(e.getEntity()).build();
@@ -188,6 +191,7 @@ public class EmployeeEndpoint {
     @Path("/{id:[0-9]+}/upgrade/project-manager")
     @Produces({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
     @Authorized(MANAGEMENT_EMPLOYEE_ONLY)
+    @Transactional
     public Response upgradeProjectManager(@PathParam("id") Long id) {
         if (id == null) {
             return Response.status(Status.BAD_REQUEST).build();
@@ -199,16 +203,18 @@ public class EmployeeEndpoint {
             return Response.status(Status.NOT_FOUND).build();
         }
 
-        ProjectManager newManager = new ProjectManager(employee);
-        employee.getMemberProjects().stream().map(Project::getEmployees).forEach(e -> {
-            e.remove(employee);
-            e.add(newManager);
-        });
-        employee.getRegisteredOccupations().stream().forEach(o -> o.setRegistrar(newManager));
-        em.remove(employee);
+        em.unwrap(Session.class).evict(employee);
 
         try {
-            em.persist(newManager);
+            String deleteFromManagementEmployee = "DELETE FROM managementemployee WHERE id=" + id + ";";
+            String deleteFromProjectManager = "DELETE FROM projectmanager WHERE id=" + id + ";";
+            String deleteFromProjectManagerProjectRelationship = "DELETE FROM projectmanager_project WHERE ProjectManager_id=" + id + ";";
+            String addToProjectManager = "INSERT INTO projectmanager VALUES (" + id + ");";
+
+            em.createNativeQuery(deleteFromManagementEmployee).executeUpdate();
+            em.createNativeQuery(deleteFromProjectManagerProjectRelationship).executeUpdate();
+            em.createNativeQuery(deleteFromProjectManager).executeUpdate();
+            em.createNativeQuery(addToProjectManager).executeUpdate();
         } catch (OptimisticLockException e) {
             return Response.status(Response.Status.CONFLICT)
                     .entity(e.getEntity()).build();
@@ -221,6 +227,7 @@ public class EmployeeEndpoint {
     @Path("/{id:[0-9]+}/upgrade/project-manager")
     @Produces({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
     @Authorized(MANAGEMENT_EMPLOYEE_ONLY)
+    @Transactional
     public Response downgradeEmployee(@PathParam("id") Long id) {
         if (id == null) {
             return Response.status(Status.BAD_REQUEST).build();
@@ -232,16 +239,16 @@ public class EmployeeEndpoint {
             return Response.status(Status.NOT_FOUND).build();
         }
 
-        Employee newEmployee = new Employee(employee);
-        employee.getMemberProjects().stream().map(Project::getEmployees).forEach(e -> {
-            e.remove(employee);
-            e.add(newEmployee);
-        });
-        employee.getRegisteredOccupations().stream().forEach(o -> o.setRegistrar(newEmployee));
-        em.remove(employee);
+        em.unwrap(Session.class).evict(employee);
 
         try {
-            em.persist(newEmployee);
+            String deleteFromManagementEmployee = "DELETE FROM managementemployee WHERE id=" + id + ";";
+            String deleteFromProjectManager = "DELETE FROM projectmanager WHERE id=" + id + ";";
+            String deleteFromProjectManagerProjectRelationship = "DELETE FROM projectmanager_project WHERE ProjectManager_id=" + id + ";";
+
+            em.createNativeQuery(deleteFromManagementEmployee).executeUpdate();
+            em.createNativeQuery(deleteFromProjectManagerProjectRelationship).executeUpdate();
+            em.createNativeQuery(deleteFromProjectManager).executeUpdate();
         } catch (OptimisticLockException e) {
             return Response.status(Response.Status.CONFLICT)
                     .entity(e.getEntity()).build();

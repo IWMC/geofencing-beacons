@@ -343,7 +343,7 @@ public class EmployeeEndpointTest {
         when(manager.find(Employee.class, employee1.getId())).thenReturn(employee1);
         endpoint.upgradeProjectManager(employee1.getId());
         verify(manager, atLeastOnce()).remove(employee1);
-        verify(manager, atLeastOnce()).persist(new ProjectManager(employee1));
+        verify(manager, atLeastOnce()).merge(new ProjectManager(employee1));
     }
 
     @Test
@@ -364,7 +364,7 @@ public class EmployeeEndpointTest {
         when(manager.find(Employee.class, employee1.getId())).thenReturn(employee1);
         endpoint.upgradeProjectManager(employee1.getId());
         verify(manager, atLeastOnce()).remove(employee1);
-        verify(manager, atLeastOnce()).persist(new ManagementEmployee(employee1));
+        verify(manager, atLeastOnce()).merge(new ManagementEmployee(employee1));
     }
 
     @Test
@@ -386,6 +386,6 @@ public class EmployeeEndpointTest {
         when(manager.find(Employee.class, projectManager.getId())).thenReturn(projectManager);
         endpoint.downgradeEmployee(projectManager.getId());
         verify(manager, atLeastOnce()).remove(projectManager);
-        verify(manager, atLeastOnce()).persist(employee1);
+        verify(manager, atLeastOnce()).merge(employee1);
     }
 }

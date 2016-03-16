@@ -54,7 +54,7 @@ public class EmployeeEditController implements Serializable {
 
     @Transactional
     public void onPreRender() throws IOException {
-        userId = facesContext.getExternalContext().getRequestParameterMap().getOrDefault("userId", userId);
+        userId = getFacesContext().getExternalContext().getRequestParameterMap().getOrDefault("userId", userId);
 
         try {
             if (userId != null) {
@@ -75,11 +75,9 @@ public class EmployeeEditController implements Serializable {
                 }
             }
 
-            (facesContext == null ? FacesContext.getCurrentInstance() : facesContext)
-                    .getExternalContext().redirect(Pages.searchEmployee().noRedirect());
+            getFacesContext().getExternalContext().redirect(Pages.searchEmployee().noRedirect());
         } catch (NumberFormatException nfex) {
-            (facesContext == null ? FacesContext.getCurrentInstance() : facesContext)
-                    .getExternalContext().redirect(Pages.searchEmployee().noRedirect());
+            getFacesContext().getExternalContext().redirect(Pages.searchEmployee().noRedirect());
         }
     }
 
@@ -99,6 +97,14 @@ public class EmployeeEditController implements Serializable {
         this.employee = employee;
     }
 
+    public FacesContext getFacesContext() {
+        if (facesContext.isReleased()) {
+            facesContext = FacesContext.getCurrentInstance();
+        }
+
+        return facesContext;
+    }
+
     @TestOnly
     public void setFacesContext(FacesContext context) {
         this.facesContext = context;
@@ -116,12 +122,18 @@ public class EmployeeEditController implements Serializable {
         return Pages.searchEmployee().redirect();
     }
 
-    public void saveUser() throws IOException {
+    public void saveUser() throws Exception {
         Response response = employeeEndpoint.update(employee.getId(), employee);
+        if (employeeType.equals("2") && !(employee instanceof ProjectManager)) {
+            employeeEndpoint.upgradeProjectManager(employee.getId());
+        } else if (employeeType.equals("3") && !(employee instanceof ManagementEmployee)) {
+            employeeEndpoint.upgradeManagementEmployee(employee.getId());
+        } else if (employeeType.equals("1") && (employee instanceof ProjectManager || employee instanceof ManagementEmployee)) {
+            employeeEndpoint.downgradeEmployee(employee.getId());
+        }
 
         if (response.getStatus() == Response.Status.NO_CONTENT.getStatusCode()) {
-            toastService.newToast("Werknemer opgeslagen", 5000);
-            facesContext.getExternalContext().redirect(Pages.searchEmployee().redirect());
+            getFacesContext().getExternalContext().redirect(Pages.searchEmployee().redirect());
         }
     }
 

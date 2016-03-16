@@ -5,6 +5,7 @@ import org.hibernate.search.annotations.Indexed;
 import javax.persistence.Entity;
 import javax.persistence.NamedQueries;
 import javax.persistence.NamedQuery;
+import javax.persistence.Table;
 
 /**
  * Entity for a management employee. It does not hold additional properties by himself, yet it is important to keep this
@@ -15,6 +16,7 @@ import javax.persistence.NamedQuery;
 })
 @Entity
 @Indexed
+@Table(name = "managementemployee")
 public class ManagementEmployee extends Employee {
 
     public ManagementEmployee() {

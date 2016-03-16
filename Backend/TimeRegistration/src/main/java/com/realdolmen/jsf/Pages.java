@@ -28,6 +28,8 @@ public class Pages {
 
     public static Page editEmployee() { return new Page("/employees/employee-edit.xhtml"); }
 
+    public static Page addEmployee() { return new Page("/employees/employee-add.xhtml"); }
+
     public static class Page {
 
         private String baseUrl;
