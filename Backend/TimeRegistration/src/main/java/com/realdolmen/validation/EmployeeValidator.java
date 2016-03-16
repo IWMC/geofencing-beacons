@@ -11,7 +11,7 @@ import java.util.Arrays;
 import java.util.Set;
 
 /**
- * Validator used to validate employees.
+ * Validator used to validate {@link Employee}.
  */
 @Stateless
 @Local(Validator.class)

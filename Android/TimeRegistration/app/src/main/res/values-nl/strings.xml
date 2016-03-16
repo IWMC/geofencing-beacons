@@ -13,4 +13,7 @@
     <string name="login_generic_error">Kon niet aanmelden door een server fout!</string>
     <string name="day_registration_empty_state">Geen geregistreerde bezigheden vandaag!</string>
     <string name="day_registration_title">Tijdsregistratie</string>
+    <string name="day_registration_add_occupation">Voeg een bezigheid toe</string>
+    <string name="day_registration_confirm">Bevestig registraties</string>
+    <string name="day_registration_confirm_message">Uw registraties zijn geconfirmeerd</string>
 </resources>

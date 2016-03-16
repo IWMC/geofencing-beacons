@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <android.support.design.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:orientation="vertical"
-    tools:context=".ui.dayregistration.DayRegistrationActivity">
+                                                 xmlns:app="http://schemas.android.com/apk/res-auto"
+                                                 xmlns:tools="http://schemas.android.com/tools"
+                                                 android:layout_width="match_parent"
+                                                 android:layout_height="match_parent"
+                                                 android:orientation="vertical"
+                                                 tools:context=".ui.dayregistration.DayRegistrationActivity">
 
     <android.support.design.widget.AppBarLayout
         android:id="@+id/day_registration_appbar"
@@ -29,7 +29,7 @@
             android:layout_height="70dp"
             app:tabMode="scrollable"
             app:tabPaddingEnd="25dp"
-            app:tabPaddingStart="25dp" />
+            app:tabPaddingStart="25dp"/>
 
     </android.support.design.widget.AppBarLayout>
 
@@ -42,18 +42,36 @@
         android:id="@+id/day_registration_viewpager"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        app:layout_behavior="@string/appbar_scrolling_view_behavior" />
+        app:layout_behavior="@string/appbar_scrolling_view_behavior"/>
 
-    <android.support.design.widget.FloatingActionButton
-        app:backgroundTint="@color/colorConfirmFab"
-        android:id="@+id/day_registration_fab"
+
+    <com.github.clans.fab.FloatingActionMenu
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_margin="16dp"
-        android:clickable="true"
-        android:longClickable="true"
-        android:src="@drawable/ic_done_24dp"
-        app:layout_behavior="com.realdolmen.timeregistration.util.ScrollAwareFabBehavior"
-        android:layout_gravity="bottom|right|end"/>
+        android:layout_gravity="bottom|right|end"
+        android:padding="16dp"
+        app:layout_behavior="com.realdolmen.timeregistration.util.adapters.dayregistration.ScrollAwareFabBehavior"
+        app:menu_icon="@drawable/ic_apps_24dp">
+
+        <com.github.clans.fab.FloatingActionButton
+            android:id="@+id/day_registration_confirm_fab"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:src="@drawable/ic_done_24dp"
+            app:fab_label="@string/day_registration_confirm"
+            app:fab_size="mini"
+            app:menu_backgroundColor="@color/colorConfirmFab"
+            app:fab_colorNormal="@color/colorConfirmFab"
+            app:fab_progress_showBackground="false"
+            app:fab_progress_color="@color/colorPrimary"/>
+
+        <com.github.clans.fab.FloatingActionButton
+            android:id="@+id/day_registration_add_fab"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:src="@drawable/fab_add"
+            app:fab_label="@string/day_registration_add_occupation"
+            app:fab_size="mini"/>
+    </com.github.clans.fab.FloatingActionMenu>
 
 </android.support.design.widget.CoordinatorLayout>

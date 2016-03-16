@@ -20,4 +20,6 @@
     <color name="colorEmptyList">@color/colorOccupationDescription</color>
     <color name="colorConfirmFab">#00B16A</color>
     <color name="colorTabIconColor">@android:color/white</color>
+
+    <color name="background_dim_overlay">#88333333</color>
 </resources>

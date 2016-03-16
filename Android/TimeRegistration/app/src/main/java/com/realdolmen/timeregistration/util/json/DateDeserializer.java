@@ -1,4 +1,4 @@
-package com.realdolmen.timeregistration.data;
+package com.realdolmen.timeregistration.util.json;
 
 import com.google.gson.JsonDeserializationContext;
 import com.google.gson.JsonDeserializer;

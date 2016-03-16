@@ -4,10 +4,11 @@ import android.content.Context;
 import android.content.res.TypedArray;
 import android.support.design.widget.AppBarLayout;
 import android.support.design.widget.CoordinatorLayout;
-import android.support.design.widget.FloatingActionButton;
+import android.support.design.widget.FabBehavior;
 import android.util.AttributeSet;
 import android.view.View;
 
+import com.github.clans.fab.FloatingActionMenu;
 import com.realdolmen.timeregistration.R;
 
 /**
@@ -15,12 +16,14 @@ import com.realdolmen.timeregistration.R;
  * {@link com.realdolmen.timeregistration.ui.dayregistration.DayRegistrationFragment}.
  */
 @SuppressWarnings("unused")
-public class ScrollAwareFabBehavior extends FloatingActionButton.Behavior {
+public class ScrollAwareFabBehavior extends FabBehavior {
+
+	//TODO: make scroll less fast
 
 	private int toolbarHeight;
 
 	public ScrollAwareFabBehavior(Context context, AttributeSet set) {
-		super();
+		super(context, set);
 		this.toolbarHeight = getToolbarHeight(context);
 	}
 
@@ -35,12 +38,12 @@ public class ScrollAwareFabBehavior extends FloatingActionButton.Behavior {
 
 
 	@Override
-	public boolean layoutDependsOn(CoordinatorLayout parent, FloatingActionButton child, View dependency) {
+	public boolean layoutDependsOn(CoordinatorLayout parent, FloatingActionMenu child, View dependency) {
 		return dependency instanceof AppBarLayout;
 	}
 
 	@Override
-	public boolean onDependentViewChanged(CoordinatorLayout parent, FloatingActionButton fab, View dependency) {
+	public boolean onDependentViewChanged(CoordinatorLayout parent, FloatingActionMenu fab, View dependency) {
 		if (dependency instanceof AppBarLayout) {
 			CoordinatorLayout.LayoutParams lp = (CoordinatorLayout.LayoutParams) fab.getLayoutParams();
 			int fabBottomMargin = lp.bottomMargin;
