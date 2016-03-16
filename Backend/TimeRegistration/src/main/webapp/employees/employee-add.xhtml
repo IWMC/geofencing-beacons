@@ -4,7 +4,9 @@
 <html xmlns="http://www.w3.org/1999/xhtml"
       xmlns:h="http://xmlns.jcp.org/jsf/html"
       xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
-      xmlns:f="http://xmlns.jcp.org/jsf/core">
+      xmlns:f="http://xmlns.jcp.org/jsf/core" xmlns:mp="http://primefaces.org/ui/material"
+      xmlns:p="http://primefaces.org/ui" xmlns:of="http://omnifaces.org/functions"
+      xmlns:a="http://xmlns.jcp.org/jsf/passthrough">
 <f:view>
     <ui:composition template="../page-template.xhtml">
         <ui:define name="toolbar-after-logo">
@@ -14,6 +16,89 @@
             <div class="row">
                 <h5 class="col s12 hide-on-large-only">#{msg['employee.add.title']}</h5>
             </div>
+        </ui:define>
+        <ui:define name="body">
+            <div class="container">
+                <div class="card">
+                    <h:form id="edit-form">
+                        <div class="card-content text-center">
+                            <i class="hide-on-small-and-down material-icons center-align"
+                               id="account-circle">account_circle</i>
+                            <div class="row">
+                                <div class="input-field col push-s1 s9 push-m3 m6">
+                                    <i class="m0 hide-on-med-and-up material-icons prefix"
+                                       style="margin-top: 8px;">account_circle</i>
+                                    <h:inputText styleClass="edit-big thin text-center ml0"
+                                                 a:placeholder="#{msg['username']}"
+                                                 id="username"
+                                                 value="#{employeeAdd.employee.username}">
+                                        <f:validateLength minimum="4" maximum="15" for="username"/>
+                                    </h:inputText>
+                                    <br/>
+                                    <h:outputText id="username_error" styleClass="error validator"
+                                                  value="#{util.getMessageForClient('edit-form:username')}"/>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="input-field col push-s1 s10 push-m1 m5 medium">
+                                    <p:inputText id="first_name" type="text"
+                                                 value="#{employeeAdd.employee.firstName}"
+                                                 a:length="50">
+                                    </p:inputText>
+                                    <h:outputLabel for="first_name" value="${msg['employee.firstName']}"/>
+                                </div>
+                                <div class="input-field col push-s1 s10 push-m1 m5">
+                                    <p:inputText id="last_name" styleClass="validation" a:length="50" type="text"
+                                                 value="#{employeeAdd.employee.lastName}"
+                                                 required="true"/>
+                                    <label for="last_name"><h:outputText
+                                            value="${msg['employee.lastName']}"/></label>
+                                </div>
+                                <div class="input-field col push-s1 s10 push-m1 m5" style="padding-top: 15px;">
+                                    <p:inputText styleClass="validate" id="email" a:type="email"
+                                                 value="#{employeeAdd.employee.email}"
+                                                 a:pattern="[a-z0-9]+[_a-z0-9\.-]*[a-z0-9]+@[a-z0-9-]+(\.[a-z0-9-]+)*(\.[a-z]{2,4})"/>
+                                    <h:outputLabel styleClass="label-big-textfield" value="#{msg['employee.email']}"
+                                                   for="email" a:data-error="${msg['validation.invalid_email']}"/>
+                                </div>
+                                <div class="input-field col push-s1 s10 push-m1 m5">
+                                    <mp:selectOne value="#{employeeAdd.employeeType}">
+                                        <f:selectItem itemLabel="#{msg['employee.edit.employee']}" itemValue="1"/>
+                                        <f:selectItem itemLabel="#{msg['employee.edit.project_manager']}"
+                                                      itemValue="2"/>
+                                        <f:selectItem itemLabel="#{msg['employee.edit.management']}" itemValue="3"/>
+                                    </mp:selectOne>
+                                </div>
+                                <input type="text" style="display: none;" value=""/>
+                                <input type="password" style="display: none;" value=""/>
+                                <div class="input-field col push-s1 s10 push-m1 m5">
+                                    <h:inputSecret id="password" styleClass="validate"
+                                                   value="#{employeeAdd.password}"
+                                                   a:pattern="^((?=.*\d)(?=.*[a-z])(?=.*[A-Z])[0-9a-zA-Z]{6,15})?$"/>
+                                    <h:outputLabel value="#{msg['password']}"
+                                                   a:data-error="#{msg['validation.invalid_password']}"
+                                                   for="password"/>
+                                </div>
+                                <div class="input-field col push-s1 s10 push-m1 m5">
+                                    <h:inputSecret id="password-repeat" styleClass="validate"
+                                                   value="#{employeeAdd.passwordRepeat}" a:required="true"/>
+                                    <h:outputLabel for="password-repeat"
+                                                   value="#{msg['employee.edit.password_repeat']}"
+                                                   a:data-error="#{msg['validation.field_empty']}"/>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="card-action">
+                            <h:commandLink action="#{employeeAdd.saveUser()}"
+                                           styleClass="waves-effect waves-orange card-action-flat"
+                                           value="#{msg['save']}">
+                                <f:ajax execute="@form"/>
+                            </h:commandLink>
+                        </div>
+                    </h:form>
+                </div>
+            </div>
+            <h:outputStylesheet library="css" name="employee-edit.css" target="head"/>
         </ui:define>
     </ui:composition>
 </f:view>
