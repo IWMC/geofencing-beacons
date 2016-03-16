@@ -2,27 +2,26 @@ package com.realdolmen.rest;
 
 import com.realdolmen.annotations.Authorized;
 import com.realdolmen.entity.*;
+import com.realdolmen.entity.PersistenceUnit;
+import com.realdolmen.entity.validation.Existing;
+import com.realdolmen.json.EmployeePasswordCredentials;
+import com.realdolmen.service.SecurityManager;
+import com.realdolmen.validation.ValidationResult;
+import com.realdolmen.validation.Validator;
 import org.hibernate.Hibernate;
 
 import javax.ejb.Stateless;
-import javax.persistence.EntityManager;
-import javax.persistence.OptimisticLockException;
-import javax.persistence.PersistenceContext;
-import javax.persistence.TypedQuery;
-import javax.ws.rs.DELETE;
-import javax.ws.rs.GET;
-import javax.ws.rs.PUT;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
-import javax.ws.rs.QueryParam;
+import javax.inject.Inject;
+import javax.persistence.*;
+import javax.transaction.Transactional;
+import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
+import java.security.NoSuchAlgorithmException;
 import java.util.List;
 
-import static com.realdolmen.annotations.UserGroup.MANAGEMENT;
-import static com.realdolmen.annotations.UserGroup.MANAGEMENT_EMPLOYEE_ONLY;
+import static com.realdolmen.annotations.UserGroup.*;
 
 
 /**
@@ -35,6 +34,15 @@ public class EmployeeEndpoint {
 
 	@PersistenceContext(unitName = PersistenceUnit.PRODUCTION)
 	private EntityManager em;
+
+    @Inject
+    private Validator<EmployeePasswordCredentials> credentialsValidator;
+
+    @Inject
+    private Validator<Employee> employeeValidator;
+
+    @Inject
+    private SecurityManager securityManager;
 
 	@DELETE
 	@Path("/{id:[0-9]+}")
@@ -83,6 +91,26 @@ public class EmployeeEndpoint {
 		return Response.ok().entity(employees).build();
 	}
 
+    @PUT
+    @Path("/{id:[0-9]+}")
+    @Produces({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
+    @Authorized(EMPLOYEE)
+    @Transactional
+    public Response updatePassword(@PathParam("id") Long id, EmployeePasswordCredentials credentials) throws NoSuchAlgorithmException {
+        ValidationResult validationResult = credentialsValidator.validate(credentials);
+        if (!validationResult.isValid()) {
+            return Response.status(Status.BAD_REQUEST).entity(validationResult).build();
+        }
+
+        Employee dbEmployee = em.find(Employee.class, id);
+        dbEmployee.setPassword(credentials.getPassword());
+        dbEmployee.setSalt(securityManager.randomSalt());
+        dbEmployee.setHash(securityManager.generateHash(dbEmployee.getSalt(), dbEmployee.getPassword()));
+        em.merge(dbEmployee);
+
+        return Response.noContent().build();
+    }
+
 	@PUT
 	@Path("/{id:[0-9]+}")
 	@Produces({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
@@ -103,6 +131,11 @@ public class EmployeeEndpoint {
 			return Response.status(Status.NOT_FOUND).build();
 		}
 
+        ValidationResult validationResult = employeeValidator.validate(entity, Existing.class);
+        if (validationResult != null) {
+            return Response.status(Status.BAD_REQUEST).entity(validationResult).build();
+        }
+
         entity.setSalt(dbEmployee.getSalt());
         entity.setHash(dbEmployee.getHash());
 
@@ -111,7 +144,9 @@ public class EmployeeEndpoint {
 		} catch (OptimisticLockException e) {
 			return Response.status(Response.Status.CONFLICT)
 					.entity(e.getEntity()).build();
-		}
+		} catch (NonUniqueResultException nure) {
+            return Response.status(Response.Status.CONFLICT).build();
+        }
 
 		return Response.noContent().build();
 	}
@@ -136,10 +171,11 @@ public class EmployeeEndpoint {
             e.remove(employee);
             e.add(newManager);
         });
+        employee.getRegisteredOccupations().stream().forEach(o -> o.setRegistrar(newManager));
         em.remove(employee);
 
         try {
-            em.merge(newManager);
+            em.persist(newManager);
         } catch (OptimisticLockException e) {
             return Response.status(Response.Status.CONFLICT)
                     .entity(e.getEntity()).build();
@@ -168,10 +204,44 @@ public class EmployeeEndpoint {
             e.remove(employee);
             e.add(newManager);
         });
+        employee.getRegisteredOccupations().stream().forEach(o -> o.setRegistrar(newManager));
         em.remove(employee);
 
         try {
-            em.merge(newManager);
+            em.persist(newManager);
+        } catch (OptimisticLockException e) {
+            return Response.status(Response.Status.CONFLICT)
+                    .entity(e.getEntity()).build();
+        }
+
+        return Response.noContent().build();
+    }
+
+    @PUT
+    @Path("/{id:[0-9]+}/upgrade/project-manager")
+    @Produces({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
+    @Authorized(MANAGEMENT_EMPLOYEE_ONLY)
+    public Response downgradeEmployee(@PathParam("id") Long id) {
+        if (id == null) {
+            return Response.status(Status.BAD_REQUEST).build();
+        }
+
+        Employee employee = em.find(Employee.class, id);
+
+        if (employee == null) {
+            return Response.status(Status.NOT_FOUND).build();
+        }
+
+        Employee newEmployee = new Employee(employee);
+        employee.getMemberProjects().stream().map(Project::getEmployees).forEach(e -> {
+            e.remove(employee);
+            e.add(newEmployee);
+        });
+        employee.getRegisteredOccupations().stream().forEach(o -> o.setRegistrar(newEmployee));
+        em.remove(employee);
+
+        try {
+            em.persist(newEmployee);
         } catch (OptimisticLockException e) {
             return Response.status(Response.Status.CONFLICT)
                     .entity(e.getEntity()).build();

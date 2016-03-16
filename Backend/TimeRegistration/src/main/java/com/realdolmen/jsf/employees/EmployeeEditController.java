@@ -5,6 +5,8 @@ import com.realdolmen.entity.ManagementEmployee;
 import com.realdolmen.entity.PersistenceUnit;
 import com.realdolmen.entity.ProjectManager;
 import com.realdolmen.jsf.Pages;
+import com.realdolmen.json.EmployeePasswordCredentials;
+import com.realdolmen.messages.Language;
 import com.realdolmen.rest.EmployeeEndpoint;
 import org.jetbrains.annotations.TestOnly;
 import org.omnifaces.cdi.ViewScoped;
@@ -19,6 +21,7 @@ import javax.transaction.Transactional;
 import javax.ws.rs.core.Response;
 import java.io.IOException;
 import java.io.Serializable;
+import java.security.NoSuchAlgorithmException;
 
 /**
  * A controller for <code>/employees/employee-edit.xhtml</code>.
@@ -34,6 +37,9 @@ public class EmployeeEditController implements Serializable {
     @Inject
     private transient EmployeeEndpoint employeeEndpoint;
 
+    @Inject
+    private transient Language language;
+
     @PersistenceContext(unitName = PersistenceUnit.PRODUCTION)
     private transient EntityManager em;
 
@@ -41,12 +47,14 @@ public class EmployeeEditController implements Serializable {
 
     private transient FacesContext facesContext = FacesContext.getCurrentInstance();
 
+    private transient ToastService toastService = ToastService.getInstance();
+
     private String password;
     private String passwordRepeat;
 
     @Transactional
     public void onPreRender() throws IOException {
-        userId = FacesContext.getCurrentInstance().getExternalContext().getRequestParameterMap().getOrDefault("userId", userId);
+        userId = facesContext.getExternalContext().getRequestParameterMap().getOrDefault("userId", userId);
 
         try {
             if (userId != null) {
@@ -98,12 +106,10 @@ public class EmployeeEditController implements Serializable {
 
     @Transactional
     public String removeUser() {
-        if (employee != null) {
-            if (userId != null) {
-                try {
-                    employeeEndpoint.deleteById(Long.parseLong(userId));
-                } catch (NumberFormatException nfex) {
-                }
+        if (employee != null && userId != null) {
+            try {
+                employeeEndpoint.deleteById(Long.parseLong(userId));
+            } catch (NumberFormatException nfex) {
             }
         }
 
@@ -112,14 +118,31 @@ public class EmployeeEditController implements Serializable {
 
     public void saveUser() throws IOException {
         Response response = employeeEndpoint.update(employee.getId(), employee);
+
         if (response.getStatus() == Response.Status.NO_CONTENT.getStatusCode()) {
-            ToastService.getInstance().newToast("Werknemer opgeslagen", 5000);
-            FacesContext.getCurrentInstance().getExternalContext().redirect(Pages.searchEmployee().redirect());
+            toastService.newToast("Werknemer opgeslagen", 5000);
+            facesContext.getExternalContext().redirect(Pages.searchEmployee().redirect());
         }
     }
 
-    public void changePassword() {
+    public long getIdAsLong() {
+        if (userId == null) {
+            return 0;
+        } else {
+            try {
+                return Long.parseLong(userId);
+            } catch (NumberFormatException nfex) {
+                return 0;
+            }
+        }
+    }
 
+    public void changePassword() throws NoSuchAlgorithmException {
+        Response response = employeeEndpoint.updatePassword(getIdAsLong(),
+                new EmployeePasswordCredentials(getPassword(), getPasswordRepeat(), getIdAsLong()));
+        String message = language.getLanguageBundle().getString(response.getStatus() != Response.Status.NO_CONTENT.getStatusCode()
+                ? Language.Text.EMPLOYEE_EDIT_PASSWORD_INVALID : Language.Text.EMPLOYEE_EDIT_PASSWORD_SAVED);
+        ToastService.getInstance().newToast(message, 5000);
     }
 
     public String getEmployeeType() {

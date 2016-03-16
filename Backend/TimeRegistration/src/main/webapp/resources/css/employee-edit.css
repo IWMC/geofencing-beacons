@@ -11,6 +11,10 @@
     padding-right: 5px;
 }
 
+.label-big-textfield {
+    margin-top: 15px !important;
+}
+
 .edit-big {
     font-size: 45px !important;
     margin-bottom: 45px !important;

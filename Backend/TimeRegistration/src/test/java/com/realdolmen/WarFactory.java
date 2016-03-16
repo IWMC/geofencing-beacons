@@ -4,10 +4,7 @@ import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.EmptyAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.jboss.shrinkwrap.resolver.api.maven.Maven;
-import org.mockito.InjectMocks;
 
-import javax.inject.Inject;
-import javax.inject.Singleton;
 import java.util.Arrays;
 
 /**

@@ -14,6 +14,7 @@ import javax.persistence.PersistenceContext;
 import javax.transaction.UserTransaction;
 import java.util.Date;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
 
 import static org.junit.Assert.*;
@@ -40,16 +41,24 @@ public class EmployeeTest {
         return WarFactory.createDeployment();
     }
 
+    private static AtomicInteger atomicInteger = new AtomicInteger();
+
     @Before
     public void setUp() throws Exception {
-        employee = new Employee("Password123", "zout", "", "test@realdolmen.com", "test", "user", "test");
+        employee = new Employee("Password123", "zout", "",
+                "testemail" + String.valueOf(atomicInteger.getAndIncrement()) + "@realdolmen.com",
+                "testusername" + String.valueOf(atomicInteger.getAndIncrement())
+                , "user", "test");
         simpleProject = new Project();
         simpleProject.setProjectNr(9);
         simpleProject.setName("Project 1");
         simpleProject.setStartDate(new Date());
         simpleProject.setDescription("Project 1 description");
-        transaction(em::persist, employee);
-        transaction(em::persist, simpleProject);
+        try {
+            transaction(em::persist, employee);
+            transaction(em::persist, simpleProject);
+        } catch (Exception ex) {
+        }
     }
 
     @Test
@@ -101,7 +110,7 @@ public class EmployeeTest {
             employee = em.merge(employee);
             Set<Project> projects = em.find(Employee.class, employee.getId()).getMemberProjects();
             em.remove(employee);
-            for(Project p : projects) {
+            for (Project p : projects) {
                 Project dbProject = em.find(Project.class, p.getId());
                 assertFalse("A user should be removed from project members when deleted", dbProject.getEmployees().contains(employee));
             }

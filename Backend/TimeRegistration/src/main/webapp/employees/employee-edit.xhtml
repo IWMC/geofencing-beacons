@@ -6,15 +6,18 @@
       xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
       xmlns:f="http://xmlns.jcp.org/jsf/core"
       xmlns:of="http://omnifaces.org/functions" xmlns:mp="http://primefaces.org/ui/material"
-      xmlns:p="http://primefaces.org/ui">
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:a="http://xmlns.jcp.org/jsf/passthrough">
 <f:view>
     <f:metadata>
+        <f:viewParam name="id" value="#{employeeEdit.userId}"/>
         <f:viewParam name="id" value="#{employeeEdit.userId}"/>
         <f:event type="preRenderView" listener="#{employeeEdit.onPreRender}"/>
     </f:metadata>
     <ui:composition template="../page-template.xhtml">
         <ui:define name="toolbar-after-logo">
-            <h5 class="col s12 hide-on-med-and-down" id="subtitle"><h:outputText value="#{msg['employee.edit.title']}"/></h5>
+            <h5 class="col s12 hide-on-med-and-down" id="subtitle"><h:outputText value="#{msg['employee.edit.title']}"/>
+            </h5>
         </ui:define>
         <ui:define name="additional-toolbar-full">
             <div class="row">
@@ -32,38 +35,48 @@
                                 <div class="input-field col push-s1 s9 push-m3 m6">
                                     <i class="m0 hide-on-med-and-up material-icons prefix"
                                        style="margin-top: 8px;">account_circle</i>
-                                    <h:inputText styleClass="edit-big thin text-center ml0" placeholder="#{msg['username']}"
-                                                 value="#{employeeEdit.employee.username}"/>
+                                    <h:inputText styleClass="edit-big thin text-center ml0"
+                                                 placeholder="#{msg['username']}"
+                                                 id="username"
+                                                 value="#{employeeEdit.employee.username}">
+                                        <f:validateLength minimum="4" maximum="15" for="username"/>
+                                    </h:inputText>
+                                    <br/>
+                                    <h:outputText id="username_error" styleClass="error validator"
+                                                  value="#{util.getMessageForClient('edit-form:username')}"/>
                                 </div>
                                 <div class="input-field col push-s1 push-m2 s1">
                                     <a href="#password-change" class="modal-trigger btn-flat tooltipped text-center"
-                                       data-position="right" data-delay="50" data-tooltip="#{msg['employee.edit.edit_password']}">
+                                       data-position="right" data-delay="50"
+                                       data-tooltip="#{msg['employee.edit.edit_password']}">
                                         <i class="material-icons right" id="password-lock-icon">lock</i>
                                     </a>
                                 </div>
                             </div>
                             <div class="row">
                                 <div class="input-field col push-s1 s10 push-m1 m5 medium">
-                                    <p:inputText id="first_name" styleClass="validation" type="text"
+                                    <p:inputText id="first_name" type="text"
                                                  value="#{employeeEdit.employee.firstName}"
-                                                 required="true"/>
-                                    <label for="first_name"><h:outputText value="${msg['employee.firstName']}"/></label>
+                                                 a:length="50">
+                                    </p:inputText>
+                                    <h:outputLabel for="first_name" value="${msg['employee.firstName']}"/>
                                 </div>
                                 <div class="input-field col push-s1 s10 push-m1 m5">
-                                    <p:inputText id="last_name" styleClass="validation" type="text"
+                                    <p:inputText id="last_name" styleClass="validation" a:length="50" type="text"
                                                  value="#{employeeEdit.employee.lastName}"
                                                  required="true"/>
                                     <label for="last_name"><h:outputText value="${msg['employee.lastName']}"/></label>
                                 </div>
                                 <div class="input-field col push-s1 s10 push-m1 m5" style="padding-top: 15px;">
-                                    <p:inputText styleClass="validate" id="email" type="email"
-                                                 value="#{employeeEdit.employee.email}"/>
-                                    <label for="email"><h:outputText value="#{msg['employee.email']}"/></label>
+                                    <p:inputText styleClass="validate" id="email" a:type="email"
+                                                 value="#{employeeEdit.employee.email}" a:pattern="[a-z0-9]+[_a-z0-9\.-]*[a-z0-9]+@[a-z0-9-]+(\.[a-z0-9-]+)*(\.[a-z]{2,4})"/>
+                                    <h:outputLabel styleClass="label-big-textfield" value="#{msg['employee.email']}" for="email" a:data-error="${msg['validation.invalid_email']}"/>
                                 </div>
                                 <div class="input-field col push-s1 s10 push-m1 m5">
                                     <mp:selectOne value="#{employeeEdit.employeeType}">
                                         <f:selectItem itemLabel="#{msg['employee.edit.employee']}" itemValue="1"/>
-                                        <f:selectItem itemLabel="#{msg['employee.edit.project_manager']}" itemValue="2"/>
+                                        <f:selectItem itemLabel="#{msg['employee.edit.project_manager']}"
+                                                      itemValue="2"/>
                                         <f:selectItem itemLabel="#{msg['employee.edit.management']}" itemValue="3"/>
                                     </mp:selectOne>
                                 </div>
@@ -85,60 +98,63 @@
                         </div>
                         <div class="card-action">
                             <h:commandLink action="#{employeeEdit.saveUser()}"
-                                           styleClass="waves-effect waves-orange card-action-flat" value="#{msg['save']}">
-                                <f:ajax execute="@form :employee-content"/>
+                                           styleClass="waves-effect waves-orange card-action-flat"
+                                           value="#{msg['save']}">
+                                <f:ajax execute="@form" />
                             </h:commandLink>
                             <a class="right red-text text-lighten-1 modal-trigger waves-effect waves-red card-action-flat"
                                href="#remove-warning">#{msg['remove']}</a>
                         </div>
-                        <div id="remove-warning" class="modal">
-                            <div class="modal-content">
-                                <h4>#{msg['employee.remove_warning_title']}</h4>
-                                <h:outputText value="#{msg['employee.remove_warning_description']}"/>
-                            </div>
-                            <div class="modal-footer">
-                                <h:form>
-                                    <a href="#!"
-                                       class="green-text modal-action modal-close waves-effect waves-green btn-flat">
-                                        #{msg['no']}
-                                    </a>
-                                    <h:commandLink
-                                            styleClass="red-text modal-action modal-close waves-effect waves-red btn-flat"
-                                            value="#{msg['yes']}"
-                                            action="#{employeeEdit.removeUser()}"/>
-                                </h:form>
-                            </div>
+                    </h:form>
+                    <div id="remove-warning" class="modal">
+                        <div class="modal-content">
+                            <h4>#{msg['employee.remove_warning_title']}</h4>
+                            <h:outputText value="#{msg['employee.remove_warning_description']}"/>
                         </div>
-                        <div id="password-change" class="modal">
+                        <div class="modal-footer">
                             <h:form>
-                                <div class="modal-content">
-                                    <h4>#{msg['employee.edit.edit_password_title']}</h4>
-                                    <div class="row">
-                                        <div class="input-field col s12 m6">
-                                            <h:inputSecret id="password" styleClass="validation" required="true"
-                                                           requiredMessage="#{msg['employee.edit.password.required']}"
-                                                           value="#{employeeEdit.password}"/>
-                                            <label for="password">#{msg['password']}</label>
-                                        </div>
-                                        <div class="input-field col s12 m6">
-                                            <h:inputSecret id="password-repeat" styleClass="validation" required="true"
-                                                           requiredMessage="#{msg['employee.edit.password_repeat.required']}"
-                                                           value="#{employeeEdit.passwordRepeat}"/>
-                                            <label for="password-repeat">#{msg['employee.edit.password_repeat']}</label>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="modal-footer">
-                                    <a href="#!"
-                                       class="red-text modal-action modal-close waves-effect waves-red btn-flat">#{msg['cancel']}</a>
-                                    <h:commandLink
-                                            styleClass="green-text modal-action modal-close waves-effect waves-green btn-flat"
-                                            value="#{msg['save']}"
-                                            action="#{employeeEdit.changePassword()}"/>
-                                </div>
+                                <a href="#!"
+                                   class="green-text modal-action modal-close waves-effect waves-green btn-flat">
+                                    #{msg['no']}
+                                </a>
+                                <h:commandLink
+                                        styleClass="red-text modal-action modal-close waves-effect waves-red btn-flat"
+                                        value="#{msg['yes']}"
+                                        action="#{employeeEdit.removeUser()}"/>
                             </h:form>
                         </div>
-                    </h:form>
+                    </div>
+                    <div id="password-change" class="modal">
+                        <h:form>
+                            <div class="modal-content">
+                                <h4>#{msg['employee.edit.edit_password_title']}</h4>
+                                <div class="row">
+                                    <input type="text" style="display: none;" value=""/>
+                                    <input type="password" style="display: none;" value=""/>
+                                    <div class="input-field col s12 m6">
+                                        <h:inputSecret id="password" styleClass="validate"
+                                                       value="#{employeeEdit.password}" a:pattern="^((?=.*\d)(?=.*[a-z])(?=.*[A-Z])[0-9a-zA-Z]{6,15})?$"/>
+                                        <h:outputLabel value="#{msg['password']}" a:data-error="#{msg['validation.invalid_password']}"
+                                                       for="password"/>
+                                    </div>
+                                    <div class="input-field col s12 m6">
+                                        <h:inputSecret id="password-repeat" styleClass="validate"
+                                                       value="#{employeeEdit.passwordRepeat}" a:required="true"/>
+                                        <h:outputLabel for="password-repeat" value="#{msg['employee.edit.password_repeat']}"
+                                                       a:data-error="#{msg['validation.field_empty']}"/>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="modal-footer">
+                                <a href="#!"
+                                   class="red-text modal-action modal-close waves-effect waves-red btn-flat">#{msg['cancel']}</a>
+                                <h:commandLink
+                                        styleClass="green-text modal-action waves-effect waves-green btn-flat"
+                                        value="#{msg['save']}"
+                                        action="#{employeeEdit.changePassword()}"/>
+                            </div>
+                        </h:form>
+                    </div>
                 </div>
             </div>
             <h:outputStylesheet library="css" name="employee-edit.css" target="head"/>

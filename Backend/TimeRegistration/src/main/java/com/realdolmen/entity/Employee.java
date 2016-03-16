@@ -5,15 +5,16 @@ import com.realdolmen.entity.validation.New;
 import org.hibernate.Hibernate;
 import org.hibernate.search.annotations.Field;
 import org.hibernate.search.annotations.Indexed;
-import org.hibernate.search.annotations.IndexedEmbedded;
 
 import javax.inject.Named;
 import javax.persistence.*;
+import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Pattern;
+import javax.validation.constraints.Size;
+import javax.xml.bind.annotation.XmlRootElement;
 import java.io.Serializable;
 import java.util.HashSet;
 import java.util.Set;
-import javax.validation.constraints.*;
-import javax.xml.bind.annotation.XmlRootElement;
 
 /**
  * Generic employee entity. Every user in the system will be an Employee or a subtype of this.
@@ -37,7 +38,10 @@ import javax.xml.bind.annotation.XmlRootElement;
         @NamedQuery(name = "Employee.findAll", query = "SELECT e FROM Employee e"),
         @NamedQuery(name = "Employee.findByUsername", query = "SELECT e FROM Employee e WHERE e.username = :username"),
         @NamedQuery(name = "Management.findByUsername", query = "SELECT e FROM Employee e WHERE e.username = :username " +
-                "AND TYPE(e) IN (ProjectManager, ManagementEmployee)")
+                "AND TYPE(e) IN (ProjectManager, ManagementEmployee)"),
+        @NamedQuery(name = "Employee.findByEmail", query = "SELECT e FROM Employee e WHERE e.email = :email"),
+        @NamedQuery(name = "Management.findByEmail", query = "SELECT e FROM Employee e WHERE e.email = :email " +
+                "AND TYPE(e) IN (ProjectManager , ManagementEmployee )")
 })
 @Named
 @Inheritance(strategy = InheritanceType.JOINED)
@@ -74,13 +78,13 @@ public class Employee implements Serializable {
     @Field
     private String lastName;
 
-    @Column(length = 15)
+    @Column(length = 15, unique = true)
     @NotNull(message = "username.empty")
-    @Size(min = 1, max = 15, message = "username.length")
+    @Size(min = 4, max = 15, message = "username.length")
     @Field
     private String username;
 
-    @Column(length = 100)
+    @Column(length = 100, unique = true)
     @NotNull(message = "email.empty")
     @Pattern(message = "email.pattern", regexp = "[a-z0-9]+[_a-z0-9\\.-]*[a-z0-9]+@[a-z0-9-]+(\\.[a-z0-9-]+)*(\\.[a-z]{2,4})")
     @Field

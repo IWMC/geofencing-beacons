@@ -3,7 +3,6 @@ package com.realdolmen.jsf.employees;
 import com.realdolmen.WarFactory;
 import com.realdolmen.entity.Employee;
 import com.realdolmen.entity.ManagementEmployee;
-import com.realdolmen.entity.PersistenceUnit;
 import com.realdolmen.jsf.Pages;
 import com.realdolmen.jsf.Session;
 import com.realdolmen.rest.EmployeeEndpoint;
@@ -18,34 +17,35 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.mockito.Spy;
+import org.primefaces.material.application.ToastService;
 
 import javax.faces.context.ExternalContext;
 import javax.faces.context.FacesContext;
 import javax.inject.Inject;
 import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
 import javax.transaction.UserTransaction;
+import javax.ws.rs.core.Response;
+import java.io.IOException;
 
-import java.util.concurrent.atomic.AtomicInteger;
-
+import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.anyLong;
 import static org.mockito.Mockito.*;
 
-
 @RunWith(Arquillian.class)
-public class EmployeeDetailsControllerTest {
-    
-    @PersistenceContext(unitName = PersistenceUnit.PRODUCTION)
+public class EmployeeEditControllerTest {
+
+    @Mock
     private EntityManager em;
 
     @Inject
-    private EmployeeDetailsController controller;
-    
-    @Inject
     private UserTransaction utx;
+
+    @Mock
+    private ToastService toastService;
 
     @Spy
     private FacesContext facesContext;
-    
+
     private Employee employee = new Employee();
 
     @Inject
@@ -55,27 +55,49 @@ public class EmployeeDetailsControllerTest {
     private EmployeeEndpoint endpoint = new EmployeeEndpoint();
 
     @InjectMocks
-    private EmployeeDetailsController notInjectedController = new EmployeeDetailsController();
+    private EmployeeEditController controller = new EmployeeEditController();
 
     @Deployment
     public static WebArchive createDeployment() {
         return WarFactory.createDeployment();
     }
 
-    private static AtomicInteger atomicInteger = new AtomicInteger();
-
     @Before
     public void setUp() throws Exception {
         MockitoAnnotations.initMocks(this);
-        employee.setUsername("Employee" + String.valueOf(atomicInteger.getAndIncrement()));
+        employee.setUsername("Employee");
         employee.setFirstName("First");
         employee.setLastName("Last");
-        employee.setEmail("email" + String.valueOf(atomicInteger.getAndIncrement()) + "detailscontrollertest@realdolmen.com");
+        employee.setEmail("email@realdolmen.com");
+        employee.setId(1l);
         utx.begin();
         em.persist(employee);
         utx.commit();
         controller.setFacesContext(facesContext);
         session.setEmployee(new ManagementEmployee());
+    }
+
+    @Test
+    public void testControllerUpdatesUser() throws IOException {
+        controller.setUserId(employee.getId().toString());
+        controller.setEmployee(employee);
+        when(endpoint.update(employee.getId(), employee)).thenReturn(Response.noContent().build());
+        ExternalContext externalContext = mock(ExternalContext.class);
+        when(facesContext.getExternalContext()).thenReturn(externalContext);
+        controller.saveUser();
+        verify(endpoint, times(1)).update(employee.getId(), employee);
+    }
+
+    @Test
+    public void testControllerRedirectsOnUserUpdate() throws IOException {
+        controller.setUserId(employee.getId().toString());
+        controller.setEmployee(employee);
+        when(endpoint.update(employee.getId(), employee)).thenReturn(Response.noContent().build());
+        ExternalContext externalContext = mock(ExternalContext.class);
+        when(facesContext.getExternalContext()).thenReturn(externalContext);
+        controller.saveUser();
+        verify(externalContext, atLeastOnce()).redirect(Pages.searchEmployee().redirect());
+        verify(endpoint, times(1)).update(employee.getId(), employee);
     }
 
     @Test
@@ -93,6 +115,7 @@ public class EmployeeDetailsControllerTest {
         ExternalContext externalContext = mock(ExternalContext.class);
         when(facesContext.getExternalContext()).thenReturn(externalContext);
         controller.setUserId(employee.getId().toString());
+        when(endpoint.findById(employee.getId())).thenReturn(Response.ok(employee).build());
         controller.onPreRender();
         Assert.assertEquals("controller should set the correct active employee", employee, controller.getEmployee());
         verify(externalContext, never()).redirect(any());
@@ -100,16 +123,17 @@ public class EmployeeDetailsControllerTest {
 
     @Test
     public void testControllerRemovesEmployeeAndRedirectsWhenEmployeeIsPresent() throws Exception {
-        notInjectedController.setUserId(employee.getId().toString());
-        String result = notInjectedController.removeUser();
+        controller.setUserId(employee.getId().toString());
+        controller.setEmployee(employee);
+        String result = controller.removeUser();
         verify(endpoint, times(1)).deleteById(employee.getId());
         Assert.assertEquals("controller should redirect to search employees page", Pages.searchEmployee().redirect(), result);
     }
 
     @Test
     public void testControllerRedirectsWhenEmployeeIsNotPresent() throws Exception {
-        notInjectedController.setUserId(null);
-        String result = notInjectedController.removeUser();
+        controller.setUserId(null);
+        String result = controller.removeUser();
         verify(endpoint, never()).deleteById(anyLong());
         Assert.assertEquals("controller should redirect to search employees page", Pages.searchEmployee().redirect(), result);
     }

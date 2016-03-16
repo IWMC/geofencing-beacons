@@ -6,6 +6,7 @@ import javax.faces.context.FacesContext;
 import javax.inject.Named;
 import java.io.Serializable;
 import java.util.Locale;
+import java.util.ResourceBundle;
 
 /**
  * Been used to use the selected locale in JSF and possible other systems like JAX-RS resources.
@@ -14,8 +15,8 @@ import java.util.Locale;
 @SessionScoped
 public class Language implements Serializable {
 
-
     private Locale defaultLocale;
+    private ResourceBundle languageBundle;
 
     public Locale getDefaultLocale() {
         return defaultLocale;
@@ -28,5 +29,15 @@ public class Language implements Serializable {
     @PostConstruct
     public void init() {
         defaultLocale = FacesContext.getCurrentInstance().getApplication().getDefaultLocale();
+    }
+
+    public ResourceBundle getLanguageBundle() {
+        return FacesContext.getCurrentInstance().getApplication().getResourceBundle(FacesContext.getCurrentInstance(), "msg");
+    }
+
+    public static final class Text {
+
+        public static final String EMPLOYEE_EDIT_PASSWORD_INVALID = "employee.edit.password.invalid";
+        public static final String EMPLOYEE_EDIT_PASSWORD_SAVED = "employee.edit.password_saved";
     }
 }

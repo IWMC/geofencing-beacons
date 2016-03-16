@@ -26,6 +26,10 @@
     color: #F22613;
 }
 
+.validator {
+    font-size: 12px;
+}
+
 #toolbar-logo-wrapper {
     height: 64px;
     margin-left: 10px;
@@ -61,6 +65,11 @@ footer {
 
 .small-collection {
     max-width: 450px;
+}
+
+input + label {
+    white-space: nowrap;
+    overflow: visible;
 }
 
 .waves-effect.waves-light .waves-ripple {
