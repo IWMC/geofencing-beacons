@@ -1,6 +1,7 @@
 package com.realdolmen.rest;
 
 import com.realdolmen.annotations.Authorized;
+import com.realdolmen.entity.Employee;
 import com.realdolmen.entity.Occupation;
 import com.realdolmen.entity.PersistenceUnit;
 import com.realdolmen.entity.RegisteredOccupation;
@@ -12,12 +13,14 @@ import javax.ejb.Stateless;
 import javax.inject.Inject;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
+import javax.persistence.TemporalType;
 import javax.persistence.TypedQuery;
 import javax.transaction.Transactional;
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.net.URI;
+import java.time.Instant;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
@@ -49,35 +52,24 @@ public class OccupationEndpoint {
     @Produces(MediaType.APPLICATION_JSON)
     public Response getRegisteredOccupations(@QueryParam("start") @DefaultValue("-1") long start, @QueryParam("end") @DefaultValue("-1") long end) {
         if (start <= MINIMUM_EPOCH) {
-            return Response.status(400).entity("Start date must be after " + MINIMUM_EPOCH + " but is " + start).build();
+            return Response.status(400).build();
         }
 
         if (end <= MINIMUM_EPOCH) {
             end = start;
         }
-        Calendar startDate = Calendar.getInstance();
-        startDate.setTime(new Date(start));
-        Calendar endDate = Calendar.getInstance();
-        endDate.setTime(new Date(end));
-
-        startDate.clear(Calendar.HOUR_OF_DAY);
-        startDate.clear(Calendar.MINUTE);
-        startDate.clear(Calendar.SECOND);
-        startDate.clear(Calendar.MILLISECOND);
-
-        endDate.clear(Calendar.HOUR_OF_DAY);
-        endDate.clear(Calendar.MINUTE);
-        endDate.clear(Calendar.SECOND);
-        endDate.clear(Calendar.MILLISECOND);
+        Date startDate = Date.from(Instant.ofEpochMilli(start));
+        Date endDate = Date.from(Instant.ofEpochMilli(end));
 
         if (sm.findEmployee() == null || sm.findEmployee().getId() == null || sm.findEmployee().getId() == 0) {
-            return Response.status(400).entity("Bad employee ID: " + sm.findEmployee() != null ? sm.findEmployee().getId() : "Unknown").build();
+            return Response.status(400).build();
         }
 
         //TODO: take into account timezone differences with the phone and the server
 
         TypedQuery<RegisteredOccupation> query = em.createNamedQuery("RegisteredOccupation.findOccupationsInRange", RegisteredOccupation.class);
-        query.setParameter("start", startDate.getTime()).setParameter("employeeId", sm.findEmployee().getId()).setParameter("end", endDate.getTime());
+        System.out.printf("Performing query: Start time: %d, end time: %d, employee id: %d%n", startDate.getTime(), endDate.getTime(), sm.findEmployee().getId());
+        query.setParameter("start", startDate, TemporalType.DATE).setParameter("employeeId", sm.findEmployee().getId()).setParameter("end", endDate, TemporalType.DATE);
         List<RegisteredOccupation> occupations = query.getResultList();
         return Response.ok(occupations).build();
     }
@@ -122,8 +114,13 @@ public class OccupationEndpoint {
         if (!validationResult.isValid())
             return Response.status(400).entity(validationResult.getInvalidationTokens()).build();
 
-        ro.getRegistrar().getRegisteredOccupations().add(ro);
+        Employee foundEmployee = em.find(Employee.class, ro.getRegistrar().getId());
+        ro.setRegistrar(foundEmployee);
+
+        foundEmployee.getRegisteredOccupations().add(ro);
+
         em.persist(ro);
+
         return Response.created(URI.create("/" + ro.getId())).build();
     }
 }

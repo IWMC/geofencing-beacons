@@ -39,7 +39,7 @@ public class BackendServiceTest {
     private RequestQueue requestQueue;
 
     @Mock
-    private BackendService.RequestCallback requestCallback;
+    private RequestCallback requestCallback;
 
     @InjectMocks
     private BackendService backend;

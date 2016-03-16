@@ -16,6 +16,7 @@ import android.widget.Toast;
 import com.android.volley.VolleyError;
 import com.github.clans.fab.FloatingActionButton;
 import com.realdolmen.timeregistration.R;
+import com.realdolmen.timeregistration.model.Occupation;
 import com.realdolmen.timeregistration.model.RegisteredOccupation;
 import com.realdolmen.timeregistration.service.BackendService;
 import com.realdolmen.timeregistration.service.RequestCallback;
@@ -187,7 +188,19 @@ public class DayRegistrationActivity extends AppCompatActivity {
 	public void openAddOccupation() {
 		Intent i = new Intent(this, AddOccupationActivity.class);
 		i.putExtra(AddOccupationActivity.BASE_DATE, dates.get(viewPager.getCurrentItem()));
-		startActivity(i);
+		startActivityForResult(i, AddOccupationActivity.RESULT_CODE);
+	}
+
+	@Override
+	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+		if(requestCode == AddOccupationActivity.RESULT_CODE) {
+			if(resultCode == RESULT_OK) {
+				Occupation occ = (Occupation) data.getSerializableExtra(AddOccupationActivity.SELECTED_OCCUPATION);
+				Date start = (Date) data.getSerializableExtra(AddOccupationActivity.START_DATE);
+				Date end = (Date) data.getSerializableExtra(AddOccupationActivity.END_DATE);
+				handleNewlyRegisteredOccupation(occ, start, end);
+			}
+		}
 	}
 
 	public void setCurrentDate(Date currentDate) {
@@ -223,6 +236,28 @@ public class DayRegistrationActivity extends AppCompatActivity {
 			TabLayout.Tab tab = tabLayout.getTabAt(i);
 			tab.setIcon(getStateIcon(dates.get(i)));
 		}
+	}
+
+	private void handleNewlyRegisteredOccupation(Occupation occ, Date start, Date end) {
+		RegisteredOccupation ro = new RegisteredOccupation();
+		ro.setRegisteredStart(start);
+		ro.setRegisteredEnd(end);
+		ro.setOccupation(occ);
+
+		BackendService.with(this).registerOccupation(ro, new RequestCallback<String>() {
+
+			@Override
+			public void onSuccess(String data) {
+				Toast.makeText(DayRegistrationActivity.this, data, Toast.LENGTH_SHORT).show();
+			}
+
+			@Override
+			public void onError(VolleyError error) {
+				if(error.networkResponse != null) {
+					Toast.makeText(DayRegistrationActivity.this, error.networkResponse.statusCode, Toast.LENGTH_SHORT).show();
+				}
+			}
+		});
 	}
 
 	//region Save Instance State

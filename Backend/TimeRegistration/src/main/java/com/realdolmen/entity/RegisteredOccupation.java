@@ -13,7 +13,9 @@ import java.util.Date;
 @Entity
 @XmlRootElement
 @NamedQueries(
-        @NamedQuery(name = "RegisteredOccupation.findOccupationsInRange", query = "SELECT r FROM RegisteredOccupation r WHERE r.registeredStart >= :start AND r.registeredEnd <= :end AND r.registrar.id = :employeeId")
+        @NamedQuery(name = "RegisteredOccupation.findOccupationsInRange",
+                query = "SELECT r FROM RegisteredOccupation r WHERE r.registeredStart >= " +
+                        ":start AND r.registeredEnd <= :end AND r.registrar.id = :employeeId")
 )
 public class RegisteredOccupation {
 
@@ -33,6 +35,7 @@ public class RegisteredOccupation {
     private boolean confirmed = false;
 
     @Id
+    @GeneratedValue(strategy = GenerationType.AUTO)
     private long id;
 
     public long getId() {

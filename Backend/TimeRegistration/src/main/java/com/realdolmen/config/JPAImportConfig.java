@@ -62,7 +62,7 @@ public class JPAImportConfig {
 
         for (int i = 0; i < 20; i++) {
             Occupation oo = new Occupation();
-            oo.setName("Occupation " + ThreadLocalRandom.current().nextInt(100));
+            oo.setName("Occupation " + i);
             if(i % 4 == 0) {
                 oo.setDescription("Description for #" + i);
             }

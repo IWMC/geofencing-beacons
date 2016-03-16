@@ -10,12 +10,14 @@ import com.android.volley.RequestQueue;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonObjectRequest;
+import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.realdolmen.timeregistration.model.Occupation;
 import com.realdolmen.timeregistration.model.RegisteredOccupation;
 import com.realdolmen.timeregistration.model.Session;
+import com.realdolmen.timeregistration.util.json.DateSerializer;
 import com.realdolmen.timeregistration.util.json.GsonObjectRequest;
 
 import org.json.JSONException;
@@ -43,7 +45,7 @@ public class BackendService {
 
 	private Context context;
 
-	private static final Gson compactGson = new GsonBuilder().create();
+	private static final Gson compactGson = new GsonBuilder().registerTypeAdapter(Date.class, new DateSerializer()).create();
 
 	private static final Map<Context, BackendService> contextMap = new HashMap<>();
 
@@ -218,6 +220,27 @@ public class BackendService {
 				requestCallback.onError(error);
 			}
 		});
+
+		requestQueue.add(req);
+	}
+
+	public void registerOccupation(RegisteredOccupation ro, final RequestCallback<String> requestCallback) {
+		Request req = new JsonObjectRequest(Request.Method.POST, API_ADD_OCCUPATION_REGISTRATION, compactGson.toJson(ro), new Response.Listener<JSONObject>() {
+			@Override
+			public void onResponse(JSONObject response) {
+				requestCallback.onSuccess(response.toString());
+			}
+		}, new Response.ErrorListener() {
+			@Override
+			public void onErrorResponse(VolleyError error) {
+				requestCallback.onError(error);
+			}
+		}) {
+			@Override
+			public Map<String, String> getHeaders() throws AuthFailureError {
+				return auth(super.getHeaders());
+			}
+		};
 
 		requestQueue.add(req);
 	}

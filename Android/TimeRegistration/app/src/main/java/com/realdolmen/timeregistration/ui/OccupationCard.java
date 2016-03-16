@@ -1,6 +1,8 @@
 package com.realdolmen.timeregistration.ui;
 
 import android.content.Context;
+import android.content.res.ColorStateList;
+import android.graphics.Color;
 import android.support.v7.widget.CardView;
 import android.util.AttributeSet;
 import android.util.TypedValue;
@@ -27,7 +29,7 @@ public class OccupationCard extends FrameLayout {
 	@Bind(R.id.occupation_card_edit)
 	RippleView editButton;
 
-	private CardView card;
+	private FrameLayout card;
 
 	private Occupation data;
 
@@ -47,12 +49,12 @@ public class OccupationCard extends FrameLayout {
 	}
 
 	private void init(ViewGroup parent) {
-		CardView view = (CardView) LayoutInflater.from(getContext()).inflate(R.layout.occupation_card, parent, false);
+		FrameLayout view = (FrameLayout) LayoutInflater.from(getContext()).inflate(R.layout.occupation_card, parent, false);
 		ButterKnife.bind(this, view);
 		editButton.setVisibility(GONE);
 		LayoutParams params = new LayoutParams(view.getLayoutParams());
-		int leftRight = (int) view.getContext().getResources().getDimension(R.dimen.activity_horizontal_margin);
-		int top = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 1, view.getContext().getResources().getDisplayMetrics());
+		int leftRight = 0;//(int) view.getContext().getResources().getDimension(R.dimen.activity_horizontal_margin);
+		int top = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 0, view.getContext().getResources().getDisplayMetrics());
 		params.setMargins(leftRight, top, leftRight, 0);
 		view.setLayoutParams(params);
 
@@ -75,11 +77,7 @@ public class OccupationCard extends FrameLayout {
 	}
 
 	public void setSelected(boolean flag) {
-		if(flag) {
-			card.setBackgroundColor(getResources().getColor(R.color.colorSelectedCard));
-		} else {
-			card.setBackgroundColor(getResources().getColor(android.support.v7.cardview.R.color.cardview_light_background));
-		}
+		 card.setSelected(flag);
 	}
 
 	public void onUpdateSelectionState(Occupation selectedItem) {

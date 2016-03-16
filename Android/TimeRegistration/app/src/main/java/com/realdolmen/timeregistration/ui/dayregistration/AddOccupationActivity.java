@@ -1,6 +1,7 @@
 package com.realdolmen.timeregistration.ui.dayregistration;
 
 import android.app.TimePickerDialog;
+import android.content.Intent;
 import android.databinding.ObservableArrayList;
 import android.os.Bundle;
 import android.support.design.widget.Snackbar;
@@ -57,6 +58,7 @@ public class AddOccupationActivity extends AppCompatActivity {
 	private OccupationRecyclerAdapter adapter;
 
 	public static final String START_DATE = "SD", END_DATE = "ED", BASE_DATE = "BD", SELECTED_OCCUPATION = "SO";
+	public static final int RESULT_CODE = 1;
 
 	private Date startDate, endDate, baseDate;
 
@@ -180,6 +182,11 @@ public class AddOccupationActivity extends AppCompatActivity {
 	public boolean onOptionsItemSelected(MenuItem item) {
 		if (item.getItemId() == R.id.add_occupation_done) {
 			if (validate()) {
+				Intent i = new Intent();
+				i.putExtra(SELECTED_OCCUPATION, adapter.getSelectedItem());
+				i.putExtra(START_DATE, startDate);
+				i.putExtra(END_DATE, endDate);
+				setResult(RESULT_OK, i);
 				finish();
 			}
 		}
@@ -189,6 +196,10 @@ public class AddOccupationActivity extends AppCompatActivity {
 	private boolean validate() {
 		if (endDate.before(startDate)) {
 			return alert("End Time cannot be before Start Date", false);
+		}
+
+		if (adapter.getSelectedItem() == null) {
+			return alert("You must select an occupation!", false);
 		}
 
 		return true;
