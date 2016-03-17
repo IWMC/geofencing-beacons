@@ -8,8 +8,8 @@ import com.realdolmen.jsf.Pages;
 import com.realdolmen.messages.Language;
 import com.realdolmen.rest.EmployeeEndpoint;
 import com.realdolmen.rest.UserEndpoint;
-import org.jetbrains.annotations.TestOnly;
 import org.omnifaces.cdi.ViewScoped;
+import org.primefaces.material.application.ToastService;
 
 import javax.faces.context.FacesContext;
 import javax.inject.Inject;
@@ -26,7 +26,7 @@ import java.io.Serializable;
 @Named("employeeAdd")
 public class EmployeeAddController implements Serializable {
 
-    private String employeeType = "1";
+    private String employeeType = EmployeeController.EMPLOYEE_TYPE;
 
     @Inject
     private transient UserEndpoint userEndpoint;
@@ -43,6 +43,7 @@ public class EmployeeAddController implements Serializable {
     private Employee employee = new Employee();
 
     private transient FacesContext facesContext = FacesContext.getCurrentInstance();
+    private transient ToastService toastService = ToastService.getInstance();
 
     private String password;
     private String passwordRepeat;
@@ -55,6 +56,10 @@ public class EmployeeAddController implements Serializable {
         this.employee = employee;
     }
 
+    public ToastService getToastService() {
+        return toastService;
+    }
+
     public FacesContext getFacesContext() {
         if (facesContext.isReleased()) {
             facesContext = FacesContext.getCurrentInstance();
@@ -63,22 +68,21 @@ public class EmployeeAddController implements Serializable {
         return facesContext;
     }
 
-    @TestOnly
-    public void setFacesContext(FacesContext context) {
-        this.facesContext = context;
-    }
-
     public void saveUser() throws Exception {
-        Response response = userEndpoint.register(employee);
-        if (employeeType.equals("2") && !(employee instanceof ProjectManager)) {
-            employeeEndpoint.upgradeProjectManager(employee.getId());
-        } else if (employeeType.equals("3") && !(employee instanceof ManagementEmployee)) {
-            employeeEndpoint.upgradeManagementEmployee(employee.getId());
-        } else if (employeeType.equals("1") && (employee instanceof ProjectManager || employee instanceof ManagementEmployee)) {
-            employeeEndpoint.downgradeEmployee(employee.getId());
+        if (password != null && !password.isEmpty() && !password.equals(passwordRepeat)) {
+            getToastService().newToast(language.getLanguageBundle().getString(Language.Text.EMPLOYEE_EDIT_PASSWORD_INVALID), 5000);
+            return;
         }
 
-        if (response.getStatus() == Response.Status.NO_CONTENT.getStatusCode()) {
+        employee.setPassword(password);
+        Response response = userEndpoint.register(employee);
+        if (employeeType.equals(EmployeeController.PROJECT_MANAGER_TYPE) && !(employee instanceof ProjectManager)) {
+            employeeEndpoint.upgradeProjectManager(employee.getId());
+        } else if (employeeType.equals(EmployeeController.MANAGEMENT_EMPLOYEE_TYPE) && !(employee instanceof ManagementEmployee)) {
+            employeeEndpoint.upgradeManagementEmployee(employee.getId());
+        }
+
+        if (response.getStatus() == Response.Status.CREATED.getStatusCode()) {
             getFacesContext().getExternalContext().redirect(Pages.searchEmployee().redirect());
         }
     }

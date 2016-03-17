@@ -22,6 +22,7 @@ import org.mockito.MockitoAnnotations;
 import javax.inject.Inject;
 import javax.persistence.EntityManager;
 import javax.persistence.NonUniqueResultException;
+import javax.persistence.Query;
 import javax.persistence.TypedQuery;
 import javax.ws.rs.core.Response;
 import java.util.ArrayList;
@@ -65,7 +66,6 @@ public class EmployeeEndpointTest {
     public void setUp() throws Exception {
         MockitoAnnotations.initMocks(this);
         session.setEmployee(new ManagementEmployee());
-        Employee employee = new Employee();
         employee1.setFirstName("first name");
         employee1.setLastName("last name");
         employee1.setUsername("username");
@@ -78,6 +78,9 @@ public class EmployeeEndpointTest {
         employee2.setLastName("another last name");
         employee2.setEmail("anotheremail@email.com");
         employee2.setId(employee1.getId());
+        when(manager.unwrap(org.hibernate.Session.class)).thenReturn(mock(org.hibernate.Session.class));
+        when(manager.createNativeQuery(anyString())).thenReturn(mock(Query.class));
+        when(employeeValidator.validate(any(), anyVararg())).thenReturn(new ValidationResult(true, new ArrayList<>()));
     }
 
     private AtomicLong counter = new AtomicLong(1);
@@ -342,8 +345,15 @@ public class EmployeeEndpointTest {
     public void testUpgradeToProjectManagerUpgradesProjectManager() throws Exception {
         when(manager.find(Employee.class, employee1.getId())).thenReturn(employee1);
         endpoint.upgradeProjectManager(employee1.getId());
-        verify(manager, atLeastOnce()).remove(employee1);
-        verify(manager, atLeastOnce()).merge(new ProjectManager(employee1));
+        String deleteFromManagementEmployee = "DELETE FROM managementemployee WHERE id=" + employee1.getId() + ";";
+        String deleteFromProjectManager = "DELETE FROM projectmanager WHERE id=" + employee1.getId() + ";";
+        String deleteFromProjectManagerProjectRelationship = "DELETE FROM projectmanager_project WHERE ProjectManager_id=" + employee1.getId() + ";";
+        String addToProjectManager = "INSERT INTO projectmanager VALUES (" + employee1.getId() + ");";
+
+        verify(manager, atLeastOnce()).createNativeQuery(deleteFromManagementEmployee);
+        verify(manager, atLeastOnce()).createNativeQuery(deleteFromProjectManagerProjectRelationship);
+        verify(manager, atLeastOnce()).createNativeQuery(deleteFromProjectManager);
+        verify(manager, atLeastOnce()).createNativeQuery(addToProjectManager);
     }
 
     @Test
@@ -362,9 +372,16 @@ public class EmployeeEndpointTest {
     @Test
     public void testUpgradeToManagementEmployeeUpgradesManagementEmployee() throws Exception {
         when(manager.find(Employee.class, employee1.getId())).thenReturn(employee1);
-        endpoint.upgradeProjectManager(employee1.getId());
-        verify(manager, atLeastOnce()).remove(employee1);
-        verify(manager, atLeastOnce()).merge(new ManagementEmployee(employee1));
+        endpoint.upgradeManagementEmployee(employee1.getId());
+        String deleteFromManagementEmployee = "DELETE FROM managementemployee WHERE id=" + employee1.getId() + ";";
+        String deleteFromProjectManager = "DELETE FROM projectmanager WHERE id=" + employee1.getId() + ";";
+        String deleteFromProjectManagerProjectRelationship = "DELETE FROM projectmanager_project WHERE ProjectManager_id=" + employee1.getId() + ";";
+        String addToManagementEmployee = "INSERT INTO managementemployee VALUES (" + employee1.getId() + ");";
+
+        verify(manager, atLeastOnce()).createNativeQuery(deleteFromManagementEmployee);
+        verify(manager, atLeastOnce()).createNativeQuery(deleteFromProjectManagerProjectRelationship);
+        verify(manager, atLeastOnce()).createNativeQuery(deleteFromProjectManager);
+        verify(manager, atLeastOnce()).createNativeQuery(addToManagementEmployee);
     }
 
     @Test
@@ -385,7 +402,12 @@ public class EmployeeEndpointTest {
         ProjectManager projectManager = new ProjectManager(employee1);
         when(manager.find(Employee.class, projectManager.getId())).thenReturn(projectManager);
         endpoint.downgradeEmployee(projectManager.getId());
-        verify(manager, atLeastOnce()).remove(projectManager);
-        verify(manager, atLeastOnce()).merge(employee1);
+        String deleteFromManagementEmployee = "DELETE FROM managementemployee WHERE id=" + employee1.getId() + ";";
+        String deleteFromProjectManager = "DELETE FROM projectmanager WHERE id=" + employee1.getId() + ";";
+        String deleteFromProjectManagerProjectRelationship = "DELETE FROM projectmanager_project WHERE ProjectManager_id=" + employee1.getId() + ";";
+
+        verify(manager, atLeastOnce()).createNativeQuery(deleteFromManagementEmployee);
+        verify(manager, atLeastOnce()).createNativeQuery(deleteFromProjectManagerProjectRelationship);
+        verify(manager, atLeastOnce()).createNativeQuery(deleteFromProjectManager);
     }
 }

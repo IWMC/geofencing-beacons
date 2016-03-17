@@ -8,6 +8,7 @@ import com.realdolmen.entity.validation.New;
 import com.realdolmen.service.SecurityManager;
 import com.realdolmen.validation.ValidationResult;
 import com.realdolmen.validation.Validator;
+import org.hibernate.PersistentObjectException;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.annotations.TestOnly;
 
@@ -63,7 +64,12 @@ public class UserEndpoint {
         entity.setSalt(salt);
         entity.setHash(securityManager.generateHash(salt, entity.getPassword()));
 
-        em.persist(entity);
+        try {
+            em.persist(entity);
+        } catch (PersistentObjectException poex) {
+            em.merge(entity);
+        }
+
         return Response.created(
                 UriBuilder.fromResource(EmployeeEndpoint.class)
                         .path(String.valueOf(entity.getId())).build()).build();

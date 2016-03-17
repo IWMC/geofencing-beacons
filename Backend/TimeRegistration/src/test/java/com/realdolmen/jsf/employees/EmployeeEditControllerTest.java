@@ -16,7 +16,6 @@ import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
-import org.mockito.Spy;
 import org.primefaces.material.application.ToastService;
 
 import javax.faces.context.ExternalContext;
@@ -42,7 +41,7 @@ public class EmployeeEditControllerTest {
     @Mock
     private ToastService toastService;
 
-    @Spy
+    @Mock
     private FacesContext facesContext;
 
     private Employee employee = new Employee();
@@ -74,6 +73,7 @@ public class EmployeeEditControllerTest {
         utx.commit();
         controller.setFacesContext(facesContext);
         session.setEmployee(new ManagementEmployee());
+        when(facesContext.isReleased()).thenReturn(false);
     }
 
     @Test

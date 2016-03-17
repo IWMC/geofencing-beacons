@@ -32,7 +32,7 @@ public class EmployeeEditController implements Serializable {
 
     private String userId;
 
-    private String employeeType;
+    private String employeeType = EmployeeController.EMPLOYEE_TYPE;
 
     @Inject
     private transient EmployeeEndpoint employeeEndpoint;
@@ -124,11 +124,11 @@ public class EmployeeEditController implements Serializable {
 
     public void saveUser() throws Exception {
         Response response = employeeEndpoint.update(employee.getId(), employee);
-        if (employeeType.equals("2") && !(employee instanceof ProjectManager)) {
+        if (employeeType.equals(EmployeeController.PROJECT_MANAGER_TYPE) && !(employee instanceof ProjectManager)) {
             employeeEndpoint.upgradeProjectManager(employee.getId());
-        } else if (employeeType.equals("3") && !(employee instanceof ManagementEmployee)) {
+        } else if (employeeType.equals(EmployeeController.MANAGEMENT_EMPLOYEE_TYPE) && !(employee instanceof ManagementEmployee)) {
             employeeEndpoint.upgradeManagementEmployee(employee.getId());
-        } else if (employeeType.equals("1") && (employee instanceof ProjectManager || employee instanceof ManagementEmployee)) {
+        } else if (employeeType.equals(EmployeeController.EMPLOYEE_TYPE) && (employee instanceof ProjectManager || employee instanceof ManagementEmployee)) {
             employeeEndpoint.downgradeEmployee(employee.getId());
         }
 

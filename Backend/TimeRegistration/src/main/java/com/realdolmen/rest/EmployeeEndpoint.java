@@ -48,6 +48,7 @@ public class EmployeeEndpoint {
     @DELETE
     @Path("/{id:[0-9]+}")
     @Authorized(MANAGEMENT_EMPLOYEE_ONLY)
+    @Transactional
     public Response deleteById(@PathParam("id") Long id) {
         Employee entity = em.find(Employee.class, id);
         if (entity == null) {
