@@ -7,10 +7,12 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.design.widget.Snackbar;
 import android.support.design.widget.TabLayout;
+import android.support.v4.app.Fragment;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.widget.Toast;
 
 import com.android.volley.VolleyError;
@@ -23,8 +25,10 @@ import com.realdolmen.timeregistration.service.RequestCallback;
 import com.realdolmen.timeregistration.util.DateUtil;
 import com.realdolmen.timeregistration.util.adapters.dayregistration.DayRegistrationFragmentPagerAdapter;
 
+import org.joda.time.DateTime;
+import org.joda.time.DateTimeZone;
+
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -52,13 +56,13 @@ public class DayRegistrationActivity extends AppCompatActivity {
 
 	private DayRegistrationFragmentPagerAdapter pagerAdapter;
 
-	private Map<Date, List<RegisteredOccupation>> registeredOccupations = new HashMap<>();
+	private Map<DateTime, List<RegisteredOccupation>> registeredOccupations = new HashMap<>();
 
-	private List<Date> dates = new ArrayList<>();
+	private List<DateTime> dates = new ArrayList<>();
 
 	public static final String SELECTED_DAY = "SELECTED_DAY";
 
-	private Date currentDate;
+	private DateTime currentDate;
 
 	//region Initialization methods
 
@@ -89,11 +93,11 @@ public class DayRegistrationActivity extends AppCompatActivity {
 		tabLayout.setupWithViewPager(viewPager);
 	}
 
-	public List<Date> getDates() {
+	public List<DateTime> getDates() {
 		return dates;
 	}
 
-	public Date getCurrentDate() {
+	public DateTime getCurrentDate() {
 		return currentDate;
 	}
 
@@ -134,12 +138,8 @@ public class DayRegistrationActivity extends AppCompatActivity {
 	//endregion
 
 	//region Data methods
-	public void getDataForDate(final Date date, final RequestCallback<List<RegisteredOccupation>> callback) {
-		if (registeredOccupations.containsKey(date)) {
-			callback.onSuccess(registeredOccupations.get(date));
-			return;
-		}
-		BackendService.with(this).getOccupationsInDateRange(date, date, new RequestCallback<List<RegisteredOccupation>>() {
+	public void getDataForDate(final DateTime date, final RequestCallback<List<RegisteredOccupation>> callback) {
+		BackendService.with(this).getOccupationsInDateRange(date, new RequestCallback<List<RegisteredOccupation>>() {
 			@Override
 			public void onSuccess(List<RegisteredOccupation> data) {
 				registeredOccupations.put(date, data);
@@ -153,9 +153,19 @@ public class DayRegistrationActivity extends AppCompatActivity {
 		});
 	}
 
-	public boolean isDateConfirmed(Date date) {
+	public void refreshCurrent() {
+		Fragment page = getSupportFragmentManager().findFragmentByTag("android:switcher:" + R.id.day_registration_viewpager + ":" + viewPager.getCurrentItem());
+		if (page != null) {
+			if (page instanceof DayRegistrationFragment) {
+				DayRegistrationFragment fragment = (DayRegistrationFragment) page;
+				fragment.refreshData();
+			}
+		}
+	}
+
+	public boolean isDateConfirmed(DateTime date) {
 		List<RegisteredOccupation> data = registeredOccupations.get(date);
-		if(data == null || data.isEmpty()) {
+		if (data == null || data.isEmpty()) {
 			return false;
 		}
 		boolean isConfirmed = true;
@@ -167,7 +177,7 @@ public class DayRegistrationActivity extends AppCompatActivity {
 		return isConfirmed;
 	}
 
-	public int getStateIcon(Date date) {
+	public int getStateIcon(DateTime date) {
 		if (isDateConfirmed(date)) {
 			return R.drawable.ic_assignment_turned_in_24dp;
 		}
@@ -193,21 +203,21 @@ public class DayRegistrationActivity extends AppCompatActivity {
 
 	@Override
 	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-		if(requestCode == AddOccupationActivity.RESULT_CODE) {
-			if(resultCode == RESULT_OK) {
+		if (requestCode == AddOccupationActivity.RESULT_CODE) {
+			if (resultCode == RESULT_OK) {
 				Occupation occ = (Occupation) data.getSerializableExtra(AddOccupationActivity.SELECTED_OCCUPATION);
-				Date start = (Date) data.getSerializableExtra(AddOccupationActivity.START_DATE);
-				Date end = (Date) data.getSerializableExtra(AddOccupationActivity.END_DATE);
+				DateTime start = (DateTime) data.getSerializableExtra(AddOccupationActivity.START_DATE);
+				DateTime end = (DateTime) data.getSerializableExtra(AddOccupationActivity.END_DATE);
 				handleNewlyRegisteredOccupation(occ, start, end);
 			}
 		}
 	}
 
-	public void setCurrentDate(Date currentDate) {
+	public void setCurrentDate(DateTime currentDate) {
 		this.currentDate = currentDate;
 	}
 
-	public void confirm(@NonNull Date date, @Nullable final RequestCallback callback) {
+	public void confirm(@NonNull DateTime date, @Nullable final RequestCallback callback) {
 		confirmFab.setIndeterminate(true);
 		confirmFab.setEnabled(false);
 		BackendService.with(this).confirmOccupations(date, new RequestCallback() {
@@ -238,26 +248,35 @@ public class DayRegistrationActivity extends AppCompatActivity {
 		}
 	}
 
-	private void handleNewlyRegisteredOccupation(Occupation occ, Date start, Date end) {
+	private void handleNewlyRegisteredOccupation(Occupation occ, DateTime start, DateTime end) {
 		RegisteredOccupation ro = new RegisteredOccupation();
-		ro.setRegisteredStart(start);
-		ro.setRegisteredEnd(end);
+		ro.setRegisteredStart(start.toDateTime(DateTimeZone.UTC));
+		ro.setRegisteredEnd(end.toDateTime(DateTimeZone.UTC));
 		ro.setOccupation(occ);
 
 		BackendService.with(this).registerOccupation(ro, new RequestCallback<String>() {
 
 			@Override
 			public void onSuccess(String data) {
-				Toast.makeText(DayRegistrationActivity.this, data, Toast.LENGTH_SHORT).show();
+				refreshCurrent();
 			}
 
 			@Override
 			public void onError(VolleyError error) {
-				if(error.networkResponse != null) {
+				if (error.networkResponse != null) {
 					Toast.makeText(DayRegistrationActivity.this, error.networkResponse.statusCode, Toast.LENGTH_SHORT).show();
 				}
 			}
 		});
+	}
+
+	@Override
+	public boolean onOptionsItemSelected(MenuItem item) {
+		if (item.getItemId() == R.id.menu_refresh) {
+			refreshCurrent();
+			return true;
+		}
+		return false;
 	}
 
 	//region Save Instance State

@@ -8,6 +8,10 @@ import com.realdolmen.entity.RegisteredOccupation;
 import com.realdolmen.service.SecurityManager;
 import com.realdolmen.validation.ValidationResult;
 import com.realdolmen.validation.Validator;
+import org.joda.time.DateTime;
+import org.joda.time.DateTimeFieldType;
+import org.joda.time.DateTimeZone;
+import org.joda.time.LocalDateTime;
 
 import javax.ejb.Stateless;
 import javax.inject.Inject;
@@ -25,6 +29,8 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 
+import static org.joda.time.DateTimeFieldType.*;
+
 @Stateless
 @Path("/occupations")
 public class OccupationEndpoint {
@@ -38,28 +44,19 @@ public class OccupationEndpoint {
     @Inject
     private Validator<RegisteredOccupation> regOccValidator;
 
-    public static final long MINIMUM_EPOCH;
-
-    static {
-        Calendar c = Calendar.getInstance();
-        c.set(Calendar.YEAR, 2015);
-        MINIMUM_EPOCH = c.getTime().getTime();
-    }
+    public static final long MINIMUM_EPOCH = DateTime.now().minusYears(1).getMillis();
 
     @GET
     @Path("registration")
     @Authorized
     @Produces(MediaType.APPLICATION_JSON)
-    public Response getRegisteredOccupations(@QueryParam("start") @DefaultValue("-1") long start, @QueryParam("end") @DefaultValue("-1") long end) {
-        if (start <= MINIMUM_EPOCH) {
+    public Response getRegisteredOccupations(@QueryParam("date") @DefaultValue("-1") long date) {
+        if (date <= MINIMUM_EPOCH) {
             return Response.status(400).build();
         }
 
-        if (end <= MINIMUM_EPOCH) {
-            end = start;
-        }
-        Date startDate = Date.from(Instant.ofEpochMilli(start));
-        Date endDate = Date.from(Instant.ofEpochMilli(end));
+
+        LocalDateTime startDate = new DateTime(date, DateTimeZone.UTC).withHourOfDay(0).withMinuteOfHour(0).toLocalDateTime();
 
         if (sm.findEmployee() == null || sm.findEmployee().getId() == null || sm.findEmployee().getId() == 0) {
             return Response.status(400).build();
@@ -68,9 +65,16 @@ public class OccupationEndpoint {
         //TODO: take into account timezone differences with the phone and the server
 
         TypedQuery<RegisteredOccupation> query = em.createNamedQuery("RegisteredOccupation.findOccupationsInRange", RegisteredOccupation.class);
-        System.out.printf("Performing query: Start time: %d, end time: %d, employee id: %d%n", startDate.getTime(), endDate.getTime(), sm.findEmployee().getId());
-        query.setParameter("start", startDate, TemporalType.DATE).setParameter("employeeId", sm.findEmployee().getId()).setParameter("end", endDate, TemporalType.DATE);
+        System.out.printf("Performing query: Start time: %d -> %s, employee id: %d%n", startDate.toDateTime().getMillis(), startDate.toDateTime().toString(), sm.findEmployee().getId());
+        query
+                .setParameter("employeeId", sm.findEmployee().getId())
+                .setParameter("year", startDate.get(year()))
+                .setParameter("month", startDate.get(monthOfYear()))
+                .setParameter("day", startDate.get(dayOfMonth()));
+
         List<RegisteredOccupation> occupations = query.getResultList();
+
+        occupations.forEach(RegisteredOccupation::initialize);
         return Response.ok(occupations).build();
     }
 
@@ -79,7 +83,7 @@ public class OccupationEndpoint {
     @Transactional
     @Authorized
     public Response confirmOccupationRegistration(@PathParam("date") long date) {
-        List<RegisteredOccupation> occupations = (List<RegisteredOccupation>) getRegisteredOccupations(date, date).getEntity();
+        List<RegisteredOccupation> occupations = (List<RegisteredOccupation>) getRegisteredOccupations(date).getEntity();
         occupations.forEach(o -> {
             em.detach(o);
             o.confirm();
@@ -118,7 +122,6 @@ public class OccupationEndpoint {
         ro.setRegistrar(foundEmployee);
 
         foundEmployee.getRegisteredOccupations().add(ro);
-
         em.persist(ro);
 
         return Response.created(URI.create("/" + ro.getId())).build();

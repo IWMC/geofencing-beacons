@@ -5,6 +5,8 @@ import com.realdolmen.entity.Occupation;
 import com.realdolmen.entity.PersistenceUnit;
 import com.realdolmen.entity.RegisteredOccupation;
 import com.realdolmen.service.SecurityManager;
+import org.joda.time.DateTime;
+import org.joda.time.DateTimeZone;
 
 import javax.inject.Inject;
 import javax.json.Json;
@@ -50,13 +52,13 @@ public class RegisteredOccupationBodyReader implements MessageBodyReader<Registe
             ro.setRegistrar(existingEmployee);
             if (root.containsKey("registeredStart")) {
                 long start = Long.parseLong(root.get("registeredStart").toString());
-                Date startDate = new Date(start);
+                Date startDate = new DateTime(start, DateTimeZone.UTC).toDate();
                 ro.setRegisteredStart(startDate);
             }
 
             if (root.containsKey("registeredEnd")) {
                 long end = Long.parseLong(root.get("registeredEnd").toString());
-                Date endDate = new Date(end);
+                Date endDate = new DateTime(end, DateTimeZone.UTC).toDate();
                 ro.setRegisteredEnd(endDate);
             }
 

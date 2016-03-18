@@ -5,6 +5,7 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
 import com.android.volley.AuthFailureError;
+import com.android.volley.NetworkResponse;
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
 import com.android.volley.Response;
@@ -20,11 +21,12 @@ import com.realdolmen.timeregistration.model.Session;
 import com.realdolmen.timeregistration.util.json.DateSerializer;
 import com.realdolmen.timeregistration.util.json.GsonObjectRequest;
 
+import org.joda.time.DateTime;
+import org.joda.time.DateTimeZone;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.Arrays;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -38,14 +40,14 @@ public class BackendService {
 
 	private static final String
 			API_LOGIN_URI = HOST + "/api/user/login",
-			API_GET_REGISTERED_OCCUPATIONS = HOST + "/api/occupations/registration/?start=%d&end=%d",
+			API_GET_REGISTERED_OCCUPATIONS = HOST + "/api/occupations/registration/?date=%d",
 			API_CONFIRM_OCCUPATIONS = HOST + "/api/occupations/registration/%d/confirm",
 			API_ADD_OCCUPATION_REGISTRATION = HOST + "/api/occupations/registration",
 			API_GET_OCCUPATIONS = HOST + "/api/occupations";
 
 	private Context context;
 
-	private static final Gson compactGson = new GsonBuilder().registerTypeAdapter(Date.class, new DateSerializer()).create();
+	private static final Gson compactGson = new GsonBuilder().registerTypeAdapter(DateTime.class, new DateSerializer()).create();
 
 	private static final Map<Context, BackendService> contextMap = new HashMap<>();
 
@@ -77,17 +79,15 @@ public class BackendService {
 	}
 
 	/**
-	 * Makes a network request to retrieve all the user's occupations between a start and end date.
-	 *
-	 * @param start    The starting date
-	 * @param end      The end date
+	 * Makes a network request to retrieve all the user's occupations between a date and end date.
+	 *  @param date    The starting date
 	 * @param callback {@link RequestCallback#onSuccess(Object)}
 	 *                 is called when the server returned 200 OK. When the {@link GsonObjectRequest} could not parse the answer
 	 *                 {@link RequestCallback#onError(VolleyError)}
-	 *                 is returned.
 	 */
-	public void getOccupationsInDateRange(Date start, Date end, final RequestCallback<List<RegisteredOccupation>> callback) {
-		GsonObjectRequest req = new GsonObjectRequest<>(params(API_GET_REGISTERED_OCCUPATIONS, start.getTime(), end.getTime()), RegisteredOccupation[].class
+	public void getOccupationsInDateRange(DateTime date, final RequestCallback<List<RegisteredOccupation>> callback) {
+		GsonObjectRequest req = new GsonObjectRequest<>(params(API_GET_REGISTERED_OCCUPATIONS,
+				date.toDateTime(DateTimeZone.UTC).getMillis()), RegisteredOccupation[].class
 				, auth(), new Response.Listener<RegisteredOccupation[]>() {
 			@Override
 			public void onResponse(RegisteredOccupation[] response) {
@@ -182,8 +182,8 @@ public class BackendService {
 		return headers;
 	}
 
-	public void confirmOccupations(Date date, final RequestCallback callback) {
-		JsonObjectRequest req = new JsonObjectRequest(Request.Method.PUT, params(API_CONFIRM_OCCUPATIONS, date.getTime()), "", new Response.Listener() {
+	public void confirmOccupations(DateTime date, final RequestCallback callback) {
+		JsonObjectRequest req = new JsonObjectRequest(Request.Method.PUT, params(API_CONFIRM_OCCUPATIONS, date.toDateTime(DateTimeZone.UTC).getMillis()), "", new Response.Listener() {
 			@Override
 			public void onResponse(Object response) {
 				callback.onSuccess(response);
@@ -239,6 +239,14 @@ public class BackendService {
 			@Override
 			public Map<String, String> getHeaders() throws AuthFailureError {
 				return auth(super.getHeaders());
+			}
+
+			@Override
+			protected Response<JSONObject> parseNetworkResponse(NetworkResponse response) {
+				if(response.data.length == 0) {
+					response = new NetworkResponse(response.statusCode, "{}".getBytes(), response.headers, response.notModified);
+				}
+				return super.parseNetworkResponse(response);
 			}
 		};
 

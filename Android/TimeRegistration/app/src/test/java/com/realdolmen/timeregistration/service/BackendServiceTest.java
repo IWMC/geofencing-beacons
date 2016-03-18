@@ -7,9 +7,9 @@ import com.android.volley.Request;
 import com.android.volley.RequestQueue;
 import com.android.volley.toolbox.JsonObjectRequest;
 import com.realdolmen.timeregistration.BuildConfig;
-import com.realdolmen.timeregistration.ui.login.LoginActivity;
 import com.realdolmen.timeregistration.UITestActivity;
 import com.realdolmen.timeregistration.model.Session;
+import com.realdolmen.timeregistration.ui.login.LoginActivity;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -23,8 +23,10 @@ import org.robolectric.Robolectric;
 import org.robolectric.RobolectricGradleTestRunner;
 import org.robolectric.annotation.Config;
 
-import static org.junit.Assert.*;
-import static org.mockito.Mockito.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.when;
 
 /**
  * Created by BCCAZ45 on 1/03/2016.

@@ -25,7 +25,8 @@ import com.realdolmen.timeregistration.util.SimpleObservableCallback;
 import com.realdolmen.timeregistration.util.adapters.dayregistration.AdapterState;
 import com.realdolmen.timeregistration.util.adapters.dayregistration.RegisteredOccupationRecyclerAdapter;
 
-import java.util.Date;
+import org.joda.time.DateTime;
+
 import java.util.List;
 
 import butterknife.Bind;
@@ -48,7 +49,9 @@ public class DayRegistrationFragment extends Fragment {
 
 	public static final String DATE_PARAM = "DATE";
 
-	private Date selectedDate;
+	private DateTime selectedDate;
+
+	private ObservableArrayList<RegisteredOccupation> registeredOccupationList;
 
 	public AdapterState getState() {
 		return state;
@@ -72,88 +75,120 @@ public class DayRegistrationFragment extends Fragment {
 	}
 
 	@Override
+	public void onResume() {
+		super.onResume();
+		parent.setCurrentDate(selectedDate);
+	}
+
+	@Override
 	public void onViewCreated(View view, Bundle savedInstanceState) {
 		super.onViewCreated(view, savedInstanceState);
 		if (getArguments() != null && !getArguments().isEmpty()) {
-			selectedDate = (Date) getArguments().getSerializable(DATE_PARAM);
+			selectedDate = (DateTime) getArguments().getSerializable(DATE_PARAM);
 		} else {
 			throw new IllegalStateException("DayRegistrationFragment requires a date argument.");
 		}
 		state = new AdapterState.NewlyEmptyState();
 		parent.setCurrentDate(selectedDate);
-		final ObservableArrayList<RegisteredOccupation> list = new ObservableArrayList<>();
-		final RegisteredOccupationRecyclerAdapter adapter = new RegisteredOccupationRecyclerAdapter(list);
-		recyclerView.setAdapter(adapter);
-		state.doNotify(this, adapter);
-		parent.getDataForDate(selectedDate, new RequestCallback<List<RegisteredOccupation>>() {
-			@Override
-			public void onSuccess(List<RegisteredOccupation> data) {
-				list.addOnListChangedCallback(new SimpleObservableCallback() {
-					@Override
-					public void onChanged(ObservableList sender) {
-						checkState();
-					}
+		refreshData();
+	}
 
-					@Override
-					public void onItemRangeInserted(ObservableList sender, int positionStart, int itemCount) {
-						checkState();
-					}
+	public void refreshData() {
+		//TODO: put initial setup in onViewCreated to simplify this method
+		if (registeredOccupationList == null) {
+			registeredOccupationList = new ObservableArrayList<>();
+			final RegisteredOccupationRecyclerAdapter adapter = new RegisteredOccupationRecyclerAdapter(registeredOccupationList);
+			recyclerView.setAdapter(adapter);
+			state.doNotify(this, adapter);
+			parent.getDataForDate(selectedDate, new RequestCallback<List<RegisteredOccupation>>() {
+				@Override
+				public void onSuccess(List<RegisteredOccupation> data) {
+					registeredOccupationList.addOnListChangedCallback(new SimpleObservableCallback() {
+						@Override
+						public void onChanged(ObservableList sender) {
+							checkState();
+						}
 
-					@Override
-					public void onItemRangeRemoved(ObservableList sender, int positionStart, int itemCount) {
-						checkState();
-					}
-				});
-				list.addAll(data);
-			}
+						@Override
+						public void onItemRangeInserted(ObservableList sender, int positionStart, int itemCount) {
+							checkState();
+						}
 
-			@Override
-			public void onError(VolleyError error) {
-				if (error.networkResponse != null)
-					Toast.makeText(getContext(), "" + error.networkResponse.statusCode, Toast.LENGTH_LONG).show();
-				else {
-					Toast.makeText(getContext(), error.getMessage(), Toast.LENGTH_LONG).show();
-					error.printStackTrace();
+						@Override
+						public void onItemRangeRemoved(ObservableList sender, int positionStart, int itemCount) {
+							checkState();
+						}
+					});
+					registeredOccupationList.addAll(data);
 				}
-			}
-		});
-		recyclerView.setLayoutManager(new LinearLayoutManager(getContext(), LinearLayoutManager.VERTICAL, false));
-		ItemTouchHelper.SimpleCallback simpleItemTouchCallback = new ItemTouchHelper.SimpleCallback(0, ItemTouchHelper.RIGHT) {
-			@Override
-			public boolean onMove(RecyclerView recyclerView, RecyclerView.ViewHolder viewHolder, RecyclerView.ViewHolder target) {
-				return false;
-			}
 
-			@Override
-			public void onSwiped(final RecyclerView.ViewHolder viewHolder, int swipeDir) {
-				if (swipeDir != ItemTouchHelper.RIGHT) {
-					return;
+				@Override
+				public void onError(VolleyError error) {
+					if (error.networkResponse != null)
+						Toast.makeText(getContext(), "" + error.networkResponse.statusCode, Toast.LENGTH_LONG).show();
+					else {
+						Toast.makeText(getContext(), error.getMessage(), Toast.LENGTH_LONG).show();
+						error.printStackTrace();
+					}
 				}
-				new AlertDialog.Builder(getContext()).setTitle("Delete?").setMessage("Do you want to delete " + viewHolder + "?").setIcon(R.drawable.ic_delete_24dp).setNegativeButton("No", new DialogInterface.OnClickListener() {
-					@Override
-					public void onClick(DialogInterface dialog, int which) {
-						dialog.dismiss();
-						recyclerView.getAdapter().notifyDataSetChanged();
-					}
-				}).setPositiveButton("Yes", new DialogInterface.OnClickListener() {
-					@Override
-					public void onClick(DialogInterface dialog, int which) {
-						//TODO: remove item from datase
-						((RegisteredOccupationRecyclerAdapter) recyclerView.getAdapter()).removeItemAt(viewHolder.getAdapterPosition());
-						dialog.dismiss();
-					}
-				}).setOnCancelListener(new DialogInterface.OnCancelListener() {
-					@Override
-					public void onCancel(DialogInterface dialog) {
-						dialog.dismiss();
-						recyclerView.getAdapter().notifyDataSetChanged();
-					}
-				}).show();
-			}
-		};
+			});
+			recyclerView.setLayoutManager(new LinearLayoutManager(getContext(), LinearLayoutManager.VERTICAL, false));
+			ItemTouchHelper.SimpleCallback simpleItemTouchCallback = new ItemTouchHelper.SimpleCallback(0, ItemTouchHelper.RIGHT) {
+				@Override
+				public boolean onMove(RecyclerView recyclerView, RecyclerView.ViewHolder viewHolder, RecyclerView.ViewHolder target) {
+					return false;
+				}
 
-		ItemTouchHelper itemTouchHelper = new ItemTouchHelper(simpleItemTouchCallback);
-		itemTouchHelper.attachToRecyclerView(recyclerView);
+				@Override
+				public void onSwiped(final RecyclerView.ViewHolder viewHolder, int swipeDir) {
+					if (swipeDir != ItemTouchHelper.RIGHT) {
+						return;
+					}
+					new AlertDialog.Builder(getContext()).setTitle("Delete?").setMessage("Do you want to delete " + viewHolder + "?").setIcon(R.drawable.ic_delete_24dp).setNegativeButton("No", new DialogInterface.OnClickListener() {
+						@Override
+						public void onClick(DialogInterface dialog, int which) {
+							dialog.dismiss();
+							recyclerView.getAdapter().notifyDataSetChanged();
+						}
+					}).setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+						@Override
+						public void onClick(DialogInterface dialog, int which) {
+							//TODO: remove item from datase
+							((RegisteredOccupationRecyclerAdapter) recyclerView.getAdapter()).removeItemAt(viewHolder.getAdapterPosition());
+							dialog.dismiss();
+						}
+					}).setOnCancelListener(new DialogInterface.OnCancelListener() {
+						@Override
+						public void onCancel(DialogInterface dialog) {
+							dialog.dismiss();
+							recyclerView.getAdapter().notifyDataSetChanged();
+						}
+					}).show();
+				}
+			};
+
+			ItemTouchHelper itemTouchHelper = new ItemTouchHelper(simpleItemTouchCallback);
+			itemTouchHelper.attachToRecyclerView(recyclerView);
+		} else {
+			parent.getDataForDate(selectedDate, new RequestCallback<List<RegisteredOccupation>>() {
+				@Override
+				public void onSuccess(List<RegisteredOccupation> data) {
+					registeredOccupationList.clear();
+					registeredOccupationList.addAll(data);
+				}
+
+				@Override
+				public void onError(VolleyError error) {
+					if (error.networkResponse != null)
+						Toast.makeText(getContext(), "" + error.networkResponse.statusCode, Toast.LENGTH_LONG).show();
+					else {
+						Toast.makeText(getContext(), error.getMessage(), Toast.LENGTH_LONG).show();
+						error.printStackTrace();
+					}
+				}
+			});
+
+		}
 	}
 
 	@Override

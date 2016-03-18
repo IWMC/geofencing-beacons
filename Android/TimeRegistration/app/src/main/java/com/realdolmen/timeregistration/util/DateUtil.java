@@ -2,21 +2,22 @@ package com.realdolmen.timeregistration.util;
 
 import android.support.annotation.NonNull;
 
-import org.apache.commons.lang3.time.DateUtils;
+import org.joda.time.DateTime;
+import org.joda.time.DateTimeConstants;
+import org.joda.time.DateTimeFieldType;
+import org.joda.time.format.DateTimeFormat;
+import org.joda.time.format.DateTimeFormatter;
 
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.Collections;
-import java.util.Date;
 import java.util.List;
 
 public class DateUtil {
 
-	private static final SimpleDateFormat nameOfDayDateFormat = new SimpleDateFormat("EEEE");
-	private static final SimpleDateFormat hourFormat24Hours = new SimpleDateFormat("HH:mm");
-	private static final SimpleDateFormat hourFormatAmPm = new SimpleDateFormat("hh:mm a");
-	private static final SimpleDateFormat dayFormat = new SimpleDateFormat("EEEE dd MMMM");
+	private static final DateTimeFormatter nameOfDayDateFormat = DateTimeFormat.forPattern("EEEE");
+	private static final DateTimeFormatter hourFormat24Hours = DateTimeFormat.forPattern("HH:mm");
+	private static final DateTimeFormatter hourFormatAmPm = DateTimeFormat.forPattern("hh:mm a");
+	private static final DateTimeFormatter dayFormat = DateTimeFormat.forPattern("EEEE dd MMMM");
 
 	/**
 	 * Uses the current time to check whether the specified date is on the same day.
@@ -24,8 +25,8 @@ public class DateUtil {
 	 * @param date The date to check against the current date.
 	 * @return true if the specified date is the same as the current date, false if not.
 	 */
-	public static boolean isToday(@NonNull Date date) {
-		return DateUtils.isSameDay(date, new Date());
+	public static boolean isToday(@NonNull DateTime date) {
+		return date.withTimeAtStartOfDay().isEqual(DateTime.now().withTimeAtStartOfDay());
 	}
 
 	/**
@@ -33,15 +34,13 @@ public class DateUtil {
 	 *
 	 * @return reversed list of work dates.
 	 */
-	public static List<Date> pastWorkWeek() {
+	public static List<DateTime> pastWorkWeek() {
 		int span = 6;
-		List<Date> pastWeek = new ArrayList<>();
+		List<DateTime> pastWeek = new ArrayList<>();
 		for (int i = 0; i < span; i++) {
-			Date date = DateUtils.addDays(new Date(), -i);
-			Calendar c = Calendar.getInstance();
-			c.setTime(date);
-			int type = c.get(Calendar.DAY_OF_WEEK);
-			if (type == Calendar.SATURDAY || type == Calendar.SUNDAY) {
+			DateTime date = new DateTime().minusDays(i);
+			if(date.get(DateTimeFieldType.dayOfWeek()) == DateTimeConstants.SUNDAY
+					|| date.get(DateTimeFieldType.dayOfWeek()) == DateTimeConstants.SATURDAY) {
 				span += 1;
 				continue;
 			}
@@ -52,22 +51,22 @@ public class DateUtil {
 		return pastWeek;
 	}
 
-	public static String formatToHours(@NonNull Date date) {
-		return hourFormat24Hours.format(date);
+	public static String formatToHours(@NonNull DateTime date) {
+		return hourFormat24Hours.print(date);
 	}
 
-	public static String formatToHours(@NonNull Date date, boolean is24Hours) {
-		return is24Hours ? hourFormat24Hours.format(date) : hourFormatAmPm.format(date);
+	public static String formatToHours(@NonNull DateTime date, boolean is24Hours) {
+		return is24Hours ? hourFormat24Hours.print(date) : hourFormatAmPm.print(date);
 	}
 
-	public static String nameForDate(@NonNull Date date) {
+	public static String nameForDate(@NonNull DateTime date) {
 		if (isToday(date)) {
 			return "Today";
 		}
-		return nameOfDayDateFormat.format(date);
+		return nameOfDayDateFormat.print(date);
 	}
 
-	public static String formatToDay(Date date) {
-		return dayFormat.format(date);
+	public static String formatToDay(DateTime date) {
+		return dayFormat.print(date);
 	}
 }

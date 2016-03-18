@@ -5,18 +5,18 @@ import com.google.gson.JsonDeserializer;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonParseException;
 
+import org.joda.time.DateTime;
+
 import java.lang.reflect.Type;
-import java.util.Date;
 
 /**
  * Deserializes dates in a specific manner.
  */
-public class DateDeserializer implements JsonDeserializer<Date> {
+public class DateDeserializer implements JsonDeserializer<DateTime> {
 
 	@Override
-	public Date deserialize(JsonElement element, Type arg1, JsonDeserializationContext arg2) throws JsonParseException {
+	public DateTime deserialize(JsonElement element, Type arg1, JsonDeserializationContext arg2) throws JsonParseException {
 		long date = element.getAsLong();
-		Date d = new Date(date);
-		return d;
+		return new DateTime(date);
 	}
 }

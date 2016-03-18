@@ -1,6 +1,6 @@
 package com.realdolmen.timeregistration.model;
 
-		import java.util.Date;
+import org.joda.time.DateTime;
 
 /**
  * An entity class that represents a single time registration about an {@link Occupation} for a single Employee.
@@ -9,9 +9,9 @@ public class RegisteredOccupation {
 
 	private Occupation occupation;
 
-	private Date registeredStart;
+	private DateTime registeredStart;
 
-	private Date registeredEnd;
+	private DateTime registeredEnd;
 
 	private boolean confirmed = false;
 
@@ -25,11 +25,11 @@ public class RegisteredOccupation {
 		return occupation;
 	}
 
-	public Date getRegisteredStart() {
+	public DateTime getRegisteredStart() {
 		return registeredStart;
 	}
 
-	public Date getRegisteredEnd() {
+	public DateTime getRegisteredEnd() {
 		return registeredEnd;
 	}
 
@@ -37,11 +37,11 @@ public class RegisteredOccupation {
 		this.occupation = occupation;
 	}
 
-	public void setRegisteredStart(Date registeredStart) {
+	public void setRegisteredStart(DateTime registeredStart) {
 		this.registeredStart = registeredStart;
 	}
 
-	public void setRegisteredEnd(Date registeredEnd) {
+	public void setRegisteredEnd(DateTime registeredEnd) {
 		this.registeredEnd = registeredEnd;
 	}
 

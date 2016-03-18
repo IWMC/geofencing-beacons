@@ -22,12 +22,18 @@ public class RegisteredOccupationRecyclerAdapter extends RecyclerView.Adapter<Re
 	}
 
 	public void setData(ObservableList<RegisteredOccupation> newData) {
-		this.data = newData;
-		data.addOnListChangedCallback(new ObservableRegisteredOccupationAdapterCallback(this));
+		if(data != null) {
+			data.clear();
+			data.addAll(newData);
+		} else {
+			data = newData;
+			data.addOnListChangedCallback(new ObservableRegisteredOccupationAdapterCallback(this));
+		}
 	}
 
 	public RegisteredOccupationRecyclerAdapter(ObservableArrayList<RegisteredOccupation> data) {
 		setData(data);
+		data.addOnListChangedCallback(new ObservableRegisteredOccupationAdapterCallback(this));
 	}
 
 	@Override

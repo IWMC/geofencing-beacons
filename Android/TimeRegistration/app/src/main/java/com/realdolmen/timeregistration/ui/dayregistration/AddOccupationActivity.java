@@ -27,8 +27,9 @@ import com.realdolmen.timeregistration.service.RequestCallback;
 import com.realdolmen.timeregistration.util.DateUtil;
 import com.realdolmen.timeregistration.util.adapters.dayregistration.OccupationRecyclerAdapter;
 
+import org.joda.time.DateTime;
+
 import java.util.Calendar;
-import java.util.Date;
 import java.util.List;
 
 import butterknife.Bind;
@@ -60,14 +61,14 @@ public class AddOccupationActivity extends AppCompatActivity {
 	public static final String START_DATE = "SD", END_DATE = "ED", BASE_DATE = "BD", SELECTED_OCCUPATION = "SO";
 	public static final int RESULT_CODE = 1;
 
-	private Date startDate, endDate, baseDate;
+	private DateTime startDate, endDate, baseDate;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_add_occupation);
 		ButterKnife.bind(this);
-		Date bd = (Date) getIntent().getSerializableExtra(BASE_DATE);
+		DateTime bd = (DateTime) getIntent().getSerializableExtra(BASE_DATE);
 		if (bd == null) {
 			throw new IllegalStateException("A base date must be passed as serializable extra");
 		}
@@ -89,10 +90,7 @@ public class AddOccupationActivity extends AppCompatActivity {
 		TimePickerDialog dialog = new TimePickerDialog(this, new TimePickerDialog.OnTimeSetListener() {
 			@Override
 			public void onTimeSet(TimePicker view, int hourOfDay, int minute) {
-				Calendar cal = Calendar.getInstance();
-				cal.set(Calendar.HOUR_OF_DAY, hourOfDay);
-				cal.set(Calendar.MINUTE, minute);
-				startDate = cal.getTime();
+				startDate = baseDate.withHourOfDay(hourOfDay).withMinuteOfHour(minute);
 				updateDateButtons();
 			}
 		}, calendar.get(Calendar.HOUR_OF_DAY), calendar.get(Calendar.MINUTE), DateFormat.is24HourFormat(this));
@@ -106,10 +104,7 @@ public class AddOccupationActivity extends AppCompatActivity {
 		TimePickerDialog dialog = new TimePickerDialog(this, new TimePickerDialog.OnTimeSetListener() {
 			@Override
 			public void onTimeSet(TimePicker view, int hourOfDay, int minute) {
-				Calendar cal = Calendar.getInstance();
-				cal.set(Calendar.HOUR_OF_DAY, hourOfDay);
-				cal.set(Calendar.MINUTE, minute);
-				endDate = cal.getTime();
+				endDate = baseDate.withHourOfDay(hourOfDay).withMinuteOfHour(minute);
 				updateDateButtons();
 			}
 		}, calendar.get(Calendar.HOUR_OF_DAY), calendar.get(Calendar.MINUTE), DateFormat.is24HourFormat(this));
@@ -119,11 +114,11 @@ public class AddOccupationActivity extends AppCompatActivity {
 
 	void updateDateButtons() {
 		if (startDate == null) {
-			startDate = new Date();
+			startDate = new DateTime(baseDate);
 		}
 
 		if (endDate == null) {
-			endDate = new Date();
+			endDate = new DateTime(baseDate);
 		}
 		startButton.setText(DateUtil.formatToHours(startDate, DateFormat.is24HourFormat(getApplicationContext())));
 		endButton.setText(DateUtil.formatToHours(endDate, DateFormat.is24HourFormat(getApplicationContext())));
@@ -194,7 +189,7 @@ public class AddOccupationActivity extends AppCompatActivity {
 	}
 
 	private boolean validate() {
-		if (endDate.before(startDate)) {
+		if (endDate.isBefore(startDate.toInstant())) {
 			return alert("End Time cannot be before Start Date", false);
 		}
 
@@ -224,9 +219,9 @@ public class AddOccupationActivity extends AppCompatActivity {
 	@Override
 	protected void onRestoreInstanceState(Bundle savedInstanceState) {
 		super.onRestoreInstanceState(savedInstanceState);
-		startDate = (Date) savedInstanceState.getSerializable(START_DATE);
-		endDate = (Date) savedInstanceState.getSerializable(END_DATE);
-		baseDate = (Date) savedInstanceState.getSerializable(BASE_DATE);
+		startDate = (DateTime) savedInstanceState.getSerializable(START_DATE);
+		endDate = (DateTime) savedInstanceState.getSerializable(END_DATE);
+		baseDate = (DateTime) savedInstanceState.getSerializable(BASE_DATE);
 		if (savedInstanceState.getSerializable(SELECTED_OCCUPATION) != null)
 			adapter.setSelectedItem((Occupation) savedInstanceState.getSerializable(SELECTED_OCCUPATION));
 		updateDateButtons();
