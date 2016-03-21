@@ -9,6 +9,7 @@ import com.android.volley.toolbox.JsonObjectRequest;
 import com.realdolmen.timeregistration.BuildConfig;
 import com.realdolmen.timeregistration.UITestActivity;
 import com.realdolmen.timeregistration.model.Session;
+import com.realdolmen.timeregistration.service.repository.BackendService;
 import com.realdolmen.timeregistration.ui.login.LoginActivity;
 
 import org.junit.Before;

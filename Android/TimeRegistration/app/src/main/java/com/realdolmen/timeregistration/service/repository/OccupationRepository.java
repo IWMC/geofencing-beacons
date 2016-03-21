@@ -6,43 +6,28 @@ import android.support.annotation.Nullable;
 
 import com.android.volley.VolleyError;
 import com.realdolmen.timeregistration.model.Occupation;
-import com.realdolmen.timeregistration.service.BackendService;
 import com.realdolmen.timeregistration.service.ResultCallback;
 
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
-/**
- * Created by BCCAZ45 on 21/03/2016.
- */
-public class OccupationRepository implements DataRepository<Occupation> {
-
-	private List<Occupation> data = new ArrayList<>();
-	private boolean loaded;
+public class OccupationRepository extends DataRepository<Occupation> {
 
 	OccupationRepository(Context context, final LoadCallback callback) {
 		BackendService.with(context).getRelevantOccupations(new ResultCallback<List<Occupation>>() {
 			@Override
-			public void onSuccess(List<Occupation> data) {
-				OccupationRepository.this.data.clear();
-				OccupationRepository.this.data.addAll(data);
-				if (callback != null)
-					callback.onResult(LoadCallback.Result.SUCCESS, null);
-				loaded = true;
-			}
-
-			@Override
-			public void onError(VolleyError error) {
-				if (callback != null)
+			public void onResult(@NonNull Result result, @Nullable List<Occupation> data, @Nullable VolleyError error) {
+				if(result == Result.SUCCESS) {
+					OccupationRepository.this.data.clear();
+					OccupationRepository.this.data.addAll(data);
+					setLoaded(true, null);
+					if (callback != null)
+						callback.onResult(LoadCallback.Result.SUCCESS, null);
+				} else if (callback != null) {
+					setLoaded(false, error);
 					callback.onResult(LoadCallback.Result.FAIL, error);
+				}
 			}
 		});
-	}
-
-	@Override
-	public List<Occupation> getAll() {
-		return Collections.unmodifiableList(data);
 	}
 
 	@Override
@@ -51,23 +36,8 @@ public class OccupationRepository implements DataRepository<Occupation> {
 	}
 
 	@Override
-	public Occupation get(int index) {
-		return data.get(index);
-	}
-
-	@Override
-	public int size() {
-		return data.size();
-	}
-
-	@Override
 	public void remove(@NonNull Context context, @NonNull Occupation element, @Nullable ResultCallback<Occupation> callback) {
 		throw new UnsupportedOperationException("Occupations cannot be removed!");
-	}
-
-	@Override
-	public boolean hasLoaded() {
-		return loaded;
 	}
 
 }

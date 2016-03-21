@@ -1,5 +1,8 @@
 package com.realdolmen.timeregistration.service;
 
+import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
+
 import com.android.volley.VolleyError;
 
 /**
@@ -8,19 +11,16 @@ import com.android.volley.VolleyError;
  * @param <E> Generic type of the onSuccess data parameter.
  */
 public interface ResultCallback<E> {
-	/**
-	 * Called when the request succeeded. A request succeeds when the http response code is in the error range.
-	 *
-	 * @param data The data produced from the successful response.
-	 */
-	void onSuccess(E data);
+
+	enum Result {
+		SUCCESS, FAIL
+	}
 
 	/**
-	 * Called when the request fails. A request can fail if the http response code is in the
-	 * error range or the response is invalid.
-	 *
-	 * @param error The error produces by Volley. There is also a {@link GenericVolleyError} for
-	 *              custom errors in case of invalid responses.
+	 * @param result {@link Result#SUCCESS} when the operation succeeded.
+	 * @param data   The produced data.
+	 * @param error  The error that is thrown when the operation fails. This field will be null if the operation succeeds.
 	 */
-	void onError(VolleyError error);
+	void onResult(@NonNull Result result, @Nullable E data, @Nullable VolleyError error);
+
 }

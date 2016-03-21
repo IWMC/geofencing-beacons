@@ -6,6 +6,8 @@ import android.content.DialogInterface;
 import android.databinding.ObservableArrayList;
 import android.databinding.ObservableList;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.LinearLayoutManager;
@@ -16,7 +18,6 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.LinearLayout;
-import android.widget.Toast;
 
 import com.android.volley.VolleyError;
 import com.realdolmen.timeregistration.R;
@@ -95,7 +96,7 @@ public class DayRegistrationFragment extends Fragment {
 		state = new AdapterState.NewlyEmptyState();
 		parent.setCurrentDate(selectedDate);
 		registeredOccupationList = new ObservableArrayList<>();
-		adapter = new RegisteredOccupationRecyclerAdapter(registeredOccupationList);
+		adapter = new RegisteredOccupationRecyclerAdapter(selectedDate);
 		recyclerView.setAdapter(adapter);
 		state.doNotify(this, adapter);
 		registeredOccupationList.addOnListChangedCallback(new SimpleObservableCallback() {
@@ -147,8 +148,8 @@ public class DayRegistrationFragment extends Fragment {
 				}).setPositiveButton("Yes", new DialogInterface.OnClickListener() {
 					@Override
 					public void onClick(DialogInterface dialog, int which) {
-						//TODO: remove item from datase
-						((RegisteredOccupationRecyclerAdapter) recyclerView.getAdapter()).removeItemAt(viewHolder.getAdapterPosition());
+						//TODO: remove item from repository
+						//((RegisteredOccupationRecyclerAdapter) recyclerView.getAdapter()).removeItemAt(viewHolder.getAdapterPosition());
 						dialog.dismiss();
 					}
 				}).setOnCancelListener(new DialogInterface.OnCancelListener() {
@@ -166,55 +167,15 @@ public class DayRegistrationFragment extends Fragment {
 	}
 
 	public void refreshData() {
-		if (registeredOccupationList == null) {
-			Log.i(TAG, "Refreshing data with new list");
-			parent.getDataForDate(selectedDate, new ResultCallback<List<RegisteredOccupation>>() {
-				@Override
-				public void onSuccess(List<RegisteredOccupation> data) {
-					adapter.setData(data);
-					Log.i(TAG, "After setting data (of size " + data.size() + ") in adapter, state is " + state.getClass().getSimpleName());
+		parent.getDataForDate(selectedDate, new ResultCallback<List<RegisteredOccupation>>() {
+			@Override
+			public void onResult(@NonNull Result result, @Nullable List<RegisteredOccupation> data, @Nullable VolleyError error) {
+				if (result == Result.SUCCESS) {
+					recyclerView.setAdapter(new RegisteredOccupationRecyclerAdapter(selectedDate));
 				}
-
-				@Override
-				public void onError(VolleyError error) {
-					if (error.networkResponse != null)
-						Toast.makeText(getContext(), "" + error.networkResponse.statusCode, Toast.LENGTH_LONG).show();
-					else {
-						Toast.makeText(getContext(), error.getMessage(), Toast.LENGTH_LONG).show();
-						error.printStackTrace();
-					}
-				}
-			});
-		} else {
-			Log.i(TAG, "Refreshing data with existing list");
-			if (recyclerView.getAdapter() == null) {
-				recyclerView.setAdapter(adapter);
+				checkState();
 			}
-
-			if (recyclerView.getLayoutManager() == null) {
-				recyclerView.setLayoutManager(new LinearLayoutManager(getContext(), LinearLayoutManager.VERTICAL, false));
-			}
-
-			parent.getDataForDate(selectedDate, new ResultCallback<List<RegisteredOccupation>>() {
-				@Override
-				public void onSuccess(List<RegisteredOccupation> data) {
-					Log.i(TAG, "Before setting data of size " + data.size() + " in adapter, state is " + state.getClass().getSimpleName());
-					adapter.setData(data);
-					Log.i(TAG, "After setting data (of size " + data.size() + ") in adapter, state is " + state.getClass().getSimpleName());
-				}
-
-				@Override
-				public void onError(VolleyError error) {
-					if (error.networkResponse != null)
-						Toast.makeText(getContext(), "" + error.networkResponse.statusCode, Toast.LENGTH_LONG).show();
-					else {
-						Toast.makeText(getContext(), error.getMessage(), Toast.LENGTH_LONG).show();
-						error.printStackTrace();
-					}
-				}
-			});
-
-		}
+		});
 	}
 
 	@Override

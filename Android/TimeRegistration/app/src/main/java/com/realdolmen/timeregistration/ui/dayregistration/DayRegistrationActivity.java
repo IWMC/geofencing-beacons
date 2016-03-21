@@ -20,9 +20,11 @@ import com.github.clans.fab.FloatingActionButton;
 import com.realdolmen.timeregistration.R;
 import com.realdolmen.timeregistration.model.Occupation;
 import com.realdolmen.timeregistration.model.RegisteredOccupation;
-import com.realdolmen.timeregistration.service.BackendService;
 import com.realdolmen.timeregistration.service.ResultCallback;
+import com.realdolmen.timeregistration.service.repository.LoadCallback;
+import com.realdolmen.timeregistration.service.repository.Repositories;
 import com.realdolmen.timeregistration.util.DateUtil;
+import com.realdolmen.timeregistration.util.UTC;
 import com.realdolmen.timeregistration.util.adapters.dayregistration.DayRegistrationFragmentPagerAdapter;
 
 import org.joda.time.DateTime;
@@ -138,17 +140,17 @@ public class DayRegistrationActivity extends AppCompatActivity {
 	//endregion
 
 	//region Data methods
-	public void getDataForDate(final DateTime date, final ResultCallback<List<RegisteredOccupation>> callback) {
-		BackendService.with(this).getOccupationsInDateRange(date, new ResultCallback<List<RegisteredOccupation>>() {
-			@Override
-			public void onSuccess(List<RegisteredOccupation> data) {
-				registeredOccupations.put(date, data);
-				callback.onSuccess(data);
-			}
+	public void getDataForDate(@UTC final DateTime date, final ResultCallback<List<RegisteredOccupation>> callback) {
+		DateUtil.enforceUTC(date);
 
+		Repositories.loadRegisteredOccupationRepository(this, new LoadCallback() {
 			@Override
-			public void onError(VolleyError error) {
-				callback.onError(error);
+			public void onResult(Result result, Throwable error) {
+				if (result == Result.SUCCESS) { //data successfully loaded
+					List<RegisteredOccupation> filteredData = Repositories.registeredOccupationRepository().getAll(date);
+					if (callback != null)
+						callback.onResult(ResultCallback.Result.SUCCESS, filteredData, null);
+				}
 			}
 		});
 	}
@@ -220,7 +222,9 @@ public class DayRegistrationActivity extends AppCompatActivity {
 	public void confirm(@NonNull DateTime date, @Nullable final ResultCallback callback) {
 		confirmFab.setIndeterminate(true);
 		confirmFab.setEnabled(false);
-		BackendService.with(this).confirmOccupations(date, new ResultCallback() {
+
+		//TODO: Edit this to the new repository system.
+		/*BackendService.with(this).confirmOccupations(date, new ResultCallback() {
 			@Override
 			public void onSuccess(Object data) {
 				if (callback != null)
@@ -238,7 +242,7 @@ public class DayRegistrationActivity extends AppCompatActivity {
 				confirmFab.setIndeterminate(false);
 				confirmFab.setEnabled(true);
 			}
-		});
+		});*/
 	}
 
 	public void refreshTabIcons() {
@@ -249,22 +253,25 @@ public class DayRegistrationActivity extends AppCompatActivity {
 	}
 
 	private void handleNewlyRegisteredOccupation(Occupation occ, DateTime start, DateTime end) {
-		RegisteredOccupation ro = new RegisteredOccupation();
+		final RegisteredOccupation ro = new RegisteredOccupation();
 		ro.setRegisteredStart(start.toDateTime(DateTimeZone.UTC));
 		ro.setRegisteredEnd(end.toDateTime(DateTimeZone.UTC));
 		ro.setOccupation(occ);
 
-		BackendService.with(this).registerOccupation(ro, new ResultCallback<String>() {
-
+		Repositories.loadRegisteredOccupationRepository(this, new LoadCallback() {
 			@Override
-			public void onSuccess(String data) {
-				refreshCurrent();
-			}
-
-			@Override
-			public void onError(VolleyError error) {
-				if (error.networkResponse != null) {
-					Toast.makeText(DayRegistrationActivity.this, error.networkResponse.statusCode, Toast.LENGTH_SHORT).show();
+			public void onResult(Result result, Throwable error) {
+				if (result == Result.SUCCESS) {
+					Repositories.registeredOccupationRepository().save(DayRegistrationActivity.this, ro, new ResultCallback<RegisteredOccupation>() {
+						@Override
+						public void onResult(@NonNull Result result, @Nullable RegisteredOccupation data, @Nullable VolleyError error) {
+							if (result == Result.SUCCESS) {
+								Snackbar.make(findViewById(android.R.id.content), "The registration has been saved.", Snackbar.LENGTH_LONG).show();
+							} else if (error != null) {
+								Snackbar.make(findViewById(android.R.id.content), "Your registration was not saved!", Snackbar.LENGTH_LONG).show();
+							}
+						}
+					});
 				}
 			}
 		});

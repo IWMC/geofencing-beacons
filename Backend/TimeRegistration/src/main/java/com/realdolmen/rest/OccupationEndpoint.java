@@ -25,6 +25,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.net.URI;
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
@@ -57,7 +58,7 @@ public class OccupationEndpoint {
 
 
         LocalDateTime startDate = new DateTime(date, DateTimeZone.UTC).withHourOfDay(0).withMinuteOfHour(0).toLocalDateTime();
-
+        System.out.println(startDate + " in zone: " + startDate.toDateTime().getZone());
         if (sm.findEmployee() == null || sm.findEmployee().getId() == null || sm.findEmployee().getId() == 0) {
             return Response.status(400).build();
         }
@@ -104,6 +105,23 @@ public class OccupationEndpoint {
         TypedQuery<Occupation> query = em.createNamedQuery("Occupation.FindAvailableByEmployee", Occupation.class);
         List<Occupation> occupations = query.getResultList();
         occupations.forEach(Occupation::initialize);
+        return Response.ok(occupations).build();
+    }
+
+    @GET
+    @Path("registration/range")
+    @Authorized
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response getRegisteredOccupationsOfLastXDays(@QueryParam("date") @DefaultValue("-1") long date, @QueryParam("count") @DefaultValue("7") int count) {
+        List<RegisteredOccupation> occupations = new ArrayList<>();
+        DateTime time = new DateTime(date, DateTimeZone.UTC);
+        if(count <= 0) {
+            count = 1;
+        }
+        for (int i = 0; i < count; i++) {
+            occupations.addAll((List<RegisteredOccupation>) getRegisteredOccupations(time.minusDays(i).getMillis()).getEntity());
+        }
+        System.out.println("FOUND " + occupations.size() + " results!");
         return Response.ok(occupations).build();
     }
 

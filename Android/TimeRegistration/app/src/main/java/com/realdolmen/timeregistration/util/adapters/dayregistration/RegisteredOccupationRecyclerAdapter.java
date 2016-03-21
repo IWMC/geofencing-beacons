@@ -9,40 +9,19 @@ import android.view.ViewGroup;
 
 import com.realdolmen.timeregistration.R;
 import com.realdolmen.timeregistration.model.RegisteredOccupation;
+import com.realdolmen.timeregistration.service.repository.Repositories;
 import com.realdolmen.timeregistration.util.ObservableRegisteredOccupationAdapterCallback;
+
+import org.joda.time.DateTime;
 
 import java.util.List;
 
 public class RegisteredOccupationRecyclerAdapter extends RecyclerView.Adapter<RegisteredOccupationViewHolder> {
 
-	private ObservableList<RegisteredOccupation> data;
+	private DateTime date;
 
-	public List<RegisteredOccupation> getData() {
-		return data;
-	}
-
-	private ObservableRegisteredOccupationAdapterCallback callback;
-
-	public void setData(List<RegisteredOccupation> newData) {
-		if (data != null) {
-			data.clear();
-			if (callback != null)
-				data.removeOnListChangedCallback(callback);
-			callback = new ObservableRegisteredOccupationAdapterCallback(this);
-			data.addOnListChangedCallback(callback);
-			data.addAll(newData);
-		} else {
-			data = new ObservableArrayList<>();
-			callback = new ObservableRegisteredOccupationAdapterCallback(this);
-			data.addOnListChangedCallback(callback);
-			data.addAll(newData);
-		}
-		notifyDataSetChanged();
-	}
-
-	public RegisteredOccupationRecyclerAdapter(ObservableArrayList<RegisteredOccupation> data) {
-		setData(data);
-		data.addOnListChangedCallback(new ObservableRegisteredOccupationAdapterCallback(this));
+	public RegisteredOccupationRecyclerAdapter(DateTime date) {
+		this.date = date;
 	}
 
 	@Override
@@ -53,16 +32,15 @@ public class RegisteredOccupationRecyclerAdapter extends RecyclerView.Adapter<Re
 
 	@Override
 	public void onBindViewHolder(RegisteredOccupationViewHolder holder, int position) {
-		holder.setData(data.get(position));
+		holder.setData(Repositories.registeredOccupationRepository().getAll(date).get(position));
 	}
 
 	@Override
 	public int getItemCount() {
-		return data.size();
+		return Repositories.registeredOccupationRepository().getAll(date).size();
 	}
 
-	public void removeItemAt(int adapterPosition) {
-		data.remove(adapterPosition);
+	public List<RegisteredOccupation> getData() {
+		return Repositories.registeredOccupationRepository().getAll(date);
 	}
-
 }

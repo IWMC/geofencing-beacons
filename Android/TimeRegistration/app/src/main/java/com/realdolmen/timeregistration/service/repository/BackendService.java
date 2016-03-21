@@ -1,4 +1,4 @@
-package com.realdolmen.timeregistration.service;
+package com.realdolmen.timeregistration.service.repository;
 
 import android.content.Context;
 import android.support.annotation.NonNull;
@@ -17,6 +17,10 @@ import com.google.gson.GsonBuilder;
 import com.realdolmen.timeregistration.model.Occupation;
 import com.realdolmen.timeregistration.model.RegisteredOccupation;
 import com.realdolmen.timeregistration.model.Session;
+import com.realdolmen.timeregistration.service.GenericVolleyError;
+import com.realdolmen.timeregistration.service.ResultCallback;
+import com.realdolmen.timeregistration.util.DateUtil;
+import com.realdolmen.timeregistration.util.UTC;
 import com.realdolmen.timeregistration.util.json.DateSerializer;
 import com.realdolmen.timeregistration.util.json.GsonObjectRequest;
 
@@ -42,7 +46,8 @@ public class BackendService {
 			API_GET_REGISTERED_OCCUPATIONS = HOST + "/api/occupations/registration/?date=%d",
 			API_CONFIRM_OCCUPATIONS = HOST + "/api/occupations/registration/%d/confirm",
 			API_ADD_OCCUPATION_REGISTRATION = HOST + "/api/occupations/registration",
-			API_GET_OCCUPATIONS = HOST + "/api/occupations";
+			API_GET_OCCUPATIONS = HOST + "/api/occupations",
+			API_GET_REGISTERED_OCCUPATIONS_RANGE = HOST + "/api/occupations/registration/range?date=%d&count=%d";
 
 	private Context context;
 
@@ -79,10 +84,11 @@ public class BackendService {
 
 	/**
 	 * Makes a network request to retrieve all the user's occupations between a date and end date.
-	 *  @param date    The starting date
-	 * @param callback {@link ResultCallback#onSuccess(Object)}
-	 *                 is called when the server returned 200 OK. When the {@link GsonObjectRequest} could not parse the answer
-	 *                 {@link ResultCallback#onError(VolleyError)}
+	 *
+	 * @param date     The starting date
+	 * @param callback {@link ResultCallback#onResult(ResultCallback.Result, Object, VolleyError)}
+	 *                 is called with SUCCESS result when the server returned 200 OK. When the {@link GsonObjectRequest} could not parse the answer
+	 *                 {@link ResultCallback#onResult(ResultCallback.Result, Object, VolleyError)} with FAIL result is called.
 	 */
 	public void getOccupationsInDateRange(DateTime date, final ResultCallback<List<RegisteredOccupation>> callback) {
 		GsonObjectRequest req = new GsonObjectRequest<>(params(API_GET_REGISTERED_OCCUPATIONS,
@@ -90,12 +96,12 @@ public class BackendService {
 				, auth(), new Response.Listener<RegisteredOccupation[]>() {
 			@Override
 			public void onResponse(RegisteredOccupation[] response) {
-				callback.onSuccess(Arrays.asList(response));
+				callback.onResult(ResultCallback.Result.SUCCESS, Arrays.asList(response), null);
 			}
 		}, new Response.ErrorListener() {
 			@Override
 			public void onErrorResponse(VolleyError error) {
-				callback.onError(error);
+				callback.onResult(ResultCallback.Result.FAIL, null, error);
 			}
 		});
 
@@ -140,19 +146,19 @@ public class BackendService {
 				if (response.has("token")) {
 					try {
 						session.setJwtToken(response.getString("token"));
-						callback.onSuccess(session);
+						callback.onResult(ResultCallback.Result.SUCCESS, session, null);
 						setSession(session);
 					} catch (JSONException e) {
-						callback.onError(new GenericVolleyError(e.getMessage()));
+						callback.onResult(ResultCallback.Result.FAIL, null, new GenericVolleyError(e.getMessage()));
 					}
 				} else {
-					callback.onError(new GenericVolleyError("Server response does not contain jwt token in JSON format"));
+					callback.onResult(ResultCallback.Result.FAIL, null, new GenericVolleyError("Server response does not contain jwt token in JSON format"));
 				}
 			}
 		}, new Response.ErrorListener() {
 			@Override
 			public void onErrorResponse(VolleyError error) {
-				callback.onError(error);
+				callback.onResult(ResultCallback.Result.FAIL, null, error);
 			}
 		});
 
@@ -185,12 +191,12 @@ public class BackendService {
 		JsonObjectRequest req = new JsonObjectRequest(Request.Method.PUT, params(API_CONFIRM_OCCUPATIONS, date.toDateTime(DateTimeZone.UTC).getMillis()), "", new Response.Listener() {
 			@Override
 			public void onResponse(Object response) {
-				callback.onSuccess(response);
+				callback.onResult(ResultCallback.Result.SUCCESS, response, null);
 			}
 		}, new Response.ErrorListener() {
 			@Override
 			public void onErrorResponse(VolleyError error) {
-				callback.onError(error);
+				callback.onResult(ResultCallback.Result.FAIL, null, error);
 			}
 		}) {
 			@Override
@@ -211,28 +217,45 @@ public class BackendService {
 				, auth(), new Response.Listener<Occupation[]>() {
 			@Override
 			public void onResponse(Occupation[] response) {
-				resultCallback.onSuccess(Arrays.asList(response));
+				resultCallback.onResult(ResultCallback.Result.SUCCESS, Arrays.asList(response), null);
 			}
 		}, new Response.ErrorListener() {
 			@Override
 			public void onErrorResponse(VolleyError error) {
-				resultCallback.onError(error);
+				resultCallback.onResult(ResultCallback.Result.FAIL, null, error);
 			}
 		});
 
 		requestQueue.add(req);
 	}
 
-	public void registerOccupation(RegisteredOccupation ro, final ResultCallback<String> resultCallback) {
+	public void getRegisteredOccupationsRangeUntilNow(@UTC @NonNull DateTime originDate, int count, @NonNull final ResultCallback<List<RegisteredOccupation>> callback) {
+		DateUtil.enforceUTC(originDate, "Origin date must be in UTC format!");
+		GsonObjectRequest req = new GsonObjectRequest(params(API_GET_REGISTERED_OCCUPATIONS_RANGE, originDate.getMillis(), count), RegisteredOccupation[].class, auth(), new Response.Listener<RegisteredOccupation[]>() {
+			@Override
+			public void onResponse(RegisteredOccupation[] response) {
+				callback.onResult(ResultCallback.Result.SUCCESS, Arrays.asList(response), null);
+			}
+
+		}, new Response.ErrorListener() {
+			@Override
+			public void onErrorResponse(VolleyError error) {
+				callback.onResult(ResultCallback.Result.FAIL, null, error);
+			}
+		});
+		requestQueue.add(req);
+	}
+
+	public void registerOccupation(RegisteredOccupation ro, final ResultCallback resultCallback) {
 		Request req = new JsonObjectRequest(Request.Method.POST, API_ADD_OCCUPATION_REGISTRATION, compactGson.toJson(ro), new Response.Listener<JSONObject>() {
 			@Override
 			public void onResponse(JSONObject response) {
-				resultCallback.onSuccess(response.toString());
+				resultCallback.onResult(ResultCallback.Result.SUCCESS, null, null);
 			}
 		}, new Response.ErrorListener() {
 			@Override
 			public void onErrorResponse(VolleyError error) {
-				resultCallback.onError(error);
+				resultCallback.onResult(ResultCallback.Result.FAIL, null, error);
 			}
 		}) {
 			@Override
@@ -242,7 +265,7 @@ public class BackendService {
 
 			@Override
 			protected Response<JSONObject> parseNetworkResponse(NetworkResponse response) {
-				if(response.data.length == 0) {
+				if (response.data.length == 0) {
 					response = new NetworkResponse(response.statusCode, "{}".getBytes(), response.headers, response.notModified);
 				}
 				return super.parseNetworkResponse(response);
