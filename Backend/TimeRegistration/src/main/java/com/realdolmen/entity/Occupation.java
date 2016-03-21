@@ -2,6 +2,10 @@ package com.realdolmen.entity;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import org.hibernate.Hibernate;
+import org.hibernate.search.annotations.DocumentId;
+import org.hibernate.search.annotations.Field;
+import org.hibernate.search.annotations.Indexed;
+import org.hibernate.search.annotations.ProvidedId;
 
 import javax.persistence.*;
 import javax.transaction.Transactional;
@@ -15,9 +19,11 @@ import java.util.Date;
  */
 @Entity
 @Inheritance(strategy = InheritanceType.JOINED)
-@NamedQueries(
-        @NamedQuery(name = "Occupation.FindAvailableByEmployee", query = "SELECT o FROM Occupation o")
-)
+@NamedQueries({
+        @NamedQuery(name = "Occupation.findAvailableByEmployee", query = "SELECT o FROM Occupation o"),
+        @NamedQuery(name = "Occupation.findAll", query = "SELECT o FROM Occupation o")
+})
+@Indexed
 public class Occupation {
 
     /**
@@ -34,13 +40,15 @@ public class Occupation {
 
     @Column
     @NotNull(message = "name")
+    @Field
     private String name;
 
     @Version
     @Column(name = "version")
     private int version;
 
-    @Column
+    @Column(length = 2000)
+    @Field
     private String description;
 
     public String getName() {
@@ -93,6 +101,7 @@ public class Occupation {
     }
 
     @Id
+    @DocumentId
     @GeneratedValue(strategy = GenerationType.AUTO)
     @Column(name = "id", updatable = false, nullable = false)
     private long id;

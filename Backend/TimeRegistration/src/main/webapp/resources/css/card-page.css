@@ -31,3 +31,10 @@
 .text-center {
     text-align: center;
 }
+
+.occupation-content {
+    display: block;
+    text-align: justify;
+    max-height: 110px;
+    overflow: hidden;
+}

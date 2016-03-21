@@ -1,15 +1,15 @@
 package com.realdolmen.rest;
 
 import com.realdolmen.annotations.Authorized;
-import com.realdolmen.entity.Occupation;
-import com.realdolmen.entity.PersistenceUnit;
-import com.realdolmen.entity.RegisteredOccupation;
+import com.realdolmen.annotations.UserGroup;
+import com.realdolmen.entity.*;
 import com.realdolmen.service.SecurityManager;
 import com.realdolmen.validation.ValidationResult;
 import com.realdolmen.validation.Validator;
 
 import javax.ejb.Stateless;
 import javax.inject.Inject;
+import javax.json.JsonObject;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.persistence.TypedQuery;
@@ -41,6 +41,26 @@ public class OccupationEndpoint {
         Calendar c = Calendar.getInstance();
         c.set(Calendar.YEAR, 2015);
         MINIMUM_EPOCH = c.getTime().getTime();
+    }
+
+    @GET
+    @Authorized(UserGroup.MANAGEMENT)
+    @Produces({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
+    public Response listAll(@QueryParam("start") Integer startPosition,
+                            @QueryParam("max") Integer maxResult) {
+        TypedQuery<Occupation> findAllQuery = em.createNamedQuery("Occupation.findAll", Occupation.class);
+
+        if (startPosition != null) {
+            findAllQuery.setFirstResult(startPosition);
+        }
+
+        if (maxResult != null) {
+            findAllQuery.setMaxResults(maxResult);
+        }
+
+        List<Occupation> occupations = findAllQuery.getResultList();
+        occupations.forEach(Occupation::initialize);
+        return Response.ok().entity(occupations).build();
     }
 
     @GET
@@ -103,9 +123,10 @@ public class OccupationEndpoint {
 
     @GET
     @Authorized
+    @Path("/available")
     @Produces(MediaType.APPLICATION_JSON)
     public Response getAvailableOccupations() {
-        TypedQuery<Occupation> query = em.createNamedQuery("Occupation.FindAvailableByEmployee", Occupation.class);
+        TypedQuery<Occupation> query = em.createNamedQuery("Occupation.findAvailableByEmployee", Occupation.class);
         List<Occupation> occupations = query.getResultList();
         occupations.forEach(Occupation::initialize);
         return Response.ok(occupations).build();
@@ -125,5 +146,48 @@ public class OccupationEndpoint {
         ro.getRegistrar().getRegisteredOccupations().add(ro);
         em.persist(ro);
         return Response.created(URI.create("/" + ro.getId())).build();
+    }
+
+    @POST
+    @Path("/{id:[0-9][0-9]*}/points")
+    @Authorized(UserGroup.PROJECT_MANAGER_ONLY)
+    @Transactional
+    public Response addLocationPoint(@PathParam("id") Long id, JsonObject point) {
+        if (id == null) {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
+
+        if (point == null) {
+            return Response.status(Response.Status.BAD_REQUEST).build();
+        }
+
+        Project project = em.find(Project.class, id);
+
+        if (project == null) {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
+
+        String longitude = point.getString("long", "");
+        String latitude = point.getString("lat", "");
+
+        if (longitude.isEmpty() || latitude.isEmpty()) {
+            return Response.status(Response.Status.BAD_REQUEST).build();
+        }
+
+        Location location = null;
+
+        try {
+            location = new Location(Double.parseDouble(latitude), Double.parseDouble(longitude));
+            project.getLocations().add(location);
+        } catch (NumberFormatException nfex) {
+            return Response.status(Response.Status.BAD_REQUEST).build();
+        }
+
+        if (location != null) {
+            em.persist(location);
+            em.merge(project);
+        }
+
+        return Response.noContent().build();
     }
 }

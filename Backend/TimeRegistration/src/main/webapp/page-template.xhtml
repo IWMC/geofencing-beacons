@@ -12,7 +12,10 @@
                 <main>
                     <h:form>
                         <ul id="dropdown1" class="dropdown-content" style="min-width: 200px;">
-                            <li><h:commandLink action="#{pages.searchEmployee().jsf()}" value="#{msg['page.navigation.employees']}"/></li>
+                            <li><h:commandLink action="#{pages.searchEmployee().jsf()}"
+                                               value="#{msg['page.navigation.employees']}"/></li>
+                            <li><h:commandLink action="#{pages.searchOccupation().jsf()}"
+                                               value="#{msg['page.navigation.occupations']}"/></li>
                         </ul>
                     </h:form>
 
@@ -30,8 +33,12 @@
                             <h:form>
                                 <ul class="right" id="nav-mobile">
                                     <li class="hide-on-med-and-down" style="margin-top: -2px;">
-                                        <h:commandLink styleClass="waves-effect waves-light" action="#{pages.searchEmployee().jsf()}"
+                                        <h:commandLink action="#{pages.searchEmployee().jsf()}"
                                                        value="#{msg['page.navigation.employees']}"/>
+                                    </li>
+                                    <li class="hide-on-med-and-down" style="margin-top: -2px;">
+                                        <h:commandLink action="#{pages.searchOccupation().jsf()}"
+                                                       value="#{msg['page.navigation.occupations']}"/>
                                     </li>
                                     <li>
                                         <a class="dropdown-button hide-on-large-only" href="#!"

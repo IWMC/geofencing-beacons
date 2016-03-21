@@ -12,7 +12,7 @@
         <ui:define name="toolbar-after-logo">
             <h:form styleClass="right show-on-medium-and-up">
                 <div class="input-field">
-                    <p:inputText id="search" type="search" required="true" value="#{employeeSearch.searchTerms}"/>
+                    <p:inputText id="search" type="search" required="true" value="#{occupationSearch.searchTerms}"/>
                     <label for="search"><i class="material-icons">search</i></label>
                     <i class="material-icons">close</i>
                     <h:commandButton id="searchButton" value="#{msg['search']}" style="display: none;">
@@ -24,7 +24,7 @@
         <ui:define name="additional-toolbar-full">
             <h:form styleClass="lookup-form">
                 <div class="input-field">
-                    <p:inputText id="search" type="search" required="true" value="#{employeeSearch.searchTerms}"/>
+                    <p:inputText id="search" type="search" required="true" value="#{occupationSearch.searchTerms}"/>
                     <label for="search"><i class="material-icons">search</i></label>
                     <i class="material-icons">close</i>
                     <h:commandButton id="searchButton" value="#{msg['search']}" style="display: none;">
@@ -36,26 +36,26 @@
         <ui:define name="body">
             <div class="container">
                 <div class="fixed-action-btn">
-                    <h:link outcome="#{pages.addEmployee().jsf()}" styleClass="btn-floating btn-large red">
+                    <h:link outcome="#{pages.addOccupation().jsf()}" styleClass="btn-floating btn-large red">
                         <i class="large material-icons">add</i>
                     </h:link>
                 </div>
                 <h:panelGroup id="search-results">
                     <div class="row">
-                        <ui:repeat value="#{employeeSearch.employees}"
+                        <ui:repeat value="#{occupationSearch.occupations}"
                                    var="occupation">
-                            <div class="col s12 m6 l4">
+                            <div class="col m12 l6">
                                 <h:form>
                                     <div class="card">
                                         <div class="card-content">
                                             <h:outputText styleClass="card-title"
-                                                          value="#{occupation.firstName} #{occupation.lastName}"/><br/>
-                                            <h:outputText styleClass="truncate" value="#{occupation.email}"/>
+                                                          value="#{occupation.name}"/><br/>
+                                            <h:outputText styleClass="occupation-content" value="#{occupation.description}"/>
                                         </div>
                                         <div class="card-action">
                                             <p:link styleClass="realdolmen-blue-text waves-effect waves-realdolmen-blue card-action-flat"
                                                     value="#{msg['employee.search.open_details']}"
-                                                    outcome="#{pages.detailsEmployee().param('id', occupation.id).redirect()}"/>
+                                                    outcome="#{pages.detailsOccupation().param('id', occupation.id).redirect()}"/>
                                         </div>
                                     </div>
                                 </h:form>

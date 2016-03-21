@@ -30,6 +30,12 @@ public class Pages {
 
     public static Page addEmployee() { return new Page("/employees/employee-add.xhtml"); }
 
+    public static Page searchOccupation() { return new Page("/occupations/search-occupations.xhmtl"); }
+
+    public static Page addOccupation() { return new Page("/occupations/occupation-add.xhtml"); }
+
+    public static Page detailsOccupation() { return new Page("/occupations/occupation-details.xhtml"); }
+
     public static class Page {
 
         private String baseUrl;

@@ -1,8 +1,8 @@
-package com.realdolmen.jsf.employees;
+package com.realdolmen.jsf.occupations;
 
-import com.realdolmen.entity.Employee;
+import com.realdolmen.entity.Occupation;
 import com.realdolmen.entity.PersistenceUnit;
-import com.realdolmen.rest.EmployeeEndpoint;
+import com.realdolmen.rest.OccupationEndpoint;
 import org.hibernate.search.jpa.FullTextEntityManager;
 import org.hibernate.search.query.dsl.QueryBuilder;
 
@@ -13,18 +13,17 @@ import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.transaction.Transactional;
 import javax.ws.rs.core.Response;
-import java.io.Serializable;
 import java.util.List;
 
 /**
- * A controller for <code>/employees/search-employees.xhtml</code>.
+ * A controller for <code>/employees/search-occupations.xhtml</code>.
  */
-@Named("employeeSearch")
+@Named("occupationSearch")
 @RequestScoped
-public class EmployeeSearchController implements Serializable {
+public class OccupationSearchController {
 
     @Inject
-    private EmployeeEndpoint endpoint;
+    private OccupationEndpoint endpoint;
 
     @PersistenceContext(unitName = PersistenceUnit.PRODUCTION)
     private EntityManager em;
@@ -32,36 +31,34 @@ public class EmployeeSearchController implements Serializable {
     private String searchTerms;
 
     @Transactional
-    public List<Employee> getEmployeesWithSearchTerms() {
+    public List<Occupation> getOccupationsWithSearchTerms() {
         if (getSearchTerms() == null || getSearchTerms().isEmpty()) {
-            return getEmployees();
+            return getOccupations();
         }
 
         FullTextEntityManager fullTextEntityManager = org.hibernate.search.jpa.Search.getFullTextEntityManager(em);
 
         QueryBuilder qb = fullTextEntityManager.getSearchFactory()
-                .buildQueryBuilder().forEntity(Employee.class).get();
+                .buildQueryBuilder().forEntity(Occupation.class).get();
         org.apache.lucene.search.Query luceneQuery = qb
-                .bool().should(qb.keyword().onField("username").matching(searchTerms).createQuery())
-                .should(qb.phrase().onField("email").sentence(searchTerms).createQuery())
-                .should(qb.keyword().onFields("firstName", "lastName").matching(searchTerms).createQuery())
+                .bool().should(qb.keyword().onFields("description", "name").matching(searchTerms).createQuery())
                 .createQuery();
 
         javax.persistence.Query jpaQuery =
-                fullTextEntityManager.createFullTextQuery(luceneQuery, Employee.class);
+                fullTextEntityManager.createFullTextQuery(luceneQuery, Occupation.class);
 
-        List<Employee> result = jpaQuery.getResultList();
+        List<Occupation> result = jpaQuery.getResultList();
         return result;
     }
 
     @Transactional
-    public List<Employee> getEmployees() {
+    public List<Occupation> getOccupations() {
         if (searchTerms == null || searchTerms.isEmpty()) {
-            Response response = endpoint.listAll(0, 0);
-            List<Employee> employees = (List<Employee>) response.getEntity();
+            Response response = endpoint.getAvailableOccupations();
+            List<Occupation> employees = (List<Occupation>) response.getEntity();
             return employees;
         } else {
-            return getEmployeesWithSearchTerms();
+            return getOccupationsWithSearchTerms();
         }
     }
 

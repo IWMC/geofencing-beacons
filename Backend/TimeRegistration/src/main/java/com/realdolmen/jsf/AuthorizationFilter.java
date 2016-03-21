@@ -1,12 +1,8 @@
 package com.realdolmen.jsf;
 
 import com.realdolmen.entity.Employee;
-import com.realdolmen.json.JsonWebToken;
-import com.realdolmen.service.SecurityManager;
 
-import javax.ejb.Stateless;
 import javax.enterprise.context.ApplicationScoped;
-import javax.enterprise.inject.Instance;
 import javax.inject.Inject;
 import javax.servlet.*;
 import javax.servlet.annotation.WebFilter;
@@ -14,7 +10,6 @@ import javax.servlet.annotation.WebInitParam;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.security.Security;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Stream;
@@ -24,7 +19,7 @@ import java.util.stream.Stream;
  */
 @ApplicationScoped
 @WebFilter(urlPatterns = "*.xhtml", initParams = {
-        @WebInitParam(name = AuthorizationFilter.INCLUDED_WEB_INIT_PARAM, value = "/index.xhtml;/employees/.*")
+        @WebInitParam(name = AuthorizationFilter.INCLUDED_WEB_INIT_PARAM, value = "/index.xhtml;/employees/.*;/occupations/.*")
 })
 public class AuthorizationFilter implements Filter {
 

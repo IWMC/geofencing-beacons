@@ -30,6 +30,7 @@ public class Project extends Occupation implements Serializable {
      * @param project the project that should be initialized
      */
     public static void initialize(Project project) {
+        Hibernate.initialize(project.getLocations());
         Hibernate.initialize(project.getSubProjects());
         project.getSubProjects().forEach(Project::initialize);
     }
@@ -55,11 +56,15 @@ public class Project extends Occupation implements Serializable {
     private final int DTYPE = 2;
 
     @OneToMany
+    // TODO: 21/03/2016 Field bridge to allow search on subprojects
     private Set<Project> subProjects = new HashSet<>();
 
     @ManyToMany(mappedBy = "memberProjects")
     @JsonIgnore
     private Set<Employee> employees = new HashSet<>();
+
+    @OneToMany
+    private Set<Location> locations = new HashSet<>();
 
     public Date getStartDate() {
         return startDate;
@@ -102,5 +107,13 @@ public class Project extends Occupation implements Serializable {
         String result = getClass().getSimpleName() + " ";
         result += "projectNr: " + projectNr;
         return result;
+    }
+
+    public Set<Location> getLocations() {
+        return locations;
+    }
+
+    public void setLocations(Set<Location> locations) {
+        this.locations = locations;
     }
 }
