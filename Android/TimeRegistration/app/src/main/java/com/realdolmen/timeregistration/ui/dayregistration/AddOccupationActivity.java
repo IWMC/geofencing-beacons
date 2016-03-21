@@ -26,6 +26,9 @@ import com.realdolmen.timeregistration.util.DateUtil;
 import com.realdolmen.timeregistration.util.adapters.dayregistration.OccupationRecyclerAdapter;
 
 import org.joda.time.DateTime;
+import org.joda.time.DateTimeFieldType;
+import org.joda.time.DateTimeZone;
+import org.joda.time.LocalDateTime;
 
 import java.util.Calendar;
 
@@ -70,6 +73,8 @@ public class AddOccupationActivity extends AppCompatActivity {
 			throw new IllegalStateException("A base date must be passed as serializable extra");
 		}
 
+		DateUtil.enforceUTC(bd);
+
 		baseDate = bd;
 		initToolbar();
 		initRecycler();
@@ -83,39 +88,37 @@ public class AddOccupationActivity extends AppCompatActivity {
 
 	@OnClick(R.id.add_occupation_startTime)
 	void openStartDateSelectionDialog() {
-		Calendar calendar = Calendar.getInstance();
 		TimePickerDialog dialog = new TimePickerDialog(this, new TimePickerDialog.OnTimeSetListener() {
 			@Override
 			public void onTimeSet(TimePicker view, int hourOfDay, int minute) {
 				startDate = baseDate.withHourOfDay(hourOfDay).withMinuteOfHour(minute);
 				updateDateButtons();
 			}
-		}, calendar.get(Calendar.HOUR_OF_DAY), calendar.get(Calendar.MINUTE), DateFormat.is24HourFormat(this));
+		}, DateTime.now().get(DateTimeFieldType.hourOfDay()), DateTime.now().get(DateTimeFieldType.minuteOfHour()), DateFormat.is24HourFormat(this));
 
 		dialog.show();
 	}
 
 	@OnClick(R.id.add_occupation_endTime)
 	void openEndDateSelectionDialog() {
-		Calendar calendar = Calendar.getInstance();
 		TimePickerDialog dialog = new TimePickerDialog(this, new TimePickerDialog.OnTimeSetListener() {
 			@Override
 			public void onTimeSet(TimePicker view, int hourOfDay, int minute) {
 				endDate = baseDate.withHourOfDay(hourOfDay).withMinuteOfHour(minute);
 				updateDateButtons();
 			}
-		}, calendar.get(Calendar.HOUR_OF_DAY), calendar.get(Calendar.MINUTE), DateFormat.is24HourFormat(this));
+		}, DateTime.now().get(DateTimeFieldType.hourOfDay()), DateTime.now().get(DateTimeFieldType.minuteOfHour()), DateFormat.is24HourFormat(this));
 
 		dialog.show();
 	}
 
 	void updateDateButtons() {
 		if (startDate == null) {
-			startDate = new DateTime(baseDate);
+            startDate = DateUtil.toLocal(baseDate);
 		}
 
 		if (endDate == null) {
-			endDate = new DateTime(baseDate);
+			endDate = DateUtil.toLocal(baseDate);
 		}
 		startButton.setText(DateUtil.formatToHours(startDate, DateFormat.is24HourFormat(getApplicationContext())));
 		endButton.setText(DateUtil.formatToHours(endDate, DateFormat.is24HourFormat(getApplicationContext())));
@@ -174,8 +177,8 @@ public class AddOccupationActivity extends AppCompatActivity {
 			if (validate()) {
 				Intent i = new Intent();
 				i.putExtra(SELECTED_OCCUPATION, adapter.getSelectedItem());
-				i.putExtra(START_DATE, startDate);
-				i.putExtra(END_DATE, endDate);
+				i.putExtra(START_DATE, DateUtil.toUTC(startDate));
+				i.putExtra(END_DATE, endDate.toDateTime(DateTimeZone.UTC));
 				setResult(RESULT_OK, i);
 				finish();
 			}

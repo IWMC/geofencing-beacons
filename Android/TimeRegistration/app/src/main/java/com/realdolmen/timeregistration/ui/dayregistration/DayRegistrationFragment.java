@@ -39,173 +39,174 @@ import butterknife.ButterKnife;
  */
 public class DayRegistrationFragment extends Fragment {
 
-	public static final String TAG = "DayRegistration";
+    public static final String TAG = "DayRegistration";
 
-	@Bind(R.id.day_registration_card_recycler)
-	RecyclerView recyclerView;
+    @Bind(R.id.day_registration_card_recycler)
+    RecyclerView recyclerView;
 
-	@Bind(R.id.day_registration_emptyState)
-	LinearLayout emptyStateLabel;
+    @Bind(R.id.day_registration_emptyState)
+    LinearLayout emptyStateLabel;
 
-	private DayRegistrationActivity parent;
+    private DayRegistrationActivity parent;
 
-	private AdapterState state;
+    private AdapterState state;
 
-	public static final String DATE_PARAM = "DATE";
+    public static final String DATE_PARAM = "DATE";
 
-	private DateTime selectedDate;
+    private DateTime selectedDate;
 
-	private ObservableArrayList<RegisteredOccupation> registeredOccupationList;
-	private RegisteredOccupationRecyclerAdapter adapter;
+    private ObservableArrayList<RegisteredOccupation> registeredOccupationList;
+    private RegisteredOccupationRecyclerAdapter adapter;
 
-	public AdapterState getState() {
-		return state;
-	}
+    public AdapterState getState() {
+        return state;
+    }
 
-	public void setState(AdapterState state) {
-		this.state = state;
-	}
+    public void setState(AdapterState state) {
+        this.state = state;
+    }
 
-	//Required empty constructor
-	public DayRegistrationFragment() {
+    //Required empty constructor
+    public DayRegistrationFragment() {
 
-	}
+    }
 
-	@Override
-	public void onAttach(Context context) {
-		super.onAttach(context);
-		if (context instanceof DayRegistrationActivity) {
-			parent = (DayRegistrationActivity) context;
-		}
-	}
+    @Override
+    public void onAttach(Context context) {
+        super.onAttach(context);
+        if (context instanceof DayRegistrationActivity) {
+            parent = (DayRegistrationActivity) context;
+        }
+    }
 
-	@Override
-	public void onResume() {
-		super.onResume();
-		parent.setCurrentDate(selectedDate);
-	}
+    @Override
+    public void onResume() {
+        super.onResume();
+        parent.setCurrentDate(selectedDate);
+    }
 
-	@Override
-	public void onViewCreated(View view, Bundle savedInstanceState) {
-		super.onViewCreated(view, savedInstanceState);
-		if (getArguments() != null && !getArguments().isEmpty()) {
-			selectedDate = (DateTime) getArguments().getSerializable(DATE_PARAM);
-		} else {
-			throw new IllegalStateException("DayRegistrationFragment requires a date argument.");
-		}
-		state = new AdapterState.NewlyEmptyState();
-		parent.setCurrentDate(selectedDate);
-		registeredOccupationList = new ObservableArrayList<>();
-		adapter = new RegisteredOccupationRecyclerAdapter(selectedDate);
-		recyclerView.setAdapter(adapter);
-		state.doNotify(this, adapter);
-		registeredOccupationList.addOnListChangedCallback(new SimpleObservableCallback() {
-			@Override
-			public void onChanged(ObservableList sender) {
-				checkState();
-			}
+    @Override
+    public void onViewCreated(View view, Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
+        if (getArguments() != null && !getArguments().isEmpty()) {
+            selectedDate = (DateTime) getArguments().getSerializable(DATE_PARAM);
+        } else {
+            throw new IllegalStateException("DayRegistrationFragment requires a date argument.");
+        }
+        state = new AdapterState.NewlyEmptyState();
+        parent.setCurrentDate(selectedDate);
+        registeredOccupationList = new ObservableArrayList<>();
+        adapter = new RegisteredOccupationRecyclerAdapter(selectedDate);
+        recyclerView.setAdapter(adapter);
+        state.doNotify(this, adapter);
+        registeredOccupationList.addOnListChangedCallback(new SimpleObservableCallback() {
+            @Override
+            public void onChanged(ObservableList sender) {
+                checkState();
+            }
 
-			@Override
-			public void onItemRangeInserted(ObservableList sender, int positionStart, int itemCount) {
-				checkState();
-			}
+            @Override
+            public void onItemRangeInserted(ObservableList sender, int positionStart, int itemCount) {
+                checkState();
+            }
 
-			@Override
-			public void onItemRangeRemoved(ObservableList sender, int positionStart, int itemCount) {
-				checkState();
-			}
+            @Override
+            public void onItemRangeRemoved(ObservableList sender, int positionStart, int itemCount) {
+                checkState();
+            }
 
-			@Override
-			public void onItemRangeChanged(ObservableList sender, int positionStart, int itemCount) {
-				checkState();
-			}
+            @Override
+            public void onItemRangeChanged(ObservableList sender, int positionStart, int itemCount) {
+                checkState();
+            }
 
-			@Override
-			public void onItemRangeMoved(ObservableList sender, int fromPosition, int toPosition, int itemCount) {
-				checkState();
-			}
-		});
-		Log.i(TAG, "(onViewCreated) Adding new adapter and state is " + state.getClass().getSimpleName());
-		refreshData();
-		recyclerView.setLayoutManager(new LinearLayoutManager(getContext(), LinearLayoutManager.VERTICAL, false));
-		ItemTouchHelper.SimpleCallback simpleItemTouchCallback = new ItemTouchHelper.SimpleCallback(0, ItemTouchHelper.RIGHT) {
-			@Override
-			public boolean onMove(RecyclerView recyclerView, RecyclerView.ViewHolder viewHolder, RecyclerView.ViewHolder target) {
-				return false;
-			}
+            @Override
+            public void onItemRangeMoved(ObservableList sender, int fromPosition, int toPosition, int itemCount) {
+                checkState();
+            }
+        });
+        Log.i(TAG, "(onViewCreated) Adding new adapter and state is " + state.getClass().getSimpleName());
+        refreshData();
+        recyclerView.setLayoutManager(new LinearLayoutManager(getContext(), LinearLayoutManager.VERTICAL, false));
+        ItemTouchHelper.SimpleCallback simpleItemTouchCallback = new ItemTouchHelper.SimpleCallback(0, ItemTouchHelper.RIGHT) {
+            @Override
+            public boolean onMove(RecyclerView recyclerView, RecyclerView.ViewHolder viewHolder, RecyclerView.ViewHolder target) {
+                return false;
+            }
 
-			@Override
-			public void onSwiped(final RecyclerView.ViewHolder viewHolder, int swipeDir) {
-				if (swipeDir != ItemTouchHelper.RIGHT) {
-					return;
-				}
-				new AlertDialog.Builder(getContext()).setTitle("Delete?").setMessage("Do you want to delete " + viewHolder + "?").setIcon(R.drawable.ic_delete_24dp).setNegativeButton("No", new DialogInterface.OnClickListener() {
-					@Override
-					public void onClick(DialogInterface dialog, int which) {
-						dialog.dismiss();
-						recyclerView.getAdapter().notifyDataSetChanged();
-					}
-				}).setPositiveButton("Yes", new DialogInterface.OnClickListener() {
-					@Override
-					public void onClick(DialogInterface dialog, int which) {
-						//TODO: remove item from repository
-						//((RegisteredOccupationRecyclerAdapter) recyclerView.getAdapter()).removeItemAt(viewHolder.getAdapterPosition());
-						dialog.dismiss();
-					}
-				}).setOnCancelListener(new DialogInterface.OnCancelListener() {
-					@Override
-					public void onCancel(DialogInterface dialog) {
-						dialog.dismiss();
-						recyclerView.getAdapter().notifyDataSetChanged();
-					}
-				}).show();
-			}
-		};
+            @Override
+            public void onSwiped(final RecyclerView.ViewHolder viewHolder, int swipeDir) {
+                if (swipeDir != ItemTouchHelper.RIGHT) {
+                    return;
+                }
+                new AlertDialog.Builder(getContext()).setTitle("Delete?").setMessage("Do you want to delete " + viewHolder + "?").setIcon(R.drawable.ic_delete_24dp).setNegativeButton("No", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        dialog.dismiss();
+                        recyclerView.getAdapter().notifyDataSetChanged();
+                    }
+                }).setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        //TODO: remove item from repository
+                        //((RegisteredOccupationRecyclerAdapter) recyclerView.getAdapter()).removeItemAt(viewHolder.getAdapterPosition());
+                        dialog.dismiss();
+                    }
+                }).setOnCancelListener(new DialogInterface.OnCancelListener() {
+                    @Override
+                    public void onCancel(DialogInterface dialog) {
+                        dialog.dismiss();
+                        recyclerView.getAdapter().notifyDataSetChanged();
+                    }
+                }).show();
+            }
+        };
 
-		ItemTouchHelper itemTouchHelper = new ItemTouchHelper(simpleItemTouchCallback);
-		itemTouchHelper.attachToRecyclerView(recyclerView);
-	}
+        ItemTouchHelper itemTouchHelper = new ItemTouchHelper(simpleItemTouchCallback);
+        itemTouchHelper.attachToRecyclerView(recyclerView);
+    }
 
-	public void refreshData() {
-		parent.getDataForDate(selectedDate, new ResultCallback<List<RegisteredOccupation>>() {
-			@Override
-			public void onResult(@NonNull Result result, @Nullable List<RegisteredOccupation> data, @Nullable VolleyError error) {
-				if (result == Result.SUCCESS) {
-					recyclerView.setAdapter(new RegisteredOccupationRecyclerAdapter(selectedDate));
-				}
-				checkState();
-			}
-		});
-	}
+    public void refreshData() {
+        parent.getDataForDate(selectedDate, new ResultCallback<List<RegisteredOccupation>>() {
+            @Override
+            public void onResult(@NonNull Result result, @Nullable List<RegisteredOccupation> data, @Nullable VolleyError error) {
+                System.out.println(data.size());
+                if (result == Result.SUCCESS) {
+                    recyclerView.setAdapter(new RegisteredOccupationRecyclerAdapter(selectedDate));
+                }
+                checkState();
+            }
+        });
+    }
 
-	@Override
-	public View onCreateView(LayoutInflater inflater, ViewGroup container,
-							 Bundle savedInstanceState) {
-		View v = inflater.inflate(R.layout.fragment_day_registration, container, false);
-		ButterKnife.bind(this, v);
-		return v;
-	}
+    @Override
+    public View onCreateView(LayoutInflater inflater, ViewGroup container,
+                             Bundle savedInstanceState) {
+        View v = inflater.inflate(R.layout.fragment_day_registration, container, false);
+        ButterKnife.bind(this, v);
+        return v;
+    }
 
-	@Override
-	public void onViewStateRestored(Bundle savedInstanceState) {
-		super.onViewStateRestored(savedInstanceState);
-	}
+    @Override
+    public void onViewStateRestored(Bundle savedInstanceState) {
+        super.onViewStateRestored(savedInstanceState);
+    }
 
-	public void showEmptyLabel() {
-		emptyStateLabel.setVisibility(View.VISIBLE);
-		recyclerView.setVisibility(View.GONE);
-	}
+    public void showEmptyLabel() {
+        emptyStateLabel.setVisibility(View.VISIBLE);
+        recyclerView.setVisibility(View.GONE);
+    }
 
-	public void showRecycler() {
-		emptyStateLabel.setVisibility(View.GONE);
-		recyclerView.setVisibility(View.VISIBLE);
-	}
+    public void showRecycler() {
+        emptyStateLabel.setVisibility(View.GONE);
+        recyclerView.setVisibility(View.VISIBLE);
+    }
 
-	private void checkState() {
-		if (state != null) {
-			state.doNotify(this, ((RegisteredOccupationRecyclerAdapter) recyclerView.getAdapter()));
-		} else {
-			Log.e(AdapterState.TAG, "State should not be null");
-		}
-	}
+    private void checkState() {
+        if (state != null) {
+            state.doNotify(this, ((RegisteredOccupationRecyclerAdapter) recyclerView.getAdapter()));
+        } else {
+            Log.e(AdapterState.TAG, "State should not be null");
+        }
+    }
 }

@@ -26,7 +26,7 @@ public class RegisteredOccupationViewHolder extends RecyclerView.ViewHolder {
 		title.setText(data.getOccupation().getName());
 		description.setVisibility(View.VISIBLE);
 		if (data.getRegisteredStart() != null)
-			description.setText(DateUtil.formatToHours(data.getRegisteredStart()) + " - " + (data.getRegisteredEnd() == null ? "Ongoing..." : DateUtil.formatToHours(data.getRegisteredEnd())));
+			description.setText(DateUtil.formatToHours(DateUtil.toLocal(data.getRegisteredStart())) + " - " + (DateUtil.toLocal(data.getRegisteredEnd()) == null ? "Ongoing..." : DateUtil.formatToHours(DateUtil.toLocal(data.getRegisteredEnd()))));
 		else
 			description.setText("No duration set!");
 	}

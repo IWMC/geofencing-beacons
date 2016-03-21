@@ -252,10 +252,12 @@ public class DayRegistrationActivity extends AppCompatActivity {
 		}
 	}
 
-	private void handleNewlyRegisteredOccupation(Occupation occ, DateTime start, DateTime end) {
+	private void handleNewlyRegisteredOccupation(Occupation occ, @UTC DateTime start, @UTC DateTime end) {
+		DateUtil.enforceUTC(start, "Start date must be in UTC format!");
+		DateUtil.enforceUTC(end, "End date must be in UTC format!");
 		final RegisteredOccupation ro = new RegisteredOccupation();
-		ro.setRegisteredStart(start.toDateTime(DateTimeZone.UTC));
-		ro.setRegisteredEnd(end.toDateTime(DateTimeZone.UTC));
+		ro.setRegisteredStart(start);
+		ro.setRegisteredEnd(end);
 		ro.setOccupation(occ);
 
 		Repositories.loadRegisteredOccupationRepository(this, new LoadCallback() {
@@ -267,6 +269,7 @@ public class DayRegistrationActivity extends AppCompatActivity {
 						public void onResult(@NonNull Result result, @Nullable RegisteredOccupation data, @Nullable VolleyError error) {
 							if (result == Result.SUCCESS) {
 								Snackbar.make(findViewById(android.R.id.content), "The registration has been saved.", Snackbar.LENGTH_LONG).show();
+                                refreshCurrent();
 							} else if (error != null) {
 								Snackbar.make(findViewById(android.R.id.content), "Your registration was not saved!", Snackbar.LENGTH_LONG).show();
 							}

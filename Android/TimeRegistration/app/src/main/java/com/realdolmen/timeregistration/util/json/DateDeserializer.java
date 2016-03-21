@@ -6,6 +6,7 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonParseException;
 
 import org.joda.time.DateTime;
+import org.joda.time.DateTimeZone;
 
 import java.lang.reflect.Type;
 
@@ -17,6 +18,6 @@ public class DateDeserializer implements JsonDeserializer<DateTime> {
 	@Override
 	public DateTime deserialize(JsonElement element, Type arg1, JsonDeserializationContext arg2) throws JsonParseException {
 		long date = element.getAsLong();
-		return new DateTime(date);
+		return new DateTime(date, DateTimeZone.UTC);
 	}
 }

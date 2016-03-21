@@ -45,8 +45,14 @@ public class RegisteredOccupationRepository extends DataRepository<RegisteredOcc
 
 	@Override
 	public void save(@NonNull Context context, @NonNull RegisteredOccupation element, @Nullable ResultCallback<RegisteredOccupation> callback) {
+		data.add(element);
+		invalidateData();
 		BackendService.with(context).registerOccupation(element, callback);
 		//TODO: Make use of local database
+	}
+
+	private void invalidateData() {
+		dataByDate.clear();
 	}
 
 	public List<RegisteredOccupation> getAll(@UTC DateTime date) {
