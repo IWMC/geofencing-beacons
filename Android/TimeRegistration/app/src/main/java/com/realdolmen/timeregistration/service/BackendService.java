@@ -11,7 +11,6 @@ import com.android.volley.RequestQueue;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonObjectRequest;
-import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -36,7 +35,7 @@ import java.util.Map;
  */
 public class BackendService {
 
-	private static final String HOST = "http://10.16.26.90";
+	private static final String HOST = "http://10.16.26.142";
 
 	private static final String
 			API_LOGIN_URI = HOST + "/api/user/login",
@@ -81,11 +80,11 @@ public class BackendService {
 	/**
 	 * Makes a network request to retrieve all the user's occupations between a date and end date.
 	 *  @param date    The starting date
-	 * @param callback {@link RequestCallback#onSuccess(Object)}
+	 * @param callback {@link ResultCallback#onSuccess(Object)}
 	 *                 is called when the server returned 200 OK. When the {@link GsonObjectRequest} could not parse the answer
-	 *                 {@link RequestCallback#onError(VolleyError)}
+	 *                 {@link ResultCallback#onError(VolleyError)}
 	 */
-	public void getOccupationsInDateRange(DateTime date, final RequestCallback<List<RegisteredOccupation>> callback) {
+	public void getOccupationsInDateRange(DateTime date, final ResultCallback<List<RegisteredOccupation>> callback) {
 		GsonObjectRequest req = new GsonObjectRequest<>(params(API_GET_REGISTERED_OCCUPATIONS,
 				date.toDateTime(DateTimeZone.UTC).getMillis()), RegisteredOccupation[].class
 				, auth(), new Response.Listener<RegisteredOccupation[]>() {
@@ -129,10 +128,10 @@ public class BackendService {
 	 * Sends a login request to the backend. The {@link Session} is converted to JSON using {@link Gson}.
 	 *
 	 * @param session  The session that contains the username and password to use for authentication.
-	 * @param callback The {@link RequestCallback< Session >}
+	 * @param callback The {@link ResultCallback < Session >}
 	 *                 used to inform the UI of network events.
 	 */
-	public void login(@NonNull final Session session, final @NonNull RequestCallback<Session> callback) {
+	public void login(@NonNull final Session session, final @NonNull ResultCallback<Session> callback) {
 
 		JsonObjectRequest request = new JsonObjectRequest(Request.Method.POST, API_LOGIN_URI,
 				compactGson.toJson(session), new Response.Listener<JSONObject>() {
@@ -182,7 +181,7 @@ public class BackendService {
 		return headers;
 	}
 
-	public void confirmOccupations(DateTime date, final RequestCallback callback) {
+	public void confirmOccupations(DateTime date, final ResultCallback callback) {
 		JsonObjectRequest req = new JsonObjectRequest(Request.Method.PUT, params(API_CONFIRM_OCCUPATIONS, date.toDateTime(DateTimeZone.UTC).getMillis()), "", new Response.Listener() {
 			@Override
 			public void onResponse(Object response) {
@@ -207,33 +206,33 @@ public class BackendService {
 		return auth(null);
 	}
 
-	public void getRelevantOccupations(final RequestCallback<List<Occupation>> requestCallback) {
+	public void getRelevantOccupations(final ResultCallback<List<Occupation>> resultCallback) {
 		GsonObjectRequest req = new GsonObjectRequest<>(API_GET_OCCUPATIONS, Occupation[].class
 				, auth(), new Response.Listener<Occupation[]>() {
 			@Override
 			public void onResponse(Occupation[] response) {
-				requestCallback.onSuccess(Arrays.asList(response));
+				resultCallback.onSuccess(Arrays.asList(response));
 			}
 		}, new Response.ErrorListener() {
 			@Override
 			public void onErrorResponse(VolleyError error) {
-				requestCallback.onError(error);
+				resultCallback.onError(error);
 			}
 		});
 
 		requestQueue.add(req);
 	}
 
-	public void registerOccupation(RegisteredOccupation ro, final RequestCallback<String> requestCallback) {
+	public void registerOccupation(RegisteredOccupation ro, final ResultCallback<String> resultCallback) {
 		Request req = new JsonObjectRequest(Request.Method.POST, API_ADD_OCCUPATION_REGISTRATION, compactGson.toJson(ro), new Response.Listener<JSONObject>() {
 			@Override
 			public void onResponse(JSONObject response) {
-				requestCallback.onSuccess(response.toString());
+				resultCallback.onSuccess(response.toString());
 			}
 		}, new Response.ErrorListener() {
 			@Override
 			public void onErrorResponse(VolleyError error) {
-				requestCallback.onError(error);
+				resultCallback.onError(error);
 			}
 		}) {
 			@Override

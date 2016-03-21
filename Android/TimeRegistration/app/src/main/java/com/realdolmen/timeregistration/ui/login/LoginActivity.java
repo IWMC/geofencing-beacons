@@ -15,7 +15,7 @@ import com.realdolmen.timeregistration.R;
 import com.realdolmen.timeregistration.model.Session;
 import com.realdolmen.timeregistration.service.BackendService;
 import com.realdolmen.timeregistration.service.GenericVolleyError;
-import com.realdolmen.timeregistration.service.RequestCallback;
+import com.realdolmen.timeregistration.service.ResultCallback;
 import com.realdolmen.timeregistration.ui.dayregistration.DayRegistrationActivity;
 
 import butterknife.Bind;
@@ -66,7 +66,7 @@ public class LoginActivity extends AppCompatActivity {
 			loginProgress.show();
 			loginProgress.setCanceledOnTouchOutside(false);
 			loginProgress.setCancelable(false);
-			BackendService.with(this).login(new Session(username.getText().toString(), password.getText().toString()), new RequestCallback<Session>() {
+			BackendService.with(this).login(new Session(username.getText().toString(), password.getText().toString()), new ResultCallback<Session>() {
 				@Override
 				public void onSuccess(Session data) {
 					runOnUiThread(new Runnable() {

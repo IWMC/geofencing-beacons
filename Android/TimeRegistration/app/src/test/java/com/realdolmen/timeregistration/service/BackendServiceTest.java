@@ -41,7 +41,7 @@ public class BackendServiceTest {
     private RequestQueue requestQueue;
 
     @Mock
-    private RequestCallback requestCallback;
+    private ResultCallback resultCallback;
 
     @InjectMocks
     private BackendService backend;

@@ -7,7 +7,7 @@ import com.android.volley.VolleyError;
  *
  * @param <E> Generic type of the onSuccess data parameter.
  */
-public interface RequestCallback<E> {
+public interface ResultCallback<E> {
 	/**
 	 * Called when the request succeeded. A request succeeds when the http response code is in the error range.
 	 *

@@ -7,6 +7,8 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import com.realdolmen.timeregistration.model.Occupation;
+import com.realdolmen.timeregistration.service.repository.DataRepository;
+import com.realdolmen.timeregistration.service.repository.Repositories;
 import com.realdolmen.timeregistration.ui.OccupationCard;
 import com.realdolmen.timeregistration.util.ObservableOccupationAdapterCallback;
 import com.realdolmen.timeregistration.util.SimpleObservableCallback;
@@ -15,24 +17,12 @@ import java.util.List;
 
 public class OccupationRecyclerAdapter extends RecyclerView.Adapter<OccupationViewHolder> {
 
-	private ObservableList<Occupation> data;
-
-	public List<Occupation> getData() {
-		return data;
-	}
-
 	private Occupation selectedItem;
 
 	private RecyclerView owner;
 
-	public void setData(ObservableList<Occupation> newData) {
-		this.data = newData;
-		data.addOnListChangedCallback(new ObservableOccupationAdapterCallback(this));
-	}
-
-	public OccupationRecyclerAdapter(ObservableArrayList<Occupation> data, RecyclerView owner) {
+	public OccupationRecyclerAdapter(RecyclerView owner) {
 		this.owner = owner;
-		setData(data);
 	}
 
 	@Override
@@ -49,7 +39,7 @@ public class OccupationRecyclerAdapter extends RecyclerView.Adapter<OccupationVi
 
 	@Override
 	public void onBindViewHolder(OccupationViewHolder holder, int position) {
-		Occupation occ = data.get(position);
+		Occupation occ = Repositories.occupationRepository().get(position);
 		holder.setData(occ);
 		if (selectedItem != null)
 			holder.onUpdateSelectionState(selectedItem);
@@ -57,7 +47,7 @@ public class OccupationRecyclerAdapter extends RecyclerView.Adapter<OccupationVi
 
 	@Override
 	public int getItemCount() {
-		return data.size();
+		return Repositories.occupationRepository().size();
 	}
 
 	public void setSelectedItem(Occupation occ) {

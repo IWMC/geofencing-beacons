@@ -21,7 +21,7 @@ import com.realdolmen.timeregistration.R;
 import com.realdolmen.timeregistration.model.Occupation;
 import com.realdolmen.timeregistration.model.RegisteredOccupation;
 import com.realdolmen.timeregistration.service.BackendService;
-import com.realdolmen.timeregistration.service.RequestCallback;
+import com.realdolmen.timeregistration.service.ResultCallback;
 import com.realdolmen.timeregistration.util.DateUtil;
 import com.realdolmen.timeregistration.util.adapters.dayregistration.DayRegistrationFragmentPagerAdapter;
 
@@ -138,8 +138,8 @@ public class DayRegistrationActivity extends AppCompatActivity {
 	//endregion
 
 	//region Data methods
-	public void getDataForDate(final DateTime date, final RequestCallback<List<RegisteredOccupation>> callback) {
-		BackendService.with(this).getOccupationsInDateRange(date, new RequestCallback<List<RegisteredOccupation>>() {
+	public void getDataForDate(final DateTime date, final ResultCallback<List<RegisteredOccupation>> callback) {
+		BackendService.with(this).getOccupationsInDateRange(date, new ResultCallback<List<RegisteredOccupation>>() {
 			@Override
 			public void onSuccess(List<RegisteredOccupation> data) {
 				registeredOccupations.put(date, data);
@@ -217,10 +217,10 @@ public class DayRegistrationActivity extends AppCompatActivity {
 		this.currentDate = currentDate;
 	}
 
-	public void confirm(@NonNull DateTime date, @Nullable final RequestCallback callback) {
+	public void confirm(@NonNull DateTime date, @Nullable final ResultCallback callback) {
 		confirmFab.setIndeterminate(true);
 		confirmFab.setEnabled(false);
-		BackendService.with(this).confirmOccupations(date, new RequestCallback() {
+		BackendService.with(this).confirmOccupations(date, new ResultCallback() {
 			@Override
 			public void onSuccess(Object data) {
 				if (callback != null)
@@ -254,7 +254,7 @@ public class DayRegistrationActivity extends AppCompatActivity {
 		ro.setRegisteredEnd(end.toDateTime(DateTimeZone.UTC));
 		ro.setOccupation(occ);
 
-		BackendService.with(this).registerOccupation(ro, new RequestCallback<String>() {
+		BackendService.with(this).registerOccupation(ro, new ResultCallback<String>() {
 
 			@Override
 			public void onSuccess(String data) {

@@ -2,7 +2,6 @@ package com.realdolmen.timeregistration.ui.dayregistration;
 
 import android.app.TimePickerDialog;
 import android.content.Intent;
-import android.databinding.ObservableArrayList;
 import android.os.Bundle;
 import android.support.design.widget.Snackbar;
 import android.support.v7.app.AlertDialog;
@@ -19,18 +18,16 @@ import android.widget.Button;
 import android.widget.TextView;
 import android.widget.TimePicker;
 
-import com.android.volley.VolleyError;
 import com.realdolmen.timeregistration.R;
 import com.realdolmen.timeregistration.model.Occupation;
-import com.realdolmen.timeregistration.service.BackendService;
-import com.realdolmen.timeregistration.service.RequestCallback;
+import com.realdolmen.timeregistration.service.repository.LoadCallback;
+import com.realdolmen.timeregistration.service.repository.Repositories;
 import com.realdolmen.timeregistration.util.DateUtil;
 import com.realdolmen.timeregistration.util.adapters.dayregistration.OccupationRecyclerAdapter;
 
 import org.joda.time.DateTime;
 
 import java.util.Calendar;
-import java.util.List;
 
 import butterknife.Bind;
 import butterknife.ButterKnife;
@@ -137,25 +134,23 @@ public class AddOccupationActivity extends AppCompatActivity {
 		}
 		initializing = true;
 		recycler.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false));
-		final ObservableArrayList<Occupation> obs = new ObservableArrayList<>();
-		adapter = new OccupationRecyclerAdapter(obs, recycler);
-		recycler.setAdapter(adapter);
-		BackendService.with(this).getRelevantOccupations(new RequestCallback<List<Occupation>>() {
-			@Override
-			public void onSuccess(List<Occupation> data) {
-				obs.addAll(data);
-				initializing = false;
-			}
 
+		Repositories.loadOccupationRepository(this, new LoadCallback() {
 			@Override
-			public void onError(VolleyError error) {
-				Snackbar.make(findViewById(android.R.id.content), "Could not fetch occupations!", Snackbar.LENGTH_LONG).setAction("Retry", new View.OnClickListener() {
-					@Override
-					public void onClick(View v) {
-						initRecycler();
-					}
-				}).show();
-				initializing = false;
+			public void onResult(Result result, Throwable error) {
+				if (result == Result.SUCCESS) {
+					adapter = new OccupationRecyclerAdapter(recycler);
+					recycler.setAdapter(adapter);
+					initializing = false;
+				} else {
+					Snackbar.make(findViewById(android.R.id.content), "Could not fetch occupations!", Snackbar.LENGTH_LONG).setAction("Retry", new View.OnClickListener() {
+						@Override
+						public void onClick(View v) {
+							initRecycler();
+						}
+					}).show();
+					initializing = false;
+				}
 			}
 		});
 	}
