@@ -22,7 +22,7 @@ import java.util.Map;
 
 public class RegisteredOccupationRepository extends DataRepository<RegisteredOccupation> {
 
-	private final Map<DateTime, List<RegisteredOccupation>> dataByDate = new HashMap<>();
+	private final @UTC Map<DateTime, List<RegisteredOccupation>> dataByDate = new HashMap<>();
 
 	RegisteredOccupationRepository(@NonNull Context context, @Nullable final LoadCallback callback) {
 		BackendService.with(context).getRegisteredOccupationsRangeUntilNow(DateUtil.today(), 7, new ResultCallback<List<RegisteredOccupation>>() {

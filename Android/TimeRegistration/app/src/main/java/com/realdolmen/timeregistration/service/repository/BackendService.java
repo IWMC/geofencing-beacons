@@ -39,7 +39,7 @@ import java.util.Map;
  */
 public class BackendService {
 
-	private static final String HOST = "http://78.22.34.105";
+	private static final String HOST = "http://10.16.26.142";
 
 	private static final String
 			API_LOGIN_URI = HOST + "/api/user/login",

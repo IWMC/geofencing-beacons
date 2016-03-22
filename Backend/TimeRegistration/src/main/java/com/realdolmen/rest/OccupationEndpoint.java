@@ -121,7 +121,6 @@ public class OccupationEndpoint {
         for (int i = 0; i < count; i++) {
             occupations.addAll((List<RegisteredOccupation>) getRegisteredOccupations(time.minusDays(i).getMillis()).getEntity());
         }
-        System.out.println("FOUND " + occupations.size() + " results!");
         return Response.ok(occupations).build();
     }
 

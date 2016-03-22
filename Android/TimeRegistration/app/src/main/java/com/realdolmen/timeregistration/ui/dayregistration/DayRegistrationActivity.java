@@ -58,8 +58,6 @@ public class DayRegistrationActivity extends AppCompatActivity {
 
 	private DayRegistrationFragmentPagerAdapter pagerAdapter;
 
-	private Map<DateTime, List<RegisteredOccupation>> registeredOccupations = new HashMap<>();
-
 	private List<DateTime> dates = new ArrayList<>();
 
 	public static final String SELECTED_DAY = "SELECTED_DAY";
@@ -165,8 +163,9 @@ public class DayRegistrationActivity extends AppCompatActivity {
 		}
 	}
 
-	public boolean isDateConfirmed(DateTime date) {
-		List<RegisteredOccupation> data = registeredOccupations.get(date);
+	public boolean isDateConfirmed(@UTC DateTime date) {
+		DateUtil.enforceUTC(date);
+		List<RegisteredOccupation> data = Repositories.registeredOccupationRepository().getAll(date);
 		if (data == null || data.isEmpty()) {
 			return false;
 		}
@@ -180,6 +179,7 @@ public class DayRegistrationActivity extends AppCompatActivity {
 	}
 
 	public int getStateIcon(DateTime date) {
+		DateUtil.enforceNotUTC(date, "Dates have to be local to provide proper state icons!");
 		if (isDateConfirmed(date)) {
 			return R.drawable.ic_assignment_turned_in_24dp;
 		}
@@ -210,6 +210,8 @@ public class DayRegistrationActivity extends AppCompatActivity {
 				Occupation occ = (Occupation) data.getSerializableExtra(AddOccupationActivity.SELECTED_OCCUPATION);
 				DateTime start = (DateTime) data.getSerializableExtra(AddOccupationActivity.START_DATE);
 				DateTime end = (DateTime) data.getSerializableExtra(AddOccupationActivity.END_DATE);
+				DateUtil.enforceUTC(start, "Received start date that is not in UTC!");
+				DateUtil.enforceUTC(end, "Received end date that is not in UTC!");
 				handleNewlyRegisteredOccupation(occ, start, end);
 			}
 		}

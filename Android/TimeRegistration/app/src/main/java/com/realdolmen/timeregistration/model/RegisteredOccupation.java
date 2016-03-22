@@ -1,5 +1,8 @@
 package com.realdolmen.timeregistration.model;
 
+import com.realdolmen.timeregistration.util.DateUtil;
+import com.realdolmen.timeregistration.util.UTC;
+
 import org.joda.time.DateTime;
 
 /**
@@ -9,8 +12,10 @@ public class RegisteredOccupation {
 
 	private Occupation occupation;
 
+	@UTC
 	private DateTime registeredStart;
 
+	@UTC
 	private DateTime registeredEnd;
 
 	private boolean confirmed = false;
@@ -25,11 +30,13 @@ public class RegisteredOccupation {
 		return occupation;
 	}
 
-	public DateTime getRegisteredStart() {
+	public @UTC DateTime getRegisteredStart() {
+		DateUtil.enforceUTC(registeredStart);
 		return registeredStart;
 	}
 
-	public DateTime getRegisteredEnd() {
+	public @UTC DateTime getRegisteredEnd() {
+		DateUtil.enforceUTC(registeredEnd);
 		return registeredEnd;
 	}
 
@@ -37,11 +44,13 @@ public class RegisteredOccupation {
 		this.occupation = occupation;
 	}
 
-	public void setRegisteredStart(DateTime registeredStart) {
+	public void setRegisteredStart(@UTC DateTime registeredStart) {
+		DateUtil.enforceUTC(registeredStart);
 		this.registeredStart = registeredStart;
 	}
 
-	public void setRegisteredEnd(DateTime registeredEnd) {
+	public void setRegisteredEnd(@UTC DateTime registeredEnd) {
+		DateUtil.enforceUTC(registeredEnd);
 		this.registeredEnd = registeredEnd;
 	}
 
