@@ -4,14 +4,18 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonPrimitive;
 import com.google.gson.JsonSerializationContext;
 import com.google.gson.JsonSerializer;
+import com.realdolmen.timeregistration.util.DateUtil;
+import com.realdolmen.timeregistration.util.UTC;
 
 import org.joda.time.DateTime;
+import org.joda.time.format.ISODateTimeFormat;
 
 import java.lang.reflect.Type;
 
 public class DateSerializer implements JsonSerializer<DateTime> {
 	@Override
-	public JsonElement serialize(DateTime src, Type typeOfSrc, JsonSerializationContext context) {
-		return new JsonPrimitive(src.getMillis());
+	public JsonElement serialize(@UTC DateTime src, Type typeOfSrc, JsonSerializationContext context) {
+		DateUtil.enforceUTC(src, "Date to serialize must be in UTC format!");
+		return new JsonPrimitive(ISODateTimeFormat.dateTime().print(src));
 	}
 }

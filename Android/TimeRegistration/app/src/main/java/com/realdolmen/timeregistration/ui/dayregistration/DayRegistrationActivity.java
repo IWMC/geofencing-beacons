@@ -27,13 +27,15 @@ import com.realdolmen.timeregistration.util.DateUtil;
 import com.realdolmen.timeregistration.util.UTC;
 import com.realdolmen.timeregistration.util.adapters.dayregistration.DayRegistrationFragmentPagerAdapter;
 
+import org.jdeferred.Deferred;
+import org.jdeferred.DoneCallback;
+import org.jdeferred.DoneFilter;
+import org.jdeferred.Promise;
+import org.jdeferred.impl.DeferredObject;
 import org.joda.time.DateTime;
-import org.joda.time.DateTimeZone;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import butterknife.Bind;
 import butterknife.ButterKnife;
@@ -163,27 +165,45 @@ public class DayRegistrationActivity extends AppCompatActivity {
 		}
 	}
 
-	public boolean isDateConfirmed(@UTC DateTime date) {
-		DateUtil.enforceUTC(date);
-		List<RegisteredOccupation> data = Repositories.registeredOccupationRepository().getAll(date);
-		if (data == null || data.isEmpty()) {
-			return false;
-		}
-		boolean isConfirmed = true;
-		for (RegisteredOccupation occupation : data) {
-			if (!occupation.isConfirmed())
-				isConfirmed = false;
+	public Promise<Boolean, Object, Object> isDateConfirmed(@UTC final DateTime date) {
+		final Deferred<Boolean, Object, Object> lateConfirm = new DeferredObject<>();
+		Repositories.loadRegisteredOccupationRepository(this, new LoadCallback() {
+			@Override
+			public void onResult(Result result, Throwable error) {
+				if (result == Result.FAIL) {
+					lateConfirm.resolve(false);
+					return;
+				}
+				DateUtil.enforceUTC(date);
+				List<RegisteredOccupation> data = Repositories.registeredOccupationRepository().getAll(date);
+				if (data == null || data.isEmpty()) {
+					lateConfirm.resolve(false);
+					return;
+				}
+				boolean isConfirmed = true;
+				for (RegisteredOccupation occupation : data) {
+					if (!occupation.isConfirmed())
+						isConfirmed = false;
+				}
+				lateConfirm.resolve(isConfirmed);
+			}
+		});
 
-		}
-		return isConfirmed;
+		return lateConfirm.promise();
 	}
 
-	public int getStateIcon(DateTime date) {
-		DateUtil.enforceNotUTC(date, "Dates have to be local to provide proper state icons!");
-		if (isDateConfirmed(date)) {
-			return R.drawable.ic_assignment_turned_in_24dp;
-		}
-		return R.drawable.ic_assignment_late_24dp;
+	public Promise<Integer, Object, Object> getStateIcon(@UTC DateTime date) {
+		DateUtil.enforceUTC(date, "Dates have to be local to provide proper state icons!");
+		Promise<Boolean, Object, Object> promise = isDateConfirmed(date);
+		return promise.then(new DoneFilter<Boolean, Integer>() {
+			@Override
+			public Integer filterDone(Boolean result) {
+				if (result) {
+					return R.drawable.ic_assignment_turned_in_24dp;
+				}
+				return R.drawable.ic_assignment_late_24dp;
+			}
+		});
 	}
 
 	private void selectToday() {
@@ -249,8 +269,13 @@ public class DayRegistrationActivity extends AppCompatActivity {
 
 	public void refreshTabIcons() {
 		for (int i = 0; i < tabLayout.getTabCount(); i++) {
-			TabLayout.Tab tab = tabLayout.getTabAt(i);
-			tab.setIcon(getStateIcon(dates.get(i)));
+			final TabLayout.Tab tab = tabLayout.getTabAt(i);
+			getStateIcon(dates.get(i)).done(new DoneCallback<Integer>() {
+				@Override
+				public void onDone(Integer result) {
+					tab.setIcon(result);
+				}
+			});
 		}
 	}
 
@@ -271,7 +296,7 @@ public class DayRegistrationActivity extends AppCompatActivity {
 						public void onResult(@NonNull Result result, @Nullable RegisteredOccupation data, @Nullable VolleyError error) {
 							if (result == Result.SUCCESS) {
 								Snackbar.make(findViewById(android.R.id.content), "The registration has been saved.", Snackbar.LENGTH_LONG).show();
-                                refreshCurrent();
+								refreshCurrent();
 							} else if (error != null) {
 								Snackbar.make(findViewById(android.R.id.content), "Your registration was not saved!", Snackbar.LENGTH_LONG).show();
 							}

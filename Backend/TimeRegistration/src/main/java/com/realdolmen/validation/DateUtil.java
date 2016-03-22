@@ -1,7 +1,6 @@
-package com.realdolmen.timeregistration.util;
+package com.realdolmen.validation;
 
-import android.support.annotation.NonNull;
-
+import com.realdolmen.annotations.UTC;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeConstants;
 import org.joda.time.DateTimeFieldType;
@@ -19,7 +18,7 @@ public class DateUtil {
 	private static final DateTimeFormatter hourFormat24Hours = DateTimeFormat.forPattern("HH:mm");
 	private static final DateTimeFormatter hourFormatAmPm = DateTimeFormat.forPattern("hh:mm a");
 	private static final DateTimeFormatter dayFormat = DateTimeFormat.forPattern("EEEE dd MMMM");
-	public static final DateTimeFormatter UTC_FORMAT = DateTimeFormat.forPattern("MM/dd/yyyy KK:mm:ss a Z");
+	public static final DateTimeFormatter UTC_FORMAT = DateTimeFormat.forPattern("MM/dd/yyyy KK:mm:ss:S Z");
 
 	/**
 	 * Uses the current time to check whether the specified date is on the same day.
@@ -27,7 +26,7 @@ public class DateUtil {
 	 * @param date The date to check against the current date.
 	 * @return true if the specified date is the same as the current date, false if not.
 	 */
-	public static boolean isToday(@UTC @NonNull DateTime date) {
+	public static boolean isToday(@UTC DateTime date) {
 		DateUtil.enforceUTC(date);
 		return date.withTimeAtStartOfDay().isEqual(today().withTimeAtStartOfDay());
 	}
@@ -54,15 +53,15 @@ public class DateUtil {
 		return pastWeek;
 	}
 
-	public static String formatToHours(@NonNull DateTime date) {
+	public static String formatToHours(DateTime date) {
 		return hourFormat24Hours.print(date);
 	}
 
-	public static String formatToHours(@NonNull DateTime date, boolean is24Hours) {
+	public static String formatToHours(DateTime date, boolean is24Hours) {
 		return is24Hours ? hourFormat24Hours.print(date) : hourFormatAmPm.print(date);
 	}
 
-	public static String nameForDate(@NonNull DateTime date) {
+	public static String nameForDate(DateTime date) {
 		if (isToday(date)) {
 			return "Today";
 		}
@@ -106,7 +105,7 @@ public class DateUtil {
 		return date.toDateTime(DateTimeZone.getDefault());
 	}
 
-	public static DateTime toUTC(DateTime date) {
+	public static DateTime toUTC(@UTC DateTime date) {
 		return date.toDateTime(DateTimeZone.UTC);
 	}
 }

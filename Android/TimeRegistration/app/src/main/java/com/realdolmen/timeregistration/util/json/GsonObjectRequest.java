@@ -22,7 +22,7 @@ import java.util.Map;
  * @param <T> The class type of the target deserialized class.
  */
 public class GsonObjectRequest<T> extends Request<T> {
-	private final Gson gson = new GsonBuilder().registerTypeAdapter(DateTime.class, new DateDeserializer()).create();
+	private final Gson gson = new GsonBuilder().registerTypeAdapter(DateTime.class, new DateDeserializer()).registerTypeAdapter(DateTime.class, new DateSerializer()).create();
 	private final Class<T> clazz;
 	private final Map<String, String> headers;
 	private final Response.Listener<T> listener;

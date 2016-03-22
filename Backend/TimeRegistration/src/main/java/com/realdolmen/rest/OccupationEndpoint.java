@@ -6,6 +6,7 @@ import com.realdolmen.entity.Occupation;
 import com.realdolmen.entity.PersistenceUnit;
 import com.realdolmen.entity.RegisteredOccupation;
 import com.realdolmen.service.SecurityManager;
+import com.realdolmen.validation.DateUtil;
 import com.realdolmen.validation.ValidationResult;
 import com.realdolmen.validation.Validator;
 import org.joda.time.DateTime;
@@ -74,8 +75,18 @@ public class OccupationEndpoint {
                 .setParameter("day", startDate.get(dayOfMonth()));
 
         List<RegisteredOccupation> occupations = query.getResultList();
+        occupations.forEach(ro -> {
+            ro.setRegisteredStart(
+                    DateUtil.toUTC(new DateTime(ro.getRegisteredStart())).toDate()
+            );
+
+            ro.setRegisteredEnd(
+                    DateUtil.toUTC(new DateTime(ro.getRegisteredEnd())).toDate()
+            );
+        });
 
         occupations.forEach(RegisteredOccupation::initialize);
+
         return Response.ok(occupations).build();
     }
 
@@ -115,7 +126,7 @@ public class OccupationEndpoint {
     public Response getRegisteredOccupationsOfLastXDays(@QueryParam("date") @DefaultValue("-1") long date, @QueryParam("count") @DefaultValue("7") int count) {
         List<RegisteredOccupation> occupations = new ArrayList<>();
         DateTime time = new DateTime(date, DateTimeZone.UTC);
-        if(count <= 0) {
+        if (count <= 0) {
             count = 1;
         }
         for (int i = 0; i < count; i++) {
@@ -130,16 +141,15 @@ public class OccupationEndpoint {
     @Authorized
     @Consumes(MediaType.APPLICATION_JSON)
     public Response addOccupationRegistration(RegisteredOccupation ro) {
-
         ValidationResult validationResult = regOccValidator.validate(ro);
         if (!validationResult.isValid())
             return Response.status(400).entity(validationResult.getInvalidationTokens()).build();
 
         Employee foundEmployee = em.find(Employee.class, ro.getRegistrar().getId());
         ro.setRegistrar(foundEmployee);
-
-        foundEmployee.getRegisteredOccupations().add(ro);
         em.persist(ro);
+        foundEmployee.getRegisteredOccupations().add(ro);
+
 
         return Response.created(URI.create("/" + ro.getId())).build();
     }
