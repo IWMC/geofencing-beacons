@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+        "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:f="http://xmlns.jcp.org/jsf/core" xmlns:mp="http://primefaces.org/ui/material"
+      xmlns:p="http://primefaces.org/ui" xmlns:of="http://omnifaces.org/functions"
+      xmlns:a="http://xmlns.jcp.org/jsf/passthrough">
+<f:view>
+    <ui:composition template="../page-template.xhtml">
+        <ui:define name="toolbar-after-logo">
+            <h5 class="col s12 hide-on-med-and-down" id="subtitle">#{msg['occupation.add.title']}</h5>
+        </ui:define>
+        <ui:define name="additional-toolbar-full">
+            <div class="row">
+                <h5 class="col s12 hide-on-large-only">#{msg['occupation.add.title']}</h5>
+            </div>
+        </ui:define>
+        <ui:define name="body">
+            <div class="container small-container">
+                <div class="card">
+                    <h:form id="edit-form">
+                        <div class="card-content" style="padding-top: 60px;">
+                            <div class="row">
+                                <div class="input-field col push-s1 s10">
+                                    <h:inputText id="name" type="text" styleClass="edit-big thin"
+                                                 value="#{occupationAdd.occupation.name}"
+                                                 a:placeholder="${msg['occupation.name']}"/>
+                                </div>
+                                <div class="input-field col push-s1 s10">
+                                    <h:inputTextarea styleClass="validate materialize-textarea" id="description"
+                                                     value="#{occupationAdd.occupation.description}"/>
+                                    <h:outputLabel styleClass="label-big-textfield"
+                                                   value="#{msg['occupation.description']}"
+                                                   for="description"/>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="card-action">
+                            <h:commandLink action="#{occupationAdd.saveOccupation()}"
+                                           styleClass="waves-effect waves-orange card-action-flat"
+                                           value="#{msg['save']}">
+                                <f:ajax execute="@form"/>
+                            </h:commandLink>
+                        </div>
+                    </h:form>
+                </div>
+            </div>
+            <h:outputStylesheet library="css" name="employee-edit.css" target="head"/>
+        </ui:define>
+    </ui:composition>
+</f:view>
+</html>

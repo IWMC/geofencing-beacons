@@ -3,6 +3,7 @@ package com.realdolmen.rest;
 import com.realdolmen.annotations.Authorized;
 import com.realdolmen.annotations.UserGroup;
 import com.realdolmen.entity.*;
+import com.realdolmen.entity.PersistenceUnit;
 import com.realdolmen.service.SecurityManager;
 import com.realdolmen.validation.ValidationResult;
 import com.realdolmen.validation.Validator;
@@ -10,13 +11,12 @@ import com.realdolmen.validation.Validator;
 import javax.ejb.Stateless;
 import javax.inject.Inject;
 import javax.json.JsonObject;
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
-import javax.persistence.TypedQuery;
+import javax.persistence.*;
 import javax.transaction.Transactional;
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import javax.ws.rs.core.UriBuilder;
 import java.net.URI;
 import java.util.Calendar;
 import java.util.Date;
@@ -61,6 +61,22 @@ public class OccupationEndpoint {
         List<Occupation> occupations = findAllQuery.getResultList();
         occupations.forEach(Occupation::initialize);
         return Response.ok().entity(occupations).build();
+    }
+
+    @GET
+    @Path("/{id:[0-9]+}")
+    @Produces({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
+    public Response findById(Long id) {
+        if (id == null) {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
+
+        Occupation occupation = em.find(Occupation.class, id);
+        if (occupation == null) {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        } else {
+            return Response.ok(occupation).build();
+        }
     }
 
     @GET
@@ -146,6 +162,25 @@ public class OccupationEndpoint {
         ro.getRegistrar().getRegisteredOccupations().add(ro);
         em.persist(ro);
         return Response.created(URI.create("/" + ro.getId())).build();
+    }
+
+    @PUT
+    @Path("/occupation")
+    @Authorized(UserGroup.MANAGEMENT_EMPLOYEE_ONLY)
+    @Consumes(MediaType.APPLICATION_JSON)
+    public Response addOccupation(Occupation occupation) {
+        if (occupation == null) {
+            return Response.status(Response.Status.BAD_REQUEST).build();
+        }
+
+        try {
+            em.persist(occupation);
+        } catch (PersistenceException pex) {
+            // Expected unique constraint to fail
+            return Response.status(Response.Status.CONFLICT).build();
+        }
+
+        return Response.created(UriBuilder.fromMethod(OccupationEndpoint.class, "findById").build(occupation.getId())).build();
     }
 
     @POST

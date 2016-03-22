@@ -119,6 +119,10 @@ input + label {
     margin-bottom: 0px;
 }
 
+nav + .container {
+    padding-top: 30px !important;
+}
+
 @media only screen and (max-width: 600px) {
     .s0 {
        width: 0px;
@@ -133,6 +137,10 @@ input + label {
     }
 }
 @media only screen and (min-width: 601px) {
+    .small-container {
+        width: 60% !important;
+    }
+
     .m0 {
         width: 0px;
     }
@@ -146,6 +154,10 @@ input + label {
     }
 }
 @media only screen and (min-width: 993px) {
+    .small-container {
+        width: 48% !important;
+    }
+
     .l0 {
         width: 0px;
     }

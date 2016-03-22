@@ -33,7 +33,7 @@ public class Occupation {
         }
     }
 
-    @Column
+    @Column(unique = true)
     @NotNull(message = "name")
     @Field
     private String name;
