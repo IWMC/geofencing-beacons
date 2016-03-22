@@ -21,6 +21,9 @@ import java.util.Set;
 @Entity
 @XmlRootElement
 @Indexed
+@NamedQueries({
+        @NamedQuery(name = "Project.findAll", query = "SELECT p FROM Project p")
+})
 public class Project extends Occupation implements Serializable {
 
     /**
@@ -55,7 +58,9 @@ public class Project extends Occupation implements Serializable {
     @JsonProperty("DTYPE")
     private final int DTYPE = 2;
 
-    @OneToMany
+    @OneToMany(cascade = {
+            CascadeType.REMOVE
+    })
     // TODO: 21/03/2016 Field bridge to allow search on subprojects
     private Set<Project> subProjects = new HashSet<>();
 
@@ -65,6 +70,16 @@ public class Project extends Occupation implements Serializable {
 
     @OneToMany
     private Set<Location> locations = new HashSet<>();
+
+    public Project() {
+    }
+
+    public Project(String name, String description, int projectNr, Date startDate, Date endDate) {
+        super(name, description);
+        this.startDate = startDate;
+        this.endDate = endDate;
+        this.projectNr = projectNr;
+    }
 
     public Date getStartDate() {
         return startDate;

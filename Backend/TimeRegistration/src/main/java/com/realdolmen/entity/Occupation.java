@@ -1,17 +1,12 @@
 package com.realdolmen.entity;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import org.hibernate.Hibernate;
 import org.hibernate.search.annotations.DocumentId;
 import org.hibernate.search.annotations.Field;
 import org.hibernate.search.annotations.Indexed;
-import org.hibernate.search.annotations.ProvidedId;
 
 import javax.persistence.*;
-import javax.transaction.Transactional;
 import javax.validation.constraints.NotNull;
-import javax.xml.bind.annotation.XmlRootElement;
-import java.util.Date;
 
 /**
  * Entity to be used in the ORM to store data about an occupation. An occupation
@@ -51,6 +46,14 @@ public class Occupation {
     @Field
     private String description;
 
+    public Occupation() {
+    }
+
+    public Occupation(String name, String description) {
+        this.description = description;
+        this.name = name;
+    }
+
     public String getName() {
         return name;
     }
@@ -84,12 +87,14 @@ public class Occupation {
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
-        if (!(o instanceof Occupation)) return false;
+        if (o == null || getClass() != o.getClass()) return false;
 
         Occupation that = (Occupation) o;
 
         if (version != that.version) return false;
-        return id == that.id;
+        if (id != that.id) return false;
+        if (!name.equals(that.name)) return false;
+        return description.equals(that.description);
 
     }
 

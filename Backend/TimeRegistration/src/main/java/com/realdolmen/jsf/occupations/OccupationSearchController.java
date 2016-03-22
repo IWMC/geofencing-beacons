@@ -54,9 +54,9 @@ public class OccupationSearchController {
     @Transactional
     public List<Occupation> getOccupations() {
         if (searchTerms == null || searchTerms.isEmpty()) {
-            Response response = endpoint.getAvailableOccupations();
-            List<Occupation> employees = (List<Occupation>) response.getEntity();
-            return employees;
+            Response response = endpoint.listAll(null, null);
+            List<Occupation> occupations = (List<Occupation>) response.getEntity();
+            return occupations;
         } else {
             return getOccupationsWithSearchTerms();
         }

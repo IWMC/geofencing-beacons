@@ -19,9 +19,6 @@ import javax.ws.rs.core.Response;
 import static org.junit.Assert.*;
 import static org.mockito.Mockito.*;
 
-/**
- * Created by BCCAZ45 on 2/03/2016.
- */
 @RunWith(Arquillian.class)
 public class LoginControllerTest {
 

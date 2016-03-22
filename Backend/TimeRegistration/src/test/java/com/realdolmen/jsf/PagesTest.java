@@ -1,13 +1,9 @@
 package com.realdolmen.jsf;
 
-import org.junit.Before;
 import org.junit.Test;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
 
-/**
- * Created by BCCAZ45 on 2/03/2016.
- */
 public class PagesTest {
 
     @Test
