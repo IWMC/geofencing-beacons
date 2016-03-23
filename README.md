@@ -26,7 +26,7 @@ First go to the web facet and click on `Add Application Server specific descript
 
 Next click on the plus button, click on web.xml and click on OK.
 
-To add the `persistence.xml` to the JPA facet, simply open `persistence.xml`, it should automatically suggest to add the descriptor in the corresponding facet, press OK.
+To add the `persistence.xml` to the JPA facet, simply open `persistence.xml`, it should automatically suggest to add the descriptor in the corresponding facet, press OK. You should now be able to run the backend, to test this, from the context root go to index.xhtml, so it might look something like this: `localhost/index.xhtml` or `localhost/TimeRegistrationBackend/index.xhtml`. To log in as an administrator, you can use username `admin` with password `Bla123` for your credentials.
 
 
 ### Test backend
