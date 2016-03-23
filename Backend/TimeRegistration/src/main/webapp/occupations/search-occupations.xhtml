@@ -36,9 +36,24 @@
         <ui:define name="body">
             <div class="container">
                 <div class="fixed-action-btn">
-                    <h:link outcome="#{pages.addOccupation().jsf()}" styleClass="btn-floating btn-large red">
+                    <h:link styleClass="btn-floating btn-large red">
                         <i class="large material-icons">add</i>
                     </h:link>
+                    <ul>
+                        <li class="tooltipped" data-position="left" data-delay="50"
+                            data-tooltip="#{msg['occupation.add']}">
+                            <h:link outcome="#{pages.addOccupation().jsf()}" styleClass="btn-floating green">
+                                <i class="large material-icons">assignment</i>
+                            </h:link>
+                        </li>
+                        <li class="tooltipped" data-position="left" data-delay="50"
+                            data-tooltip="#{msg['project.add']}">
+                            <h:link outcome="#{pages.addProject().jsf()}" styleClass="btn-floating blue">
+                                <i class="large material-icons">format_list_numbered</i>
+                            </h:link>
+                        </li>
+                    </ul>
+
                 </div>
                 <h:panelGroup id="search-results">
                     <div class="row">

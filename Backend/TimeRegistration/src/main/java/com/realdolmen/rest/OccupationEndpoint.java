@@ -13,6 +13,7 @@ import javax.inject.Inject;
 import javax.json.JsonObject;
 import javax.persistence.*;
 import javax.transaction.Transactional;
+import javax.validation.ConstraintViolationException;
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
@@ -162,6 +163,29 @@ public class OccupationEndpoint {
         ro.getRegistrar().getRegisteredOccupations().add(ro);
         em.persist(ro);
         return Response.created(URI.create("/" + ro.getId())).build();
+    }
+
+    @PUT
+    @Path("/project")
+    @Authorized(UserGroup.MANAGEMENT_EMPLOYEE_ONLY)
+    @Consumes(MediaType.APPLICATION_JSON)
+    public Response addProject(Project project) {
+        if (project == null) {
+            return Response.status(Response.Status.BAD_REQUEST).build();
+        }
+
+        try {
+            em.persist(project);
+        } catch (PersistenceException pex) {
+            // Expected unique constraint to fail
+            if (pex.getCause() != null && pex.getCause() instanceof ConstraintViolationException) {
+                return Response.status(Response.Status.CONFLICT).build();
+            } else {
+                throw pex;
+            }
+        }
+
+        return Response.created(UriBuilder.fromMethod(OccupationEndpoint.class, "findById").build(project.getId())).build();
     }
 
     @PUT

@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+        "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:f="http://xmlns.jcp.org/jsf/core" xmlns:mp="http://primefaces.org/ui/material"
+      xmlns:p="http://primefaces.org/ui" xmlns:of="http://omnifaces.org/functions"
+      xmlns:a="http://xmlns.jcp.org/jsf/passthrough">
+<f:view>
+    <ui:composition template="../page-template.xhtml">
+        <ui:define name="toolbar-after-logo">
+            <h5 class="col s12 hide-on-med-and-down" id="subtitle">#{msg['project.add.title']}</h5>
+        </ui:define>
+        <ui:define name="additional-toolbar-full">
+            <div class="row">
+                <h5 class="col s12 hide-on-large-only">#{msg['project.add.title']}</h5>
+            </div>
+        </ui:define>
+        <ui:define name="body">
+            <div class="container small-container">
+                <div class="card">
+                    <h:form id="edit-form">
+                        <div class="card-content" style="padding-top: 60px;">
+                            <div class="row">
+                                <div class="input-field col push-s1 s8">
+                                    <h:inputText id="name" styleClass="edit-big thin"
+                                                 value="#{projectAdd.project.name}"
+                                                 a:placeholder="${msg['occupation.name']}"/>
+                                </div>
+                                <div class="input-field col push-s1 s2">
+                                    <h:inputText id="projectNr" styleClass="edit-medium"
+                                                 value="#{projectAdd.project.projectNr}"/>
+                                    <label for="projectNr">${msg['occupation.projectNr']}</label>
+                                </div>
+                                <div class="input-field col push-s1 s10 push-m1 m5">
+                                    <label class="label-datepicker">#{msg['project.start_date']}</label>
+                                    <mp:datePicker id="startDate" pattern="dd/mm/yyyy" today="#{msg['date.today']}"
+                                                   close="#{msg['close']}"
+                                                   clear="#{msg['clear']}"
+                                                   labelMonthNext="#{msg['date.next_month']}"
+                                                   labelMonthPrev="#{msg['date.previous_month']}"
+                                                   labelYearSelect="#{msg['date.select_year']}"
+                                                   labelMonthSelect="#{msg['date.select_month']}"
+                                                   value="#{projectAdd.project.startDate}"/>
+                                </div>
+                                <div class="input-field col push-s1 s10 push-m1 m5">
+                                    <label class="label-datepicker">#{msg['project.end_date']}</label>
+                                    <mp:datePicker id="endDate" pattern="dd/mm/yyyy" today="#{msg['date.today']}"
+                                                   close="#{msg['close']}"
+                                                   clear="#{msg['clear']}"
+                                                   labelMonthNext="#{msg['date.next_month']}"
+                                                   labelMonthPrev="#{msg['date.previous_month']}"
+                                                   labelYearSelect="#{msg['date.select_year']}"
+                                                   labelMonthSelect="#{msg['date.select_month']}"
+                                                   value="#{projectAdd.project.endDate}"/>
+                                </div>
+                                <div class="input-field col push-s1 s10">
+                                    <h:inputTextarea styleClass="validate materialize-textarea" id="description"
+                                                     value="#{projectAdd.project.description}"/>
+                                    <h:outputLabel value="#{msg['occupation.description']}"
+                                                   for="description"/>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="card-action">
+                            <h:commandLink action="#{projectAdd.saveProject()}"
+                                           styleClass="waves-effect waves-orange card-action-flat"
+                                           value="#{msg['save']}">
+                                <f:ajax execute="@form"/>
+                            </h:commandLink>
+                        </div>
+                    </h:form>
+                </div>
+            </div>
+            <h:outputStylesheet library="css" name="employee-edit.css" target="head"/>
+        </ui:define>
+    </ui:composition>
+</f:view>
+</html>

@@ -123,6 +123,9 @@ nav + .container {
     padding-top: 30px !important;
 }
 
+.label-datepicker {
+}
+
 @media only screen and (max-width: 600px) {
     .s0 {
        width: 0px;
