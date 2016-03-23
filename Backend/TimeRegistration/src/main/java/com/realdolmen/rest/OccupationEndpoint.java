@@ -5,8 +5,12 @@ import com.realdolmen.annotations.UserGroup;
 import com.realdolmen.entity.*;
 import com.realdolmen.entity.PersistenceUnit;
 import com.realdolmen.service.SecurityManager;
+import com.realdolmen.validation.DateUtil;
 import com.realdolmen.validation.ValidationResult;
 import com.realdolmen.validation.Validator;
+import org.joda.time.DateTime;
+import org.joda.time.DateTimeZone;
+import org.joda.time.LocalDateTime;
 
 import javax.ejb.Stateless;
 import javax.inject.Inject;
@@ -18,10 +22,12 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriBuilder;
 import java.net.URI;
-import java.util.Calendar;
-import java.util.Date;
+import java.util.ArrayList;
 import java.util.List;
 
+import static org.joda.time.DateTimeFieldType.*;
+
+@SuppressWarnings("JpaQueryApiInspection")
 @Stateless
 @Path("/occupations")
 public class OccupationEndpoint {
@@ -35,13 +41,7 @@ public class OccupationEndpoint {
     @Inject
     private Validator<RegisteredOccupation> regOccValidator;
 
-    public static final long MINIMUM_EPOCH;
-
-    static {
-        Calendar c = Calendar.getInstance();
-        c.set(Calendar.YEAR, 2015);
-        MINIMUM_EPOCH = c.getTime().getTime();
-    }
+    public static final long MINIMUM_EPOCH = DateTime.now().minusYears(1).getMillis();
 
     @GET
     @Authorized(UserGroup.MANAGEMENT)
@@ -83,38 +83,41 @@ public class OccupationEndpoint {
     @Path("registration")
     @Authorized
     @Produces(MediaType.APPLICATION_JSON)
-    public Response getRegisteredOccupations(@QueryParam("start") @DefaultValue("-1") long start, @QueryParam("end") @DefaultValue("-1") long end) {
-        if (start <= MINIMUM_EPOCH) {
-            return Response.status(400).entity("Start date must be after " + MINIMUM_EPOCH + " but is " + start).build();
+    public Response getRegisteredOccupations(@QueryParam("date") @DefaultValue("-1") long date) {
+        if (date <= MINIMUM_EPOCH) {
+            return Response.status(400).build();
         }
 
-        if (end <= MINIMUM_EPOCH) {
-            end = start;
-        }
-        Calendar startDate = Calendar.getInstance();
-        startDate.setTime(new Date(start));
-        Calendar endDate = Calendar.getInstance();
-        endDate.setTime(new Date(end));
 
-        startDate.clear(Calendar.HOUR_OF_DAY);
-        startDate.clear(Calendar.MINUTE);
-        startDate.clear(Calendar.SECOND);
-        startDate.clear(Calendar.MILLISECOND);
-
-        endDate.clear(Calendar.HOUR_OF_DAY);
-        endDate.clear(Calendar.MINUTE);
-        endDate.clear(Calendar.SECOND);
-        endDate.clear(Calendar.MILLISECOND);
-
+        LocalDateTime startDate = new DateTime(date, DateTimeZone.UTC).withHourOfDay(0).withMinuteOfHour(0).toLocalDateTime();
+        System.out.println(startDate + " in zone: " + startDate.toDateTime().getZone());
         if (sm.findEmployee() == null || sm.findEmployee().getId() == null || sm.findEmployee().getId() == 0) {
-            return Response.status(400).entity("Bad employee ID: " + sm.findEmployee() != null ? sm.findEmployee().getId() : "Unknown").build();
+            return Response.status(400).build();
         }
 
         //TODO: take into account timezone differences with the phone and the server
 
         TypedQuery<RegisteredOccupation> query = em.createNamedQuery("RegisteredOccupation.findOccupationsInRange", RegisteredOccupation.class);
-        query.setParameter("start", startDate.getTime()).setParameter("employeeId", sm.findEmployee().getId()).setParameter("end", endDate.getTime());
+        System.out.printf("Performing query: Start time: %d -> %s, employee id: %d%n", startDate.toDateTime().getMillis(), startDate.toDateTime().toString(), sm.findEmployee().getId());
+        query
+                .setParameter("employeeId", sm.findEmployee().getId())
+                .setParameter("year", startDate.get(year()))
+                .setParameter("month", startDate.get(monthOfYear()))
+                .setParameter("day", startDate.get(dayOfMonth()));
+
         List<RegisteredOccupation> occupations = query.getResultList();
+        occupations.forEach(ro -> {
+            ro.setRegisteredStart(
+                    DateUtil.toUTC(new DateTime(ro.getRegisteredStart())).toDate()
+            );
+
+            ro.setRegisteredEnd(
+                    DateUtil.toUTC(new DateTime(ro.getRegisteredEnd())).toDate()
+            );
+        });
+
+        occupations.forEach(RegisteredOccupation::initialize);
+
         return Response.ok(occupations).build();
     }
 
@@ -123,7 +126,7 @@ public class OccupationEndpoint {
     @Transactional
     @Authorized
     public Response confirmOccupationRegistration(@PathParam("date") long date) {
-        List<RegisteredOccupation> occupations = (List<RegisteredOccupation>) getRegisteredOccupations(date, date).getEntity();
+        List<RegisteredOccupation> occupations = (List<RegisteredOccupation>) getRegisteredOccupations(date).getEntity();
         occupations.forEach(o -> {
             em.detach(o);
             o.confirm();
@@ -148,19 +151,38 @@ public class OccupationEndpoint {
         return Response.ok(occupations).build();
     }
 
+    @GET
+    @Path("registration/range")
+    @Authorized
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response getRegisteredOccupationsOfLastXDays(@QueryParam("date") @DefaultValue("-1") long date, @QueryParam("count") @DefaultValue("7") int count) {
+        List<RegisteredOccupation> occupations = new ArrayList<>();
+        DateTime time = new DateTime(date, DateTimeZone.UTC);
+        if (count <= 0) {
+            count = 1;
+        }
+        for (int i = 0; i < count; i++) {
+            occupations.addAll((List<RegisteredOccupation>) getRegisteredOccupations(time.minusDays(i).getMillis()).getEntity());
+        }
+        return Response.ok(occupations).build();
+    }
+
     @POST
     @Transactional
     @Path("registration")
     @Authorized
     @Consumes(MediaType.APPLICATION_JSON)
     public Response addOccupationRegistration(RegisteredOccupation ro) {
-
         ValidationResult validationResult = regOccValidator.validate(ro);
         if (!validationResult.isValid())
             return Response.status(400).entity(validationResult.getInvalidationTokens()).build();
 
-        ro.getRegistrar().getRegisteredOccupations().add(ro);
+        Employee foundEmployee = em.find(Employee.class, ro.getRegistrar().getId());
+        ro.setRegistrar(foundEmployee);
         em.persist(ro);
+        foundEmployee.getRegisteredOccupations().add(ro);
+
+
         return Response.created(URI.create("/" + ro.getId())).build();
     }
 

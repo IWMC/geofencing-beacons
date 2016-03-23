@@ -1,31 +1,41 @@
 package com.realdolmen.timeregistration.ui.dayregistration;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.design.widget.Snackbar;
 import android.support.design.widget.TabLayout;
+import android.support.v4.app.Fragment;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.widget.Toast;
 
 import com.android.volley.VolleyError;
 import com.github.clans.fab.FloatingActionButton;
 import com.realdolmen.timeregistration.R;
+import com.realdolmen.timeregistration.model.Occupation;
 import com.realdolmen.timeregistration.model.RegisteredOccupation;
-import com.realdolmen.timeregistration.service.BackendService;
-import com.realdolmen.timeregistration.service.RequestCallback;
+import com.realdolmen.timeregistration.service.ResultCallback;
+import com.realdolmen.timeregistration.service.repository.LoadCallback;
+import com.realdolmen.timeregistration.service.repository.Repositories;
 import com.realdolmen.timeregistration.util.DateUtil;
+import com.realdolmen.timeregistration.util.UTC;
 import com.realdolmen.timeregistration.util.adapters.dayregistration.DayRegistrationFragmentPagerAdapter;
 
+import org.jdeferred.Deferred;
+import org.jdeferred.DoneCallback;
+import org.jdeferred.DoneFilter;
+import org.jdeferred.Promise;
+import org.jdeferred.impl.DeferredObject;
+import org.joda.time.DateTime;
+
 import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import butterknife.Bind;
 import butterknife.ButterKnife;
@@ -50,13 +60,11 @@ public class DayRegistrationActivity extends AppCompatActivity {
 
 	private DayRegistrationFragmentPagerAdapter pagerAdapter;
 
-	private Map<Date, List<RegisteredOccupation>> registeredOccupations = new HashMap<>();
-
-	private List<Date> dates = new ArrayList<>();
+	private List<DateTime> dates = new ArrayList<>();
 
 	public static final String SELECTED_DAY = "SELECTED_DAY";
 
-	private Date currentDate;
+	private DateTime currentDate;
 
 	//region Initialization methods
 
@@ -87,11 +95,11 @@ public class DayRegistrationActivity extends AppCompatActivity {
 		tabLayout.setupWithViewPager(viewPager);
 	}
 
-	public List<Date> getDates() {
+	public List<DateTime> getDates() {
 		return dates;
 	}
 
-	public Date getCurrentDate() {
+	public DateTime getCurrentDate() {
 		return currentDate;
 	}
 
@@ -132,44 +140,70 @@ public class DayRegistrationActivity extends AppCompatActivity {
 	//endregion
 
 	//region Data methods
-	public void getDataForDate(final Date date, final RequestCallback<List<RegisteredOccupation>> callback) {
-		if (registeredOccupations.containsKey(date)) {
-			callback.onSuccess(registeredOccupations.get(date));
-			return;
-		}
-		BackendService.with(this).getOccupationsInDateRange(date, date, new RequestCallback<List<RegisteredOccupation>>() {
-			@Override
-			public void onSuccess(List<RegisteredOccupation> data) {
-				registeredOccupations.put(date, data);
-				callback.onSuccess(data);
-			}
+	public void getDataForDate(@UTC final DateTime date, final ResultCallback<List<RegisteredOccupation>> callback) {
+		DateUtil.enforceUTC(date);
 
+		Repositories.loadRegisteredOccupationRepository(this, new LoadCallback() {
 			@Override
-			public void onError(VolleyError error) {
-				callback.onError(error);
+			public void onResult(Result result, Throwable error) {
+				if (result == Result.SUCCESS) { //data successfully loaded
+					List<RegisteredOccupation> filteredData = Repositories.registeredOccupationRepository().getAll(date);
+					if (callback != null)
+						callback.onResult(ResultCallback.Result.SUCCESS, filteredData, null);
+				}
 			}
 		});
 	}
 
-	public boolean isDateConfirmed(Date date) {
-		List<RegisteredOccupation> data = registeredOccupations.get(date);
-		if(data == null || data.isEmpty()) {
-			return false;
+	public void refreshCurrent() {
+		Fragment page = getSupportFragmentManager().findFragmentByTag("android:switcher:" + R.id.day_registration_viewpager + ":" + viewPager.getCurrentItem());
+		if (page != null) {
+			if (page instanceof DayRegistrationFragment) {
+				DayRegistrationFragment fragment = (DayRegistrationFragment) page;
+				fragment.refreshData();
+			}
 		}
-		boolean isConfirmed = true;
-		for (RegisteredOccupation occupation : data) {
-			if (!occupation.isConfirmed())
-				isConfirmed = false;
-
-		}
-		return isConfirmed;
 	}
 
-	public int getStateIcon(Date date) {
-		if (isDateConfirmed(date)) {
-			return R.drawable.ic_assignment_turned_in_24dp;
-		}
-		return R.drawable.ic_assignment_late_24dp;
+	public Promise<Boolean, Object, Object> isDateConfirmed(@UTC final DateTime date) {
+		final Deferred<Boolean, Object, Object> lateConfirm = new DeferredObject<>();
+		Repositories.loadRegisteredOccupationRepository(this, new LoadCallback() {
+			@Override
+			public void onResult(Result result, Throwable error) {
+				if (result == Result.FAIL) {
+					lateConfirm.resolve(false);
+					return;
+				}
+				DateUtil.enforceUTC(date);
+				List<RegisteredOccupation> data = Repositories.registeredOccupationRepository().getAll(date);
+				if (data == null || data.isEmpty()) {
+					lateConfirm.resolve(false);
+					return;
+				}
+				boolean isConfirmed = true;
+				for (RegisteredOccupation occupation : data) {
+					if (!occupation.isConfirmed())
+						isConfirmed = false;
+				}
+				lateConfirm.resolve(isConfirmed);
+			}
+		});
+
+		return lateConfirm.promise();
+	}
+
+	public Promise<Integer, Object, Object> getStateIcon(@UTC DateTime date) {
+		DateUtil.enforceUTC(date, "Dates have to be local to provide proper state icons!");
+		Promise<Boolean, Object, Object> promise = isDateConfirmed(date);
+		return promise.then(new DoneFilter<Boolean, Integer>() {
+			@Override
+			public Integer filterDone(Boolean result) {
+				if (result) {
+					return R.drawable.ic_assignment_turned_in_24dp;
+				}
+				return R.drawable.ic_assignment_late_24dp;
+			}
+		});
 	}
 
 	private void selectToday() {
@@ -182,14 +216,37 @@ public class DayRegistrationActivity extends AppCompatActivity {
 		confirm(currentDate, null);
 	}
 
-	public void setCurrentDate(Date currentDate) {
+	@OnClick(R.id.day_registration_add_fab)
+	public void openAddOccupation() {
+		Intent i = new Intent(this, AddOccupationActivity.class);
+		i.putExtra(AddOccupationActivity.BASE_DATE, dates.get(viewPager.getCurrentItem()));
+		startActivityForResult(i, AddOccupationActivity.RESULT_CODE);
+	}
+
+	@Override
+	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+		if (requestCode == AddOccupationActivity.RESULT_CODE) {
+			if (resultCode == RESULT_OK) {
+				Occupation occ = (Occupation) data.getSerializableExtra(AddOccupationActivity.SELECTED_OCCUPATION);
+				DateTime start = (DateTime) data.getSerializableExtra(AddOccupationActivity.START_DATE);
+				DateTime end = (DateTime) data.getSerializableExtra(AddOccupationActivity.END_DATE);
+				DateUtil.enforceUTC(start, "Received start date that is not in UTC!");
+				DateUtil.enforceUTC(end, "Received end date that is not in UTC!");
+				handleNewlyRegisteredOccupation(occ, start, end);
+			}
+		}
+	}
+
+	public void setCurrentDate(DateTime currentDate) {
 		this.currentDate = currentDate;
 	}
 
-	public void confirm(@NonNull Date date, @Nullable final RequestCallback callback) {
+	public void confirm(@NonNull DateTime date, @Nullable final ResultCallback callback) {
 		confirmFab.setIndeterminate(true);
 		confirmFab.setEnabled(false);
-		BackendService.with(this).confirmOccupations(date, new RequestCallback() {
+
+		//TODO: Edit this to the new repository system.
+		/*BackendService.with(this).confirmOccupations(date, new ResultCallback() {
 			@Override
 			public void onSuccess(Object data) {
 				if (callback != null)
@@ -207,14 +264,56 @@ public class DayRegistrationActivity extends AppCompatActivity {
 				confirmFab.setIndeterminate(false);
 				confirmFab.setEnabled(true);
 			}
-		});
+		});*/
 	}
 
 	public void refreshTabIcons() {
 		for (int i = 0; i < tabLayout.getTabCount(); i++) {
-			TabLayout.Tab tab = tabLayout.getTabAt(i);
-			tab.setIcon(getStateIcon(dates.get(i)));
+			final TabLayout.Tab tab = tabLayout.getTabAt(i);
+			getStateIcon(dates.get(i)).done(new DoneCallback<Integer>() {
+				@Override
+				public void onDone(Integer result) {
+					tab.setIcon(result);
+				}
+			});
 		}
+	}
+
+	private void handleNewlyRegisteredOccupation(Occupation occ, @UTC DateTime start, @UTC DateTime end) {
+		DateUtil.enforceUTC(start, "Start date must be in UTC format!");
+		DateUtil.enforceUTC(end, "End date must be in UTC format!");
+		final RegisteredOccupation ro = new RegisteredOccupation();
+		ro.setRegisteredStart(start);
+		ro.setRegisteredEnd(end);
+		ro.setOccupation(occ);
+
+		Repositories.loadRegisteredOccupationRepository(this, new LoadCallback() {
+			@Override
+			public void onResult(Result result, Throwable error) {
+				if (result == Result.SUCCESS) {
+					Repositories.registeredOccupationRepository().save(DayRegistrationActivity.this, ro, new ResultCallback<RegisteredOccupation>() {
+						@Override
+						public void onResult(@NonNull Result result, @Nullable RegisteredOccupation data, @Nullable VolleyError error) {
+							if (result == Result.SUCCESS) {
+								Snackbar.make(findViewById(android.R.id.content), "The registration has been saved.", Snackbar.LENGTH_LONG).show();
+								refreshCurrent();
+							} else if (error != null) {
+								Snackbar.make(findViewById(android.R.id.content), "Your registration was not saved!", Snackbar.LENGTH_LONG).show();
+							}
+						}
+					});
+				}
+			}
+		});
+	}
+
+	@Override
+	public boolean onOptionsItemSelected(MenuItem item) {
+		if (item.getItemId() == R.id.menu_refresh) {
+			refreshCurrent();
+			return true;
+		}
+		return false;
 	}
 
 	//region Save Instance State

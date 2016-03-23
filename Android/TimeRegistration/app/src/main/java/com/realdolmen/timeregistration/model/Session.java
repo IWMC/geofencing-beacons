@@ -1,8 +1,5 @@
 package com.realdolmen.timeregistration.model;
 
-/**
- * Created by Brent on 29/02/2016.
- */
 public class Session {
 
 	private String username;

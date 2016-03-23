@@ -77,7 +77,7 @@ public class OccupationEndpointTest {
         when(query.setParameter(anyString(), any())).thenReturn(query);
         when(em.createNamedQuery("RegisteredOccupation.findOccupationsInRange", RegisteredOccupation.class))
                 .thenReturn(query);
-        Response response = endpoint.getRegisteredOccupations(new Date().getTime(), 0);
+        Response response = endpoint.getRegisteredOccupations(new Date().getTime());
         assertEquals("Should be 200 OK: " + response.getEntity(), 200, response.getStatus());
         List<RegisteredOccupation> returnedOccupations = (List<RegisteredOccupation>) response.getEntity();
         returnedOccupations.equals(occupations);
@@ -86,7 +86,7 @@ public class OccupationEndpointTest {
     @Test
     public void testGetOccupationsWithEndDateOnlyReturnsBadRequest() {
         when(sm.findEmployee()).thenReturn(session.getEmployee());
-        Response response = endpoint.getRegisteredOccupations(0, new Date().getTime());
+        Response response = endpoint.getRegisteredOccupations(0);
         assertEquals("Response should be 400 because there is no start time: " + response.getEntity(), 400, response.getStatus());
     }
 
@@ -131,7 +131,7 @@ public class OccupationEndpointTest {
         when(query.setParameter(anyString(), any())).thenReturn(query);
         when(em.createNamedQuery("RegisteredOccupation.findOccupationsInRange", RegisteredOccupation.class))
                 .thenReturn(query);
-        Response response = endpoint.getRegisteredOccupations(new Date().getTime(), new Date().getTime());
+        Response response = endpoint.getRegisteredOccupations(new Date().getTime());
         assertEquals("Should be 200 OK: " + response.getEntity(), 200, response.getStatus());
         List<RegisteredOccupation> returnedOccupations = (List<RegisteredOccupation>) response.getEntity();
         returnedOccupations.equals(occupations);
@@ -141,7 +141,7 @@ public class OccupationEndpointTest {
     public void testGetOccupationsWithInvalidUserReturnsBadRequest() {
         session.getEmployee().setId(0L);
         when(sm.findEmployee()).thenReturn(session.getEmployee());
-        Response response = endpoint.getRegisteredOccupations(new Date().getTime(), new Date().getTime());
+        Response response = endpoint.getRegisteredOccupations(new Date().getTime());
         assertEquals("Response should be 400 because the user is invalid (but somehow passed authentication): " + response.getEntity(), 400, response.getStatus());
     }
 

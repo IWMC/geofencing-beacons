@@ -4,6 +4,7 @@
     <item
         android:icon="@drawable/ic_refresh_24dp"
         android:title="Refresh"
+        android:id="@+id/menu_refresh"
         app:showAsAction="ifRoom" />
     <item
         android:title="Settings"

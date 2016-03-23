@@ -1,11 +1,6 @@
-package com.realdolmen.timeregistration.util;
+package com.realdolmen.validation;
 
-import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
-
-import com.realdolmen.timeregistration.service.GenericVolleyError;
-import com.realdolmen.timeregistration.service.ResultCallback;
-
+import com.realdolmen.annotations.UTC;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeConstants;
 import org.joda.time.DateTimeFieldType;
@@ -23,7 +18,7 @@ public class DateUtil {
 	private static final DateTimeFormatter hourFormat24Hours = DateTimeFormat.forPattern("HH:mm");
 	private static final DateTimeFormatter hourFormatAmPm = DateTimeFormat.forPattern("hh:mm a");
 	private static final DateTimeFormatter dayFormat = DateTimeFormat.forPattern("EEEE dd MMMM");
-	public static final DateTimeFormatter UTC_FORMAT = DateTimeFormat.forPattern("MM/dd/yyyy KK:mm:ss a Z");
+	public static final DateTimeFormatter UTC_FORMAT = DateTimeFormat.forPattern("MM/dd/yyyy KK:mm:ss:S Z");
 
 	/**
 	 * Uses the current time to check whether the specified date is on the same day.
@@ -31,7 +26,7 @@ public class DateUtil {
 	 * @param date The date to check against the current date.
 	 * @return true if the specified date is the same as the current date, false if not.
 	 */
-	public static boolean isToday(@UTC @NonNull DateTime date) {
+	public static boolean isToday(@UTC DateTime date) {
 		DateUtil.enforceUTC(date);
 		return date.withTimeAtStartOfDay().isEqual(today().withTimeAtStartOfDay());
 	}
@@ -58,15 +53,15 @@ public class DateUtil {
 		return pastWeek;
 	}
 
-	public static String formatToHours(@NonNull DateTime date) {
+	public static String formatToHours(DateTime date) {
 		return hourFormat24Hours.print(date);
 	}
 
-	public static String formatToHours(@NonNull DateTime date, boolean is24Hours) {
+	public static String formatToHours(DateTime date, boolean is24Hours) {
 		return is24Hours ? hourFormat24Hours.print(date) : hourFormatAmPm.print(date);
 	}
 
-	public static String nameForDate(@NonNull DateTime date) {
+	public static String nameForDate(DateTime date) {
 		if (isToday(date)) {
 			return "Today";
 		}
@@ -110,34 +105,7 @@ public class DateUtil {
 		return date.toDateTime(DateTimeZone.getDefault());
 	}
 
-	public static DateTime toUTC(DateTime date) {
+	public static DateTime toUTC(@UTC DateTime date) {
 		return date.toDateTime(DateTimeZone.UTC);
-	}
-
-	/**
-	 * Makes sure a given date is in UTC format. If a callback is specified it will call it with a FAIL result
-	 * and a {@link GenericVolleyError} with cause {@link IllegalStateException}. If none is specified
-	 * an {@link IllegalStateException} will be thrown.
-	 *
-	 * @param date     The date to check
-	 * @param message  The message to use in the exception.
-	 * @param callback The optional callback that will be called in event of
-	 * @return False when the date is UTC. True when it is not and an exception has occured.
-	 */
-	public static boolean enforceUTC(DateTime date, String message, @Nullable ResultCallback<?> callback) {
-		if (date.getZone() != DateTimeZone.UTC) {
-
-			if (callback != null) {
-				callback.onResult(ResultCallback.Result.FAIL, null, new GenericVolleyError(new IllegalStateException(message)));
-				return true;
-			} else {
-				throw new IllegalStateException(message);
-			}
-		}
-		return false;
-	}
-
-	public static boolean enforceUTC(DateTime date, @Nullable ResultCallback<?> callback) {
-		return enforceUTC(date, "Date should be in UTC zone!", callback);
 	}
 }

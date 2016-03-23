@@ -4,6 +4,7 @@ import android.content.Context;
 import android.os.Build;
 
 import com.realdolmen.timeregistration.BuildConfig;
+import com.realdolmen.timeregistration.service.repository.BackendService;
 import com.realdolmen.timeregistration.ui.login.LoginActivity;
 import com.realdolmen.timeregistration.UITestActivity;
 

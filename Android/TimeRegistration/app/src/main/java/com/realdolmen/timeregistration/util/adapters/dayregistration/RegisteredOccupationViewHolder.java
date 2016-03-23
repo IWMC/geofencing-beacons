@@ -11,7 +11,7 @@ import com.realdolmen.timeregistration.util.DateUtil;
 import butterknife.Bind;
 import butterknife.ButterKnife;
 
-public class CardViewHolder extends RecyclerView.ViewHolder {
+public class RegisteredOccupationViewHolder extends RecyclerView.ViewHolder {
 
 	private View view;
 	private RegisteredOccupation data;
@@ -26,12 +26,12 @@ public class CardViewHolder extends RecyclerView.ViewHolder {
 		title.setText(data.getOccupation().getName());
 		description.setVisibility(View.VISIBLE);
 		if (data.getRegisteredStart() != null)
-			description.setText(DateUtil.formatToHours(data.getRegisteredStart()) + " - " + (data.getRegisteredEnd() == null ? "Ongoing..." : DateUtil.formatToHours(data.getRegisteredEnd())));
+			description.setText(DateUtil.formatToHours(DateUtil.toLocal(data.getRegisteredStart())) + " - " + (DateUtil.toLocal(data.getRegisteredEnd()) == null ? "Ongoing..." : DateUtil.formatToHours(DateUtil.toLocal(data.getRegisteredEnd()))));
 		else
 			description.setText("No duration set!");
 	}
 
-	public CardViewHolder(View itemView) {
+	public RegisteredOccupationViewHolder(View itemView) {
 		super(itemView);
 		this.view = itemView;
 		ButterKnife.bind(this, view);

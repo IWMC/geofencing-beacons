@@ -1,6 +1,8 @@
 package com.realdolmen.timeregistration.model;
 
-public class Occupation {
+import java.io.Serializable;
+
+public class Occupation implements Serializable {
 
 	private String name = "";
 
@@ -43,18 +45,22 @@ public class Occupation {
 	@Override
 	public boolean equals(Object o) {
 		if (this == o) return true;
-		if (!(o instanceof Occupation)) return false;
+		if (o == null || getClass() != o.getClass()) return false;
 
 		Occupation that = (Occupation) o;
 
 		if (version != that.version) return false;
-		return id == that.id;
+		if (id != that.id) return false;
+		if (!name.equals(that.name)) return false;
+		return !(description != null ? !description.equals(that.description) : that.description != null);
 
 	}
 
 	@Override
 	public int hashCode() {
-		int result = version;
+		int result = name.hashCode();
+		result = 31 * result + version;
+		result = 31 * result + (description != null ? description.hashCode() : 0);
 		result = 31 * result + (int) (id ^ (id >>> 32));
 		return result;
 	}

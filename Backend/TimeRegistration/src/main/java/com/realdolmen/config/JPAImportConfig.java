@@ -63,6 +63,14 @@ public class JPAImportConfig {
         otherProject.setName("Project 100");
         otherProject.setDescription("Lorem ipsum dolor sit amet, consectetur adipiscing elit. Aliquam aliquam nisl at erat malesuada sodales. Sed semper metus vitae efficitur finibus. Morbi justo metus, sagittis eget ultricies et, accumsan quis lorem. Aliquam ut lacinia ante, ut semper quam.Donec a odio felis. Vivamus tempus mi arcu, a volutpat mauris feugiat ac. Etiam diam enim, malesuada id tortor ac, tincidunt pharetra turpis. Cras eu augue sit amet arcu porta feugiat. Phasellus lobortis ultricies ultricies. Mauris eleifend urna sed ipsum dapibus, eget feugiat nisi semper. Morbi fringilla viverra massa sit amet dapibus. Integer faucibus odio vel justo interdum maximus. Sed ut imperdiet risus, egestas bibendum odio. Vestibulum dapibus nec est at imperdiet.");
         otherProject.setEndDate(DateUtils.addMonths(new Date(), 3));
+        for (int i = 0; i < 20; i++) {
+            Occupation oo = new Occupation();
+            oo.setName("Occupation " + i);
+            if (i % 4 == 0) {
+                oo.setDescription("Description for #" + i);
+            }
+            entityManager.persist(oo);
+        }
 
         entityManager.persist(o);
         entityManager.persist(project);
