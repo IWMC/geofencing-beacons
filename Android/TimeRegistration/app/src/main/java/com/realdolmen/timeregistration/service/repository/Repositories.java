@@ -13,6 +13,9 @@ public class Repositories {
 	private static RegisteredOccupationRepository registeredOccupationRepository;
 
 	public static void loadOccupationRepository(@NonNull Context context, @Nullable LoadCallback loadCallback) {
+		if (context == null) {
+			throw new IllegalArgumentException("Context cannot be null!");
+		}
 		if (occupationRepository == null) {
 			occupationRepository = new OccupationRepository(context, loadCallback);
 		} else if (loadCallback != null) {
@@ -21,6 +24,9 @@ public class Repositories {
 	}
 
 	public static void loadRegisteredOccupationRepository(@NonNull Context context, @Nullable LoadCallback loadCallback) {
+		if (context == null) {
+			throw new IllegalArgumentException("Context cannot be null!");
+		}
 		if (registeredOccupationRepository == null) {
 			registeredOccupationRepository = new RegisteredOccupationRepository(context, loadCallback);
 		} else if (loadCallback != null) {
