@@ -39,13 +39,13 @@ public class Project extends Occupation implements Serializable {
     }
 
     @Column(name = "startDate", nullable = false)
-    @Temporal(TemporalType.DATE)
+    @Temporal(TemporalType.TIMESTAMP)
     @Field
     @DateBridge(resolution = Resolution.DAY)
     private Date startDate;
 
     @Column
-    @Temporal(TemporalType.DATE)
+    @Temporal(TemporalType.TIMESTAMP)
     @Field
     @DateBridge(resolution = Resolution.DAY)
     private Date endDate;

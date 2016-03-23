@@ -4,17 +4,17 @@ import android.databinding.ObservableArrayList;
 import android.databinding.ObservableList;
 
 import com.realdolmen.timeregistration.model.RegisteredOccupation;
-import com.realdolmen.timeregistration.util.adapters.dayregistration.OccupationRecyclerAdapter;
+import com.realdolmen.timeregistration.util.adapters.dayregistration.RegisteredOccupationRecyclerAdapter;
 
 /**
  * Seperated implementation of {@link android.databinding.ObservableList.OnListChangedCallback}
- * to use in {@link OccupationRecyclerAdapter}.
+ * to use in {@link RegisteredOccupationRecyclerAdapter}.
  */
-public class ObservableAdapterCallback extends ObservableList.OnListChangedCallback<ObservableArrayList<RegisteredOccupation>> {
+public class ObservableRegisteredOccupationAdapterCallback extends ObservableList.OnListChangedCallback<ObservableArrayList<RegisteredOccupation>> {
 
-	private OccupationRecyclerAdapter adapter;
+	private RegisteredOccupationRecyclerAdapter adapter;
 
-	public ObservableAdapterCallback(OccupationRecyclerAdapter adapter) {
+	public ObservableRegisteredOccupationAdapterCallback(RegisteredOccupationRecyclerAdapter adapter) {
 		this.adapter = adapter;
 	}
 

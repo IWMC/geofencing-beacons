@@ -15,7 +15,7 @@ import javax.validation.constraints.NotNull;
 @Entity
 @Inheritance(strategy = InheritanceType.JOINED)
 @NamedQueries({
-        @NamedQuery(name = "Occupation.findAvailableByEmployee", query = "SELECT o FROM Occupation o"),
+        @NamedQuery(name = "Occupation.findAvailableByEmployee", query = "SELECT o FROM Occupation o ORDER BY o.name"),
         @NamedQuery(name = "Occupation.findAll", query = "SELECT o FROM Occupation o")
 })
 @Indexed

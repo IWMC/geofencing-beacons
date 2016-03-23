@@ -13,6 +13,7 @@ import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.transaction.UserTransaction;
 import java.util.Date;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
 
 import static org.junit.Assert.*;
@@ -30,8 +31,10 @@ public class OccupationTest {
     @Inject
     private UserTransaction utx;
 
-    private Occupation occupation = new Occupation("Lunch", "Food consumption in the middle of the day!");
-    private Project project = new Project("Project Y", "Another project almost as secret as Project X", 42, new Date(), new Date());
+    private Occupation occupation = new Occupation("Lunch " + atomicInteger.getAndIncrement(), "Food consumption in the middle of the day!");
+    private Project project = new Project("Project Y " + atomicInteger.getAndIncrement(), "Another project almost as secret as Project X", 42, new Date(), new Date());
+
+    private static AtomicInteger atomicInteger = new AtomicInteger(1);
 
     @Deployment
     public static WebArchive createDeployment() {
@@ -109,15 +112,16 @@ public class OccupationTest {
             assertEquals("project should have 1 member", 1, dbProject.getEmployees().size());
             assertEquals("project should have the correct member", employee, dbProject.getEmployees().iterator().next());
 
-            assertEquals("project should have a different start date", project.getStartDate(), dbProject.getStartDate());
-            assertEquals("project should have a different end date", project.getEndDate(), dbProject.getEndDate());
+            //TODO: Fix dates inconsistency.
+            assertEquals("project should have the same start date", project.getStartDate(), dbProject.getStartDate());
+            assertEquals("project should have the same end date", project.getEndDate(), dbProject.getEndDate());
             assertEquals(project, dbProject);
         });
     }
 
     @Test
     public void testUpdatedOccupationIsConsistent() throws Exception {
-        final String newName = "Long lunch";
+        final String newName = "Long lunch " + atomicInteger.getAndIncrement();
         final String newDescription = "Just like a normal lunch, but longer";
 
         transaction(() -> {
@@ -136,7 +140,7 @@ public class OccupationTest {
 
     @Test
     public void testDeleteProjectDeletesSubprojects() throws Exception {
-        Project subproject = new Project("Subproject", "Subproject description", 156, new Date(), new Date());
+        Project subproject = new Project("Subproject " + atomicInteger.getAndIncrement(), "Subproject description", 156, new Date(), new Date());
         transaction(em::persist, subproject);
 
         transaction(() -> {

@@ -51,9 +51,9 @@ public class EmployeeTest {
                 , "user", "test");
         simpleProject = new Project();
         simpleProject.setProjectNr(9);
-        simpleProject.setName("Project 1");
+        simpleProject.setName("Project T " + atomicInteger.getAndIncrement());
         simpleProject.setStartDate(new Date());
-        simpleProject.setDescription("Project 1 description");
+        simpleProject.setDescription("Project T description");
         try {
             transaction(em::persist, employee);
             transaction(em::persist, simpleProject);
