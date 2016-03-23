@@ -1,6 +1,10 @@
 package com.realdolmen.timeregistration.util;
 
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
+
+import com.realdolmen.timeregistration.service.GenericVolleyError;
+import com.realdolmen.timeregistration.service.ResultCallback;
 
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeConstants;
@@ -108,5 +112,32 @@ public class DateUtil {
 
 	public static DateTime toUTC(DateTime date) {
 		return date.toDateTime(DateTimeZone.UTC);
+	}
+
+	/**
+	 * Makes sure a given date is in UTC format. If a callback is specified it will call it with a FAIL result
+	 * and a {@link GenericVolleyError} with cause {@link IllegalStateException}. If none is specified
+	 * an {@link IllegalStateException} will be thrown.
+	 *
+	 * @param date     The date to check
+	 * @param message  The message to use in the exception.
+	 * @param callback The optional callback that will be called in event of
+	 * @return False when the date is UTC. True when it is not and an exception has occured.
+	 */
+	public static boolean enforceUTC(DateTime date, String message, @Nullable ResultCallback<?> callback) {
+		if (date.getZone() != DateTimeZone.UTC) {
+
+			if (callback != null) {
+				callback.onResult(ResultCallback.Result.FAIL, null, new GenericVolleyError(new IllegalStateException(message)));
+				return true;
+			} else {
+				throw new IllegalStateException(message);
+			}
+		}
+		return false;
+	}
+
+	public static boolean enforceUTC(DateTime date, @Nullable ResultCallback<?> callback) {
+		return enforceUTC(date, "Date should be in UTC zone!", callback);
 	}
 }

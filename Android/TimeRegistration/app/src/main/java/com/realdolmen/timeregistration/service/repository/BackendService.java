@@ -90,7 +90,21 @@ public class BackendService {
 	 *                 is called with SUCCESS result when the server returned 200 OK. When the {@link GsonObjectRequest} could not parse the answer
 	 *                 {@link ResultCallback#onResult(ResultCallback.Result, Object, VolleyError)} with FAIL result is called.
 	 */
-	public void getOccupationsInDateRange(DateTime date, final ResultCallback<List<RegisteredOccupation>> callback) {
+	public void getRegisteredOccupationsByDate(@UTC @NonNull DateTime date, @NonNull final ResultCallback<List<RegisteredOccupation>> callback) {
+		if (callback == null) {
+			throw new NullPointerException("Callback cannot be null!");
+		}
+
+		if (date == null) {
+			callback.onResult(ResultCallback.Result.FAIL, null,
+					new GenericVolleyError(new NullPointerException("Date should not be null!")));
+			return;
+		}
+
+		if (DateUtil.enforceUTC(date, callback)) {
+			return;
+		}
+
 		GsonObjectRequest req = new GsonObjectRequest<>(params(API_GET_REGISTERED_OCCUPATIONS,
 				date.toDateTime(DateTimeZone.UTC).getMillis()), RegisteredOccupation[].class
 				, auth(), new Response.Listener<RegisteredOccupation[]>() {
@@ -187,8 +201,22 @@ public class BackendService {
 		return headers;
 	}
 
-	public void confirmOccupations(DateTime date, final ResultCallback callback) {
-		JsonObjectRequest req = new JsonObjectRequest(Request.Method.PUT, params(API_CONFIRM_OCCUPATIONS, date.toDateTime(DateTimeZone.UTC).getMillis()), "", new Response.Listener() {
+	public void confirmOccupations(@UTC DateTime date, @NonNull final ResultCallback callback) {
+		if (callback == null) {
+			throw new NullPointerException("Callback may not be null!");
+		}
+
+		if (date == null) {
+			callback.onResult(ResultCallback.Result.FAIL, null,
+					new GenericVolleyError(new NullPointerException("Date may not be null!")));
+			return;
+		}
+
+		if (DateUtil.enforceUTC(date, callback)) {
+			return;
+		}
+		JsonObjectRequest req = new JsonObjectRequest(Request.Method.PUT, params(API_CONFIRM_OCCUPATIONS,
+				date.toDateTime(DateTimeZone.UTC).getMillis()), "", new Response.Listener() {
 			@Override
 			public void onResponse(Object response) {
 				callback.onResult(ResultCallback.Result.SUCCESS, response, null);
@@ -212,7 +240,10 @@ public class BackendService {
 		return auth(null);
 	}
 
-	public void getRelevantOccupations(final ResultCallback<List<Occupation>> resultCallback) {
+	public void getRelevantOccupations(@NonNull final ResultCallback<List<Occupation>> resultCallback) {
+		if (resultCallback == null) {
+			throw new NullPointerException("Callback cannot be null!");
+		}
 		GsonObjectRequest req = new GsonObjectRequest<>(API_GET_OCCUPATIONS, Occupation[].class
 				, auth(), new Response.Listener<Occupation[]>() {
 			@Override
@@ -230,7 +261,20 @@ public class BackendService {
 	}
 
 	public void getRegisteredOccupationsRangeUntilNow(@UTC @NonNull DateTime originDate, int count, @NonNull final ResultCallback<List<RegisteredOccupation>> callback) {
-		DateUtil.enforceUTC(originDate, "Origin date must be in UTC format!");
+		if (callback == null) {
+			throw new NullPointerException("Callback cannot be null!");
+		}
+
+		if (originDate == null) {
+			callback.onResult(ResultCallback.Result.FAIL, null, new GenericVolleyError(new NullPointerException("Origin date cannot be null!")));
+			return;
+		}
+
+		if (count <= 0) {
+			count = 1;
+		}
+
+		DateUtil.enforceUTC(originDate, "Origin date must be in UTC format!", callback);
 		GsonObjectRequest req = new GsonObjectRequest(params(API_GET_REGISTERED_OCCUPATIONS_RANGE, originDate.getMillis(), count), RegisteredOccupation[].class, auth(), new Response.Listener<RegisteredOccupation[]>() {
 			@Override
 			public void onResponse(RegisteredOccupation[] response) {
@@ -246,16 +290,25 @@ public class BackendService {
 		requestQueue.add(req);
 	}
 
-	public void registerOccupation(RegisteredOccupation ro, final ResultCallback resultCallback) {
+	public void registerOccupation(@NonNull RegisteredOccupation ro, @NonNull final ResultCallback callback) {
+		if (callback == null) {
+			throw new NullPointerException("Callback cannot be null!");
+		}
+
+		if (ro == null) {
+			callback.onResult(ResultCallback.Result.FAIL, null, new GenericVolleyError(new NullPointerException("Registered occupation cannot be null!")));
+			return;
+		}
+
 		Request req = new JsonObjectRequest(Request.Method.POST, API_ADD_OCCUPATION_REGISTRATION, compactGson.toJson(ro), new Response.Listener<JSONObject>() {
 			@Override
 			public void onResponse(JSONObject response) {
-				resultCallback.onResult(ResultCallback.Result.SUCCESS, null, null);
+				callback.onResult(ResultCallback.Result.SUCCESS, null, null);
 			}
 		}, new Response.ErrorListener() {
 			@Override
 			public void onErrorResponse(VolleyError error) {
-				resultCallback.onResult(ResultCallback.Result.FAIL, null, error);
+				callback.onResult(ResultCallback.Result.FAIL, null, error);
 			}
 		}) {
 			@Override
