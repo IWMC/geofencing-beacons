@@ -40,4 +40,10 @@
         <item name="android:background">@drawable/colored_button</item>
         <item name="android:textColor">@android:color/white</item>
     </style>
+
+    <style name="TableSeperatorHorizontal">
+        <item name="android:background">#FFDDDDDD</item>
+        <item name="android:layout_height">1dp</item>
+        <item name="android:layout_width">match_parent</item>
+    </style>
 </resources>

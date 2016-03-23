@@ -1,6 +1,7 @@
 package com.realdolmen.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import org.hibernate.annotations.Type;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
@@ -13,7 +14,8 @@ import java.util.Date;
 @Entity
 @XmlRootElement
 @NamedQueries(
-        @NamedQuery(name = "RegisteredOccupation.findOccupationsInRange", query = "SELECT r FROM RegisteredOccupation r WHERE r.registeredStart >= :start AND r.registeredEnd <= :end AND r.registrar.id = :employeeId")
+        @NamedQuery(name = "RegisteredOccupation.findOccupationsInRange",
+                query = "SELECT r FROM RegisteredOccupation r WHERE YEAR(r.registeredStart) = :year AND DAY(r.registeredStart) = :day AND MONTH(r.registeredStart) = :month AND r.registrar.id = :employeeId ORDER BY r.registeredStart")
 )
 public class RegisteredOccupation {
 
@@ -22,18 +24,24 @@ public class RegisteredOccupation {
     private Occupation occupation;
 
     @NotNull(message = "registeredStart.empty")
+    @Temporal(TemporalType.TIMESTAMP)
     private Date registeredStart;
 
+    @Temporal(TemporalType.TIMESTAMP)
     private Date registeredEnd;
+
+    public static void initialize(RegisteredOccupation o) {
+        Occupation.initialize(o.occupation);
+    }
 
     @JsonIgnore
     @ManyToOne
     private Employee registrar;
 
-
     private boolean confirmed = false;
 
     @Id
+    @GeneratedValue(strategy = GenerationType.AUTO)
     private long id;
 
     public long getId() {

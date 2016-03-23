@@ -9,9 +9,6 @@ import com.realdolmen.timeregistration.ui.dayregistration.DayRegistrationActivit
 import com.realdolmen.timeregistration.ui.dayregistration.DayRegistrationFragment;
 import com.realdolmen.timeregistration.util.DateUtil;
 
-import java.util.Date;
-import java.util.List;
-
 /**
  * Fragment adapter for the {@link android.support.v4.view.ViewPager} of {@link DayRegistrationActivity}.
  */

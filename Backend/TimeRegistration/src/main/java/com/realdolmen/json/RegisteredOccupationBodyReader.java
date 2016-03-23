@@ -5,6 +5,10 @@ import com.realdolmen.entity.Occupation;
 import com.realdolmen.entity.PersistenceUnit;
 import com.realdolmen.entity.RegisteredOccupation;
 import com.realdolmen.service.SecurityManager;
+import com.realdolmen.validation.DateUtil;
+import org.joda.time.DateTime;
+import org.joda.time.DateTimeZone;
+import org.joda.time.format.ISODateTimeFormat;
 
 import javax.inject.Inject;
 import javax.json.Json;
@@ -22,7 +26,11 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Type;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
+import java.time.temporal.TemporalAccessor;
 import java.util.Date;
+import java.util.TimeZone;
 
 @Produces(MediaType.APPLICATION_JSON)
 @Provider
@@ -49,15 +57,22 @@ public class RegisteredOccupationBodyReader implements MessageBodyReader<Registe
             Employee existingEmployee = sm.findEmployee();
             ro.setRegistrar(existingEmployee);
             if (root.containsKey("registeredStart")) {
-                long start = Long.parseLong(root.get("registeredStart").toString());
-                Date startDate = new Date(start);
-                ro.setRegisteredStart(startDate);
+                String start = root.getString("registeredStart");
+                DateTime unconfirmedStart = ISODateTimeFormat.dateTime().parseDateTime(start).toDateTime(DateTimeZone.UTC);
+                System.out.println("UTC input string: " + start + " and converted to date in UTC: " + unconfirmedStart);
+                DateUtil.enforceUTC(unconfirmedStart);
+                ZonedDateTime startDate = unconfirmedStart.toDate().toInstant().atZone(ZoneId.of("Z"));
+                ro.setRegisteredStart(new Date(startDate.toInstant().toEpochMilli()));
+                System.out.println("Registered start: " + ro.getRegisteredStart());
             }
 
             if (root.containsKey("registeredEnd")) {
-                long end = Long.parseLong(root.get("registeredEnd").toString());
-                Date endDate = new Date(end);
+                String end = root.getString("registeredEnd");
+                DateTime unconfirmedEnd = ISODateTimeFormat.dateTime().parseDateTime(end).toDateTime(DateTimeZone.UTC);
+                DateUtil.enforceUTC(unconfirmedEnd);
+                Date endDate = unconfirmedEnd.toDate();
                 ro.setRegisteredEnd(endDate);
+                System.out.println(ro.getRegisteredEnd() + " - and millis: " + ro.getRegisteredEnd().getTime());
             }
 
             if(root.containsKey("occupation")) {

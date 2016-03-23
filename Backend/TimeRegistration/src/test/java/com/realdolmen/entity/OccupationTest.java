@@ -109,8 +109,9 @@ public class OccupationTest {
             assertEquals("project should have 1 member", 1, dbProject.getEmployees().size());
             assertEquals("project should have the correct member", employee, dbProject.getEmployees().iterator().next());
 
-            assertEquals("project should have a different start date", project.getStartDate(), dbProject.getStartDate());
-            assertEquals("project should have a different end date", project.getEndDate(), dbProject.getEndDate());
+            //TODO: Fix dates inconsistency.
+            assertEquals("project should have the same start date", project.getStartDate(), dbProject.getStartDate());
+            assertEquals("project should have the same end date", project.getEndDate(), dbProject.getEndDate());
             assertEquals(project, dbProject);
         });
     }

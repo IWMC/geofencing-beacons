@@ -1,13 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
-<android.support.v7.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:layout_width="match_parent"
-    android:layout_height="wrap_content"
-    android:layout_marginBottom="8dp"
-    android:layout_marginLeft="0dp"
-    android:layout_marginRight="0dp"
-    android:layout_marginTop="0dp"
-    android:orientation="vertical" app:cardCornerRadius="0dp">
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+             xmlns:app="http://schemas.android.com/apk/res-auto"
+             android:layout_width="match_parent"
+             android:layout_height="wrap_content"
+             android:layout_marginBottom="0dp"
+             android:layout_marginLeft="0dp"
+             android:layout_marginRight="0dp"
+             android:layout_marginTop="0dp"
+             android:orientation="vertical"
+             app:cardCornerRadius="0dp" android:background="@drawable/occupation_card_drawable">
 
     <RelativeLayout
         android:layout_width="wrap_content"
@@ -26,18 +27,19 @@
                 android:layout_height="wrap_content"
                 android:text="Card"
                 android:textAppearance="@android:style/TextAppearance.Medium"
-                android:textStyle="bold" />
+                />
 
             <TextView
+                android:id="@+id/occupation_card_description"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Description"
-                android:visibility="gone"
-                android:id="@+id/occupation_card_description"
-                android:textColor="@color/colorOccupationDescription" />
+                android:textColor="@color/colorOccupationDescription"
+                android:visibility="gone"/>
         </LinearLayout>
 
         <com.andexert.library.RippleView
+            android:id="@+id/occupation_card_edit"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_alignParentRight="true"
@@ -50,10 +52,10 @@
             <ImageView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:src="@drawable/ic_create_32dp"
                 android:layout_gravity="center"
-                android:padding="15dp"/>
+                android:padding="15dp"
+                android:src="@drawable/ic_create_32dp"/>
         </com.andexert.library.RippleView>
     </RelativeLayout>
 
-</android.support.v7.widget.CardView>
+</FrameLayout>
