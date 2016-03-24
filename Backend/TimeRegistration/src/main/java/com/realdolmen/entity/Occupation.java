@@ -45,7 +45,7 @@ public class Occupation {
     @Column(name = "version")
     private int version;
 
-    @Column(length = 2000)
+    @Column(length = 10000)
     @Field
     private String description;
 

@@ -65,12 +65,12 @@
                                         <div class="card-content">
                                             <h:outputText styleClass="card-title"
                                                           value="#{occupation.name}"/><br/>
-                                            <h:outputText styleClass="occupation-content" value="#{occupation.description}"/>
+                                            <h:outputText styleClass="occdupation-content" value="#{occupation.description}"/>
                                         </div>
                                         <div class="card-action">
                                             <p:link styleClass="realdolmen-blue-text waves-effect waves-realdolmen-blue card-action-flat"
                                                     value="#{msg['employee.search.open_details']}"
-                                                    outcome="#{pages.detailsOccupation().param('id', occupation.id).redirect()}"/>
+                                                    outcome="#{pages.occupationDetailsFrom(occupation).param('id', occupation.id).redirect()}"/>
                                         </div>
                                     </div>
                                 </h:form>

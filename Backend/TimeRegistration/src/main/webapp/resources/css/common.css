@@ -126,6 +126,10 @@ nav + .container {
 .label-datepicker {
 }
 
+.justify-text {
+    text-align: justify;
+}
+
 @media only screen and (max-width: 600px) {
     .s0 {
        width: 0px;
@@ -144,6 +148,10 @@ nav + .container {
         width: 60% !important;
     }
 
+    .large-container {
+        width: 85% !important;
+    }
+
     .m0 {
         width: 0px;
     }
@@ -159,6 +167,10 @@ nav + .container {
 @media only screen and (min-width: 993px) {
     .small-container {
         width: 48% !important;
+    }
+
+    .large-container {
+        width: 85% !important;
     }
 
     .l0 {

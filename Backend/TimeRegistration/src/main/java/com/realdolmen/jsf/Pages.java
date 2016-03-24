@@ -1,5 +1,8 @@
 package com.realdolmen.jsf;
 
+import com.realdolmen.entity.Occupation;
+import com.realdolmen.entity.Project;
+
 import javax.enterprise.context.RequestScoped;
 import javax.inject.Named;
 import java.io.UnsupportedEncodingException;
@@ -30,13 +33,23 @@ public class Pages {
 
     public static Page addEmployee() { return new Page("/employees/employee-add.xhtml"); }
 
-    public static Page searchOccupation() { return new Page("/occupations/search-occupations.xhmtl"); }
+    public static Page searchOccupation() { return new Page("/occupations/search-occupations.xhtml"); }
 
     public static Page addOccupation() { return new Page("/occupations/occupation-add.xhtml"); }
 
     public static Page detailsOccupation() { return new Page("/occupations/occupation-details.xhtml"); }
 
     public static Page addProject() { return new Page("/occupations/project-add.xhtml"); }
+
+    public static Page detailsProject() { return new Page("/occupations/project-details.xhtml"); }
+
+    public static Page occupationDetailsFrom(Occupation occupation) {
+        if (occupation instanceof Project) {
+            return Pages.detailsProject();
+        } else {
+            return Pages.detailsOccupation();
+        }
+    }
 
     public static class Page {
 
