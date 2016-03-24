@@ -196,7 +196,7 @@ public class OccupationEndpoint {
         RegisteredOccupation ro = em.createNamedQuery("RegisteredOccupation.findOccupationByIdAndUser", RegisteredOccupation.class).setParameter("regId", id).setParameter("userId", sm.findEmployee().getId()).getSingleResult();
         if (ro != null) {
             em.remove(ro);
-            return Response.ok().build();
+            return Response.noContent().build();
         }
         return Response.notModified().build();
     }

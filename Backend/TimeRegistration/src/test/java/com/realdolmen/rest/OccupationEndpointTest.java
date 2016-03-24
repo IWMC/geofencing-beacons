@@ -196,7 +196,7 @@ public class OccupationEndpointTest {
     }
 
     @Test
-    public void testRemoveOccupationWithValidIdResultsIn200OK() throws Exception {
+    public void testRemoveOccupationWithValidIdResultsIn201NOCONTENT() throws Exception {
         when(sm.findEmployee()).thenReturn(session.getEmployee());
         RegisteredOccupation ro = new RegisteredOccupation();
         ro.setId(25);
@@ -210,7 +210,7 @@ public class OccupationEndpointTest {
         when(em.createNamedQuery("RegisteredOccupation.findOccupationByIdAndUser", RegisteredOccupation.class)).thenReturn(query);
         Response response = endpoint.removeRegisteredOccupation(25);
         verify(em, times(1)).remove(ro);
-        assertEquals("Removing a valid occupation should result in 200 OK", 200, response.getStatus());
+        assertEquals("Removing a valid occupation should result in 201 NO CONTENT", 201, response.getStatus());
     }
 
     @Test
