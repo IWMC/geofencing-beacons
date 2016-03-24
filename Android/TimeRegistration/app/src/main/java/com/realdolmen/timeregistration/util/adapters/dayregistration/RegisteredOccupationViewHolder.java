@@ -46,6 +46,10 @@ public class RegisteredOccupationViewHolder extends RecyclerView.ViewHolder {
 		update();
 	}
 
+	public RegisteredOccupation getData() {
+		return data;
+	}
+
 	@Override
 	public String toString() {
 		return data.getOccupation().getName();

@@ -4,7 +4,12 @@ import android.content.Context;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
+import com.android.volley.VolleyError;
 import com.realdolmen.timeregistration.service.ResultCallback;
+
+import org.jdeferred.Deferred;
+import org.jdeferred.Promise;
+import org.jdeferred.impl.DeferredObject;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -15,7 +20,7 @@ import java.util.Queue;
 /**
  * Abstract class designed to provide a middleware to communicate between UI and backend/local database.
  */
-public abstract class DataRepository<E> {
+public abstract class DataRepository<E, RM_OUT, SAVE_OUT> {
 
 	protected final List<E> data = new ArrayList<>();
 
@@ -27,7 +32,7 @@ public abstract class DataRepository<E> {
 		return Collections.unmodifiableList(data);
 	}
 
-	public abstract void save(@NonNull Context context, @NonNull E element, @Nullable ResultCallback<E> callback);
+	public abstract void save(@NonNull Context context, @NonNull E element, @Nullable ResultCallback<SAVE_OUT> callback);
 
 	public E get(int index) {
 		return data.get(index);
@@ -37,7 +42,7 @@ public abstract class DataRepository<E> {
 		return data.size();
 	}
 
-	public abstract void remove(@NonNull Context context, @NonNull E element, @Nullable ResultCallback<E> callback);
+	public abstract void remove(@NonNull Context context, @NonNull E element, @Nullable ResultCallback<RM_OUT> callback);
 
 	public boolean isLoaded() {
 		return loaded;
@@ -56,5 +61,19 @@ public abstract class DataRepository<E> {
 		while (!callbacksOnLoaded.isEmpty()) {
 			callbacksOnLoaded.poll().onResult(isLoaded ? LoadCallback.Result.SUCCESS : LoadCallback.Result.FAIL, throwable);
 		}
+	}
+
+	public Promise<RM_OUT, VolleyError, Object> remove(@NonNull Context context, E element) {
+		final Deferred<RM_OUT, VolleyError, Object> def = new DeferredObject<>();
+		remove(context, element, new ResultCallback<RM_OUT>() {
+			@Override
+			public void onResult(@NonNull Result result, @Nullable RM_OUT data, @Nullable VolleyError error) {
+				if(result == Result.SUCCESS)
+					def.resolve(data);
+				else
+					def.reject(error);
+			}
+		});
+		return def.promise();
 	}
 }

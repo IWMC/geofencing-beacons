@@ -10,7 +10,7 @@ import com.realdolmen.timeregistration.service.ResultCallback;
 
 import java.util.List;
 
-public class OccupationRepository extends DataRepository<Occupation> {
+public class OccupationRepository extends DataRepository<Occupation, Occupation, Occupation> {
 
 	OccupationRepository(Context context, final LoadCallback callback) {
 		BackendService.with(context).getRelevantOccupations(new ResultCallback<List<Occupation>>() {

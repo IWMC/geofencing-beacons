@@ -1,8 +1,5 @@
 package com.realdolmen.json;
 
-/**
- * Created by BCCAZ45 on 1/03/2016.
- */
 public class JsonWebToken {
 
     private String token;

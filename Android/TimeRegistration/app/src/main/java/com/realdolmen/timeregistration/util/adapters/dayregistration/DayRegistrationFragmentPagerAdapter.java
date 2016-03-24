@@ -32,7 +32,7 @@ public class DayRegistrationFragmentPagerAdapter extends FragmentPagerAdapter {
 
 	@Override
 	public CharSequence getPageTitle(int position) {
-		return DateUtil.nameForDate(activity.getDates().get(position));
+		return DateUtil.nameForDate(activity, activity.getDates().get(position));
 	}
 
 	@Override

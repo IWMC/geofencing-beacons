@@ -16,4 +16,13 @@
     <string name="day_registration_add_occupation">Voeg een bezigheid toe</string>
     <string name="day_registration_confirm">Bevestig registraties</string>
     <string name="day_registration_confirm_message">Uw registraties zijn geconfirmeerd</string>
+    <string name="date_today">Vandaag</string>
+    <string name="registration_notify_not_saved">Uw registratie werd niet opgeslagen!</string>
+    <string name="registration_notify_saved">Uw registratie werd opgeslagen.</string>
+    <string name="add_occupation_from">Van</string>
+    <string name="add_occupation_invalid_dates">De eindtijd kan niet voor de starttijd zijn!</string>
+    <string name="add_occupation_no_selection">U moet een bezigheid selecteren!</string>
+    <string name="add_occupation_title">Voeg bezigheid toe</string>
+    <string name="add_occupation_to">tot</string>
+    <string name="add_occupation_fetch_error">De bezigheden konden niet opgehaald worden!</string>
 </resources>

@@ -1,19 +1,12 @@
 package com.realdolmen.timeregistration.util.adapters.dayregistration;
 
-import android.databinding.ObservableArrayList;
-import android.databinding.ObservableList;
 import android.support.v7.widget.RecyclerView;
 import android.view.View;
 import android.view.ViewGroup;
 
 import com.realdolmen.timeregistration.model.Occupation;
-import com.realdolmen.timeregistration.service.repository.DataRepository;
 import com.realdolmen.timeregistration.service.repository.Repositories;
 import com.realdolmen.timeregistration.ui.OccupationCard;
-import com.realdolmen.timeregistration.util.ObservableOccupationAdapterCallback;
-import com.realdolmen.timeregistration.util.SimpleObservableCallback;
-
-import java.util.List;
 
 public class OccupationRecyclerAdapter extends RecyclerView.Adapter<OccupationViewHolder> {
 

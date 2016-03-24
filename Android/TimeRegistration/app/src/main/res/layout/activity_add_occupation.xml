@@ -82,7 +82,7 @@
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="From"
+                        android:text="@string/add_occupation_from"
                         android:textAppearance="@android:style/TextAppearance.Medium"
                         />
 
@@ -97,7 +97,7 @@
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="to"
+                        android:text="@string/add_occupation_to"
                         android:textAppearance="@android:style/TextAppearance.Medium"
                         />
 

@@ -15,4 +15,13 @@
     <string name="day_registration_add_occupation">Add occupation</string>
     <string name="day_registration_confirm">Confirm registrations</string>
     <string name="day_registration_confirm_message">Your registrations have been confirmed</string>
+    <string name="registration_notify_saved">The registration has been saved.</string>
+    <string name="registration_notify_not_saved">Your registration was not saved!</string>
+    <string name="date_today">Today</string>
+    <string name="add_occupation_title">Add Occupation</string>
+    <string name="add_occupation_no_selection">You must select an occupation!</string>
+    <string name="add_occupation_invalid_dates">End Time cannot be before Start Date</string>
+    <string name="add_occupation_from">From</string>
+    <string name="add_occupation_to">to</string>
+    <string name="add_occupation_fetch_error">Could not fetch occupations!</string>
 </resources>

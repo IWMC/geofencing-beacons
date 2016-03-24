@@ -5,6 +5,7 @@ import android.content.res.TypedArray;
 import android.support.design.widget.AppBarLayout;
 import android.support.design.widget.CoordinatorLayout;
 import android.support.design.widget.FabBehavior;
+import android.support.design.widget.Snackbar;
 import android.util.AttributeSet;
 import android.view.View;
 
@@ -39,7 +40,7 @@ public class ScrollAwareFabBehavior extends FabBehavior {
 
 	@Override
 	public boolean layoutDependsOn(CoordinatorLayout parent, FloatingActionMenu child, View dependency) {
-		return dependency instanceof AppBarLayout;
+		return dependency instanceof AppBarLayout || dependency instanceof Snackbar.SnackbarLayout;
 	}
 
 	@Override

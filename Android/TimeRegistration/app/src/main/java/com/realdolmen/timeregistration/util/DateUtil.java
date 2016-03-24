@@ -1,8 +1,10 @@
 package com.realdolmen.timeregistration.util;
 
+import android.content.Context;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
+import com.realdolmen.timeregistration.R;
 import com.realdolmen.timeregistration.service.GenericVolleyError;
 import com.realdolmen.timeregistration.service.ResultCallback;
 
@@ -13,6 +15,7 @@ import org.joda.time.DateTimeZone;
 import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;
 
+import java.text.DateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -23,7 +26,7 @@ public class DateUtil {
 	private static final DateTimeFormatter hourFormat24Hours = DateTimeFormat.forPattern("HH:mm");
 	private static final DateTimeFormatter hourFormatAmPm = DateTimeFormat.forPattern("hh:mm a");
 	private static final DateTimeFormatter dayFormat = DateTimeFormat.forPattern("EEEE dd MMMM");
-	public static final DateTimeFormatter UTC_FORMAT = DateTimeFormat.forPattern("MM/dd/yyyy KK:mm:ss a Z");
+	private static final DateTimeFormatter dayMonthFormat = DateTimeFormat.forPattern("d MMM");
 
 	/**
 	 * Uses the current time to check whether the specified date is on the same day.
@@ -66,11 +69,11 @@ public class DateUtil {
 		return is24Hours ? hourFormat24Hours.print(date) : hourFormatAmPm.print(date);
 	}
 
-	public static String nameForDate(@NonNull DateTime date) {
+	public static String nameForDate(@NonNull Context context, @NonNull DateTime date) {
 		if (isToday(date)) {
-			return "Today";
+			return context.getString(R.string.date_today);
 		}
-		return nameOfDayDateFormat.print(date);
+		return nameOfDayDateFormat.print(date) + " " + dayMonthFormat.print(date);
 	}
 
 	public static String formatToDay(DateTime date) {
