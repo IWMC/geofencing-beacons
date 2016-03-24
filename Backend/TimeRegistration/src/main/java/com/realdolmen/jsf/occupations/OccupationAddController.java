@@ -2,8 +2,10 @@ package com.realdolmen.jsf.occupations;
 
 import com.realdolmen.entity.Occupation;
 import com.realdolmen.jsf.Pages;
+import com.realdolmen.messages.Language;
 import com.realdolmen.rest.OccupationEndpoint;
 import org.jetbrains.annotations.TestOnly;
+import org.primefaces.material.application.ToastService;
 
 import javax.enterprise.context.RequestScoped;
 import javax.faces.context.FacesContext;
@@ -24,9 +26,30 @@ public class OccupationAddController {
     @Inject
     private OccupationEndpoint endpoint;
 
+    @Inject
+    private Language language;
+
     private FacesContext facesContext = FacesContext.getCurrentInstance();
+    private ToastService toastService;
 
     public OccupationAddController() {
+    }
+
+    public void saveOccupation() throws IOException {
+        Response response = endpoint.addOccupation(occupation);
+        if (response.getStatus() == Response.Status.CREATED.getStatusCode()) {
+            getFacesContext().getExternalContext().redirect(Pages.searchOccupation().redirect());
+        } else if (response.getStatus() == Response.Status.CONFLICT.getStatusCode()) {
+            getToastService().newToast(language.getString(Language.Text.OCCUPATION_ADD_NAME_TAKEN));
+        }
+    }
+
+    public ToastService getToastService() {
+        if (toastService == null) {
+            toastService = ToastService.getInstance();
+        }
+
+        return toastService;
     }
 
     public FacesContext getFacesContext() {
@@ -42,11 +65,9 @@ public class OccupationAddController {
         this.facesContext = facesContext;
     }
 
-    public void saveOccupation() throws IOException {
-        Response response = endpoint.addOccupation(occupation);
-        if (response.getStatus() == Response.Status.CREATED.getStatusCode()) {
-            getFacesContext().getExternalContext().redirect(Pages.searchOccupation().redirect());
-        }
+    @TestOnly
+    public void setToastService(ToastService toastService) {
+        this.toastService = toastService;
     }
 
     public Occupation getOccupation() {

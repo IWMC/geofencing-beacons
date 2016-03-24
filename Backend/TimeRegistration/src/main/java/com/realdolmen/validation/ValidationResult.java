@@ -16,9 +16,13 @@ public class ValidationResult {
 
     private boolean isValid;
 
-    private List<String> invalidationTokens;
+    private List<String> invalidationTokens = new ArrayList<>();
 
     public ValidationResult() {
+    }
+
+    public ValidationResult(boolean isValid) {
+        this.isValid = isValid;
     }
 
     public ValidationResult(boolean isValid, List<String> invalidationTokens) {

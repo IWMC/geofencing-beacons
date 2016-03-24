@@ -4,6 +4,8 @@ import com.realdolmen.WarFactory;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
+import org.joda.time.DateTime;
+import org.joda.time.DateTimeFieldType;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -112,10 +114,14 @@ public class OccupationTest {
             assertEquals("project should have 1 member", 1, dbProject.getEmployees().size());
             assertEquals("project should have the correct member", employee, dbProject.getEmployees().iterator().next());
 
-            //TODO: Fix dates inconsistency.
-            assertEquals("project should have the same start date", project.getStartDate(), dbProject.getStartDate());
-            assertEquals("project should have the same end date", project.getEndDate(), dbProject.getEndDate());
-            assertEquals(project, dbProject);
+            assertEquals("project should have the same start date day", new DateTime(project.getStartDate()).get(DateTimeFieldType.dayOfYear()),
+                    new DateTime(dbProject.getStartDate()).get(DateTimeFieldType.dayOfYear()));
+            assertEquals("project should have the same start date year", new DateTime(project.getStartDate()).get(DateTimeFieldType.year()),
+                    new DateTime(dbProject.getStartDate()).get(DateTimeFieldType.year()));
+            assertEquals("project should have the same end date day", new DateTime(project.getEndDate()).get(DateTimeFieldType.dayOfYear()),
+                    new DateTime(dbProject.getEndDate()).get(DateTimeFieldType.dayOfYear()));
+            assertEquals("project should have the same end date year", new DateTime(project.getEndDate()).get(DateTimeFieldType.year()),
+                    new DateTime(dbProject.getEndDate()).get(DateTimeFieldType.year()));
         });
     }
 

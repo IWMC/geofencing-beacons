@@ -6,7 +6,9 @@ import org.hibernate.search.annotations.Field;
 import org.hibernate.search.annotations.Indexed;
 
 import javax.persistence.*;
+import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Size;
 
 /**
  * Entity to be used in the ORM to store data about an occupation. An occupation
@@ -34,7 +36,8 @@ public class Occupation {
     }
 
     @Column(unique = true)
-    @NotNull(message = "name")
+    @NotNull(message = "name.empty")
+    @Size(min = 1, message = "name.empty")
     @Field
     private String name;
 

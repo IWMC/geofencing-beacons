@@ -4,26 +4,35 @@ import com.realdolmen.WarFactory;
 import com.realdolmen.entity.*;
 import com.realdolmen.jsf.Session;
 import com.realdolmen.service.SecurityManager;
+import com.realdolmen.validation.ValidationResult;
+import com.realdolmen.validation.Validator;
 import org.hamcrest.BaseMatcher;
 import org.hamcrest.Description;
+import org.hibernate.exception.ConstraintViolationException;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.*;
+import org.mockito.InjectMocks;
+import org.mockito.Matchers;
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
 
 import javax.inject.Inject;
 import javax.json.Json;
 import javax.json.JsonObjectBuilder;
 import javax.persistence.EntityManager;
+import javax.persistence.PersistenceException;
 import javax.persistence.TypedQuery;
+import javax.transaction.*;
 import javax.ws.rs.core.Response;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
+import java.util.function.Supplier;
 
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.*;
@@ -34,14 +43,25 @@ public class OccupationEndpointTest {
     @Mock
     private EntityManager em;
 
-    @InjectMocks
-    private OccupationEndpoint endpoint;
-
     @Mock
     private SecurityManager sm;
 
     @Inject
     private Session session;
+
+    @Inject
+    private UserTransaction userTransaction;
+
+    @Mock
+    private Validator<Occupation> occupationValidator;
+
+    @Mock
+    private UserTransaction utx;
+
+    @InjectMocks
+    private OccupationEndpoint endpoint;
+
+    private RollbackException existingOccupationException;
 
     @Deployment
     public static WebArchive createDeployment() {
@@ -68,6 +88,8 @@ public class OccupationEndpointTest {
         ro2.setOccupation(oc2);
 
         occupations = new ArrayList<>(Arrays.asList(ro1, ro2));
+        existingOccupationException = new RollbackException();
+        existingOccupationException.initCause(new PersistenceException(new ConstraintViolationException("", null, "")));
     }
 
     @Test
@@ -144,8 +166,8 @@ public class OccupationEndpointTest {
         Response response = endpoint.getRegisteredOccupations(new Date().getTime());
         assertEquals("Response should be 400 because the user is invalid (but somehow passed authentication): " + response.getEntity(), 400, response.getStatus());
     }
-
     private Location location = new Location(10d, 11d);
+
     private JsonObjectBuilder point = Json.createObjectBuilder().add("long", String.valueOf(location.getLongitude()))
             .add("lat", String.valueOf(location.getLatitude()));
 
@@ -197,6 +219,77 @@ public class OccupationEndpointTest {
 
     @Test
     public void testAddLocationPointAddsLocationPoint() throws Exception {
+        Project existingProject = new Project("Project X", "Description", 10, new Date(), new Date());
+        when(em.find(Project.class, existingProject.getId())).thenReturn(existingProject);
+        endpoint.addLocationPoint(existingProject.getId(), point.build());
+        verify(em, times(1)).persist(location);
+    }
 
+    @Test
+    public void testSaveOccupationReturns400OnNoRequestContent() throws Exception {
+        Response response = endpoint.addOccupation(null);
+        assertEquals("response should have 400 status code", Response.Status.BAD_REQUEST.getStatusCode(), response.getStatus());
+    }
+
+    @Test
+    public void testSaveOccupationSavesOccupationOnNonExistingValidOccupation() throws Exception {
+        Occupation occupation = new Occupation("Occupation name", "Occupation description");
+        when(occupationValidator.validate(eq(occupation), anyVararg())).thenReturn(new ValidationResult(true));
+        endpoint.addOccupation(occupation);
+        verify(em, times(1)).persist(occupation);
+    }
+
+    @Test
+    public void testSaveOccupationReturns201OnNonExistingValidOccupation() throws Exception {
+        Occupation occupation = new Occupation("Occupation name", "Occupation description");
+        when(occupationValidator.validate(eq(occupation), anyVararg())).thenReturn(new ValidationResult(true));
+        Response response = endpoint.addOccupation(occupation);
+        assertEquals("response should have 201 status code", Response.Status.CREATED.getStatusCode(), response.getStatus());
+    }
+
+    @Test
+    public void testSaveOccupationReturns400OnNonExistingInvalidOccupation() throws Exception {
+        Occupation occupation = new Occupation("", "Occupation description");
+        when(occupationValidator.validate(eq(occupation), anyVararg())).thenReturn(new ValidationResult(false));
+        Response response = endpoint.addOccupation(occupation);
+        assertEquals("response should have 400 status code", Response.Status.BAD_REQUEST.getStatusCode(), response.getStatus());
+        verify(em, never()).persist(occupation);
+    }
+
+    @Test
+    public void testSaveOccupationReturns400OnExistingInvalidOccupation() throws Exception {
+        Occupation occupation = new Occupation("", "Occupation description");
+        Supplier supplier = () -> {
+            try {
+                utx.commit();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+            return null;
+        };
+
+        when(supplier.get()).thenThrow(existingOccupationException);
+        when(occupationValidator.validate(eq(occupation), anyVararg())).thenReturn(new ValidationResult(false));
+        Response response = endpoint.addOccupation(occupation);
+        assertEquals("response should have 400 status code", Response.Status.BAD_REQUEST.getStatusCode(), response.getStatus());
+        verify(em, never()).persist(occupation);
+    }
+
+    @Test
+    public void testSaveOccupationReturns400OnExistingValidOccupation() throws Exception {
+        Occupation occupation = new Occupation("Occupation name", "Occupation description");
+        Supplier supplier = () -> {
+            try {
+                utx.commit();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+            return null;
+        };
+
+        when(supplier.get()).thenThrow(existingOccupationException);
+        when(occupationValidator.validate(eq(occupation), anyVararg())).thenReturn(new ValidationResult(true));
+        Response response = endpoint.addOccupation(occupation);
+        assertEquals("response should have 409 status code", Response.Status.CONFLICT.getStatusCode(), response.getStatus());
     }
 }

@@ -31,6 +31,10 @@ public class Language implements Serializable {
         defaultLocale = FacesContext.getCurrentInstance().getApplication().getDefaultLocale();
     }
 
+    public String getString(String key) {
+        return getLanguageBundle().getString(key);
+    }
+
     public ResourceBundle getLanguageBundle() {
         return FacesContext.getCurrentInstance().getApplication().getResourceBundle(FacesContext.getCurrentInstance(), "msg");
     }
@@ -39,5 +43,7 @@ public class Language implements Serializable {
 
         public static final String EMPLOYEE_EDIT_PASSWORD_INVALID = "employee.edit.password.invalid";
         public static final String EMPLOYEE_EDIT_PASSWORD_SAVED = "employee.edit.password_saved";
+        public static final String OCCUPATION_ADD_NAME_TAKEN = "occupation.add.name_taken";
+        public static final String PROJECT_DATE_OUT_OF_BOUNDS = "project.date.bounds";
     }
 }

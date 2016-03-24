@@ -92,7 +92,7 @@ public class JPAImportConfig {
             Project project = new Project();
             project.setProjectNr(i + 9);
             project.setStartDate(new Date());
-            project.setName("Project " + i);
+            project.setName("Project " + (i + 300));
             project.setDescription("The project details from project #" + i);
             project.setEndDate(DateUtils.addMonths(new Date(), 3));
             entityManager.persist(project);

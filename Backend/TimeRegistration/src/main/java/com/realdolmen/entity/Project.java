@@ -9,6 +9,8 @@ import org.hibernate.search.annotations.Indexed;
 import org.hibernate.search.annotations.Resolution;
 
 import javax.persistence.*;
+import javax.validation.constraints.Min;
+import javax.validation.constraints.NotNull;
 import javax.xml.bind.annotation.XmlRootElement;
 import java.io.Serializable;
 import java.util.Date;
@@ -39,19 +41,22 @@ public class Project extends Occupation implements Serializable {
     }
 
     @Column(name = "startDate", nullable = false)
-    @Temporal(TemporalType.TIMESTAMP)
+    @Temporal(TemporalType.DATE)
     @Field
     @DateBridge(resolution = Resolution.DAY)
+    @NotNull(message = "startDate.empty")
     private Date startDate;
 
     @Column
-    @Temporal(TemporalType.TIMESTAMP)
+    @Temporal(TemporalType.DATE)
     @Field
     @DateBridge(resolution = Resolution.DAY)
+    @NotNull(message = "endDate.empty")
     private Date endDate;
 
     @Column
     @Field
+    @Min(value = 0, message = "projectNr.bounds")
     private int projectNr;
 
     @Transient
