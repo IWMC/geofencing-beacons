@@ -4,6 +4,10 @@ import android.content.Context;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
+import org.jdeferred.Deferred;
+import org.jdeferred.Promise;
+import org.jdeferred.impl.DeferredObject;
+
 /**
  * Factory class for all the data repositories the app will use.
  */
@@ -21,6 +25,17 @@ public class Repositories {
 		} else if (loadCallback != null) {
 			occupationRepository.addOnLoadCallback(loadCallback);
 		}
+	}
+
+	public static Promise<RegisteredOccupationRepository, Object, Object> loadRegisteredOccupationRepository(@NonNull Context context) {
+		final Deferred<RegisteredOccupationRepository, Object, Object> def = new DeferredObject<>();
+		loadRegisteredOccupationRepository(context, new LoadCallback() {
+			@Override
+			public void onResult(Result result, Throwable error) {
+				def.resolve(registeredOccupationRepository);
+			}
+		});
+		return def.promise();
 	}
 
 	public static void loadRegisteredOccupationRepository(@NonNull Context context, @Nullable LoadCallback loadCallback) {

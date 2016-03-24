@@ -196,6 +196,42 @@ public class OccupationEndpointTest {
     }
 
     @Test
+    public void testRemoveOccupationWithValidIdResultsIn200OK() throws Exception {
+        when(sm.findEmployee()).thenReturn(session.getEmployee());
+        RegisteredOccupation ro = new RegisteredOccupation();
+        ro.setId(25);
+        ro.setOccupation(new Occupation());
+        ro.setRegisteredStart(new Date());
+        ro.setRegisteredEnd(new Date());
+        ro.setRegistrar(sm.findEmployee());
+
+        TypedQuery<RegisteredOccupation> query = when(mock(TypedQuery.class).getSingleResult()).thenReturn(ro).getMock();
+        when(query.setParameter(anyString(), any())).thenReturn(query);
+        when(em.createNamedQuery("RegisteredOccupation.findOccupationByIdAndUser", RegisteredOccupation.class)).thenReturn(query);
+        Response response = endpoint.removeRegisteredOccupation(25);
+        verify(em, times(1)).remove(ro);
+        assertEquals("Removing a valid occupation should result in 200 OK", 200, response.getStatus());
+    }
+
+    @Test
+    public void testRemoveOccupationWithInvalidIdResultsInNotModified() throws Exception {
+        when(sm.findEmployee()).thenReturn(session.getEmployee());
+        RegisteredOccupation ro = new RegisteredOccupation();
+        ro.setId(27);
+        ro.setOccupation(new Occupation());
+        ro.setRegisteredStart(new Date());
+        ro.setRegisteredEnd(new Date());
+        ro.setRegistrar(sm.findEmployee());
+
+        TypedQuery<RegisteredOccupation> query = when(mock(TypedQuery.class).getSingleResult()).thenReturn(null).getMock();
+        when(query.setParameter(anyString(), any())).thenReturn(query);
+        when(em.createNamedQuery("RegisteredOccupation.findOccupationByIdAndUser", RegisteredOccupation.class)).thenReturn(query);
+        Response response = endpoint.removeRegisteredOccupation(25);
+        verify(em, never()).remove(ro);
+        assertEquals("Removing an invalid occupation should result in 304 NOT MODIFIED", 304, response.getStatus());
+    }
+
+    @Test
     public void testAddLocationPointAddsLocationPoint() throws Exception {
 
     }

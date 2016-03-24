@@ -14,6 +14,7 @@ import org.joda.time.LocalDateTime;
 
 import javax.ejb.Stateless;
 import javax.inject.Inject;
+import javax.json.Json;
 import javax.json.JsonObject;
 import javax.persistence.*;
 import javax.transaction.Transactional;
@@ -182,8 +183,22 @@ public class OccupationEndpoint {
         em.persist(ro);
         foundEmployee.getRegisteredOccupations().add(ro);
 
+        return Response.created(URI.create("/" + ro.getId())).entity(
+                Json.createObjectBuilder().add("id", ro.getId()).build()
+        ).build();
+    }
 
-        return Response.created(URI.create("/" + ro.getId())).build();
+    @DELETE
+    @Path("/registration/{id:[0-9][0-9]*}")
+    @Authorized
+    @Transactional
+    public Response removeRegisteredOccupation(@PathParam("id") long id) {
+        RegisteredOccupation ro = em.createNamedQuery("RegisteredOccupation.findOccupationByIdAndUser", RegisteredOccupation.class).setParameter("regId", id).setParameter("userId", sm.findEmployee().getId()).getSingleResult();
+        if (ro != null) {
+            em.remove(ro);
+            return Response.ok().build();
+        }
+        return Response.notModified().build();
     }
 
     @PUT

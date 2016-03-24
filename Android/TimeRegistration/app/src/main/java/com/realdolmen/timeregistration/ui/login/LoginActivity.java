@@ -71,6 +71,7 @@ public class LoginActivity extends AppCompatActivity {
 			BackendService.with(this).login(new Session(username.getText().toString(), password.getText().toString()), new ResultCallback<Session>() {
 				@Override
 				public void onResult(@NonNull Result result, @Nullable Session data, @Nullable VolleyError error) {
+					Log.i(TAG, result.name());
 					if (result == Result.SUCCESS) {
 						runOnUiThread(new Runnable() {
 							@Override

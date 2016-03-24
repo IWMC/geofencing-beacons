@@ -40,14 +40,16 @@ import java.util.Map;
 public class BackendService {
 
 	private static final String HOST = "http://10.16.26.142";
+	private int statusCode = 0;
 
 	private static final String
 			API_LOGIN_URI = HOST + "/api/user/login",
 			API_GET_REGISTERED_OCCUPATIONS = HOST + "/api/occupations/registration/?date=%d",
 			API_CONFIRM_OCCUPATIONS = HOST + "/api/occupations/registration/%d/confirm",
 			API_ADD_OCCUPATION_REGISTRATION = HOST + "/api/occupations/registration",
-			API_GET_OCCUPATIONS = HOST + "/api/occupations",
-			API_GET_REGISTERED_OCCUPATIONS_RANGE = HOST + "/api/occupations/registration/range?date=%d&count=%d";
+			API_GET_OCCUPATIONS = HOST + "/api/occupations/available",
+			API_GET_REGISTERED_OCCUPATIONS_RANGE = HOST + "/api/occupations/registration/range?date=%d&count=%d",
+			API_REMOVE_REGISTERED_OCCUPATION = HOST + "/api/occupations/registration/%d";
 
 	private Context context;
 
@@ -160,8 +162,8 @@ public class BackendService {
 				if (response.has("token")) {
 					try {
 						session.setJwtToken(response.getString("token"));
-						callback.onResult(ResultCallback.Result.SUCCESS, session, null);
 						setSession(session);
+						callback.onResult(ResultCallback.Result.SUCCESS, session, null);
 					} catch (JSONException e) {
 						callback.onResult(ResultCallback.Result.FAIL, null, new GenericVolleyError(e.getMessage()));
 					}
@@ -290,7 +292,7 @@ public class BackendService {
 		requestQueue.add(req);
 	}
 
-	public void registerOccupation(@NonNull RegisteredOccupation ro, @NonNull final ResultCallback callback) {
+	public void registerOccupation(@NonNull RegisteredOccupation ro, @NonNull final ResultCallback<Long> callback) {
 		if (callback == null) {
 			throw new NullPointerException("Callback cannot be null!");
 		}
@@ -303,7 +305,14 @@ public class BackendService {
 		Request req = new JsonObjectRequest(Request.Method.POST, API_ADD_OCCUPATION_REGISTRATION, compactGson.toJson(ro), new Response.Listener<JSONObject>() {
 			@Override
 			public void onResponse(JSONObject response) {
-				callback.onResult(ResultCallback.Result.SUCCESS, null, null);
+				if (response.has("id"))
+					try {
+						callback.onResult(ResultCallback.Result.SUCCESS, response.getLong("id"), null);
+					} catch (JSONException e) {
+						callback.onResult(ResultCallback.Result.FAIL, null, new GenericVolleyError(e));
+					}
+				else
+					callback.onResult(ResultCallback.Result.FAIL, null, new GenericVolleyError(new NullPointerException("Server did not return id!")));
 			}
 		}, new Response.ErrorListener() {
 			@Override
@@ -326,5 +335,48 @@ public class BackendService {
 		};
 
 		requestQueue.add(req);
+	}
+
+	public void removeRegisteredOccupation(long elementId, @NonNull final ResultCallback<Integer> callback) {
+		if (callback == null) {
+			throw new NullPointerException("Callback cannot be null");
+		}
+
+		JsonObjectRequest req = new JsonObjectRequest(
+				Request.Method.DELETE,
+				params(API_REMOVE_REGISTERED_OCCUPATION, elementId),
+				"",
+				new Response.Listener<JSONObject>() {
+					@Override
+					public void onResponse(JSONObject response) {
+						int code = statusCode;
+						statusCode = 0;
+						callback.onResult(ResultCallback.Result.SUCCESS, code, null);
+					}
+				},
+				new Response.ErrorListener() {
+					@Override
+					public void onErrorResponse(VolleyError error) {
+						callback.onResult(ResultCallback.Result.FAIL, error.networkResponse != null ? error.networkResponse.statusCode : -1, error);
+					}
+				}) {
+
+			@Override
+			public Map<String, String> getHeaders() throws AuthFailureError {
+				return auth(super.getHeaders());
+			}
+
+			@Override
+			protected Response<JSONObject> parseNetworkResponse(NetworkResponse response) {
+				statusCode = response.statusCode;
+				if (response.data.length == 0) {
+					response = new NetworkResponse(response.statusCode, "{}".getBytes(), response.headers, response.notModified);
+				}
+				return super.parseNetworkResponse(response);
+			}
+		};
+
+		requestQueue.add(req);
+
 	}
 }

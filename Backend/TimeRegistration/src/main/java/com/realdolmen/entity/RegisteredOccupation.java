@@ -13,10 +13,11 @@ import java.util.Date;
  */
 @Entity
 @XmlRootElement
-@NamedQueries(
+@NamedQueries({
         @NamedQuery(name = "RegisteredOccupation.findOccupationsInRange",
                 query = "SELECT r FROM RegisteredOccupation r WHERE YEAR(r.registeredStart) = :year AND DAY(r.registeredStart) = :day AND MONTH(r.registeredStart) = :month AND r.registrar.id = :employeeId ORDER BY r.registeredStart")
-)
+        , @NamedQuery(name = "RegisteredOccupation.findOccupationByIdAndUser", query = "SELECT ro FROM RegisteredOccupation ro WHERE ro.registrar.id = :userId AND ro.id = :regId")
+})
 public class RegisteredOccupation {
 
     @ManyToOne

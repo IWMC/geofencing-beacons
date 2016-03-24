@@ -3,9 +3,7 @@ apply plugin: 'com.android.application'
 android {
     compileSdkVersion 23
     buildToolsVersion "23.0.2"
-    dataBinding {
-        enabled = true
-    }
+
     defaultConfig {
         applicationId "com.realdolmen.timeregistration"
         minSdkVersion 16

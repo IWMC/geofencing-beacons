@@ -3,6 +3,7 @@ package com.realdolmen.timeregistration.service.repository;
 import android.content.Context;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.util.Log;
 
 import com.android.volley.VolleyError;
 import com.realdolmen.timeregistration.model.RegisteredOccupation;
@@ -10,9 +11,7 @@ import com.realdolmen.timeregistration.service.ResultCallback;
 import com.realdolmen.timeregistration.util.DateUtil;
 import com.realdolmen.timeregistration.util.UTC;
 
-import org.joda.time.Chronology;
 import org.joda.time.DateTime;
-import org.joda.time.DateTimeZone;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -20,9 +19,14 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class RegisteredOccupationRepository extends DataRepository<RegisteredOccupation> {
+public class RegisteredOccupationRepository extends DataRepository<RegisteredOccupation, Integer, Long> {
 
-	private final @UTC Map<DateTime, List<RegisteredOccupation>> dataByDate = new HashMap<>();
+	private static final String LOG_TAG = RegisteredOccupationRepository.class.getSimpleName();
+
+
+	private final
+	@UTC
+	Map<DateTime, List<RegisteredOccupation>> dataByDate = new HashMap<>();
 
 	RegisteredOccupationRepository(@NonNull Context context, @Nullable final LoadCallback callback) {
 		BackendService.with(context).getRegisteredOccupationsRangeUntilNow(DateUtil.today(), 7, new ResultCallback<List<RegisteredOccupation>>() {
@@ -44,10 +48,18 @@ public class RegisteredOccupationRepository extends DataRepository<RegisteredOcc
 	}
 
 	@Override
-	public void save(@NonNull Context context, @NonNull RegisteredOccupation element, @Nullable ResultCallback<RegisteredOccupation> callback) {
+	public void save(@NonNull Context context, @NonNull final RegisteredOccupation element, @Nullable final ResultCallback<Long> callback) {
 		data.add(element);
 		invalidateData();
-		BackendService.with(context).registerOccupation(element, callback);
+		BackendService.with(context).registerOccupation(element, new ResultCallback<Long>() {
+			@Override
+			public void onResult(@NonNull Result result, @Nullable Long data, @Nullable VolleyError error) {
+				if (result == Result.SUCCESS) {
+					element.setId(data);
+				}
+				callback.onResult(result, data, error);
+			}
+		});
 		//TODO: Make use of local database
 	}
 
@@ -72,9 +84,30 @@ public class RegisteredOccupationRepository extends DataRepository<RegisteredOcc
 		return Collections.unmodifiableList(filtered);
 	}
 
+	/**
+	 * Removes a {@link RegisteredOccupation} from the database.
+	 *
+	 * @param context
+	 * @param element
+	 * @param callback
+	 */
 	@Override
-	public void remove(@NonNull Context context, @NonNull RegisteredOccupation element, @Nullable ResultCallback<RegisteredOccupation> callback) {
-		throw new UnsupportedOperationException("Still has to be implemented");
+	public void remove(@NonNull Context context, @NonNull final RegisteredOccupation element, @Nullable final ResultCallback<Integer> callback) {
 		//TODO: Make use of local database
+		BackendService.with(context).removeRegisteredOccupation(element.getId(), new ResultCallback<Integer>() {
+			@Override
+			public void onResult(@NonNull Result result, @Nullable Integer resultData, @Nullable VolleyError error) {
+				Log.d(LOG_TAG, "Remove result is " + resultData + " and error: " + error);
+				if (result == Result.SUCCESS) {
+					if (resultData == 200) {
+						data.remove(element);
+						invalidateData();
+					}
+					callback.onResult(Result.SUCCESS, resultData, null);
+				} else {
+					callback.onResult(Result.FAIL, resultData, error);
+				}
+			}
+		});
 	}
 }

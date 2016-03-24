@@ -10,6 +10,7 @@ import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.text.format.DateFormat;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -28,10 +29,6 @@ import com.realdolmen.timeregistration.util.adapters.dayregistration.OccupationR
 
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeFieldType;
-import org.joda.time.DateTimeZone;
-import org.joda.time.LocalDateTime;
-
-import java.util.Calendar;
 
 import butterknife.Bind;
 import butterknife.ButterKnife;
@@ -42,6 +39,7 @@ import static com.realdolmen.timeregistration.util.DateUtil.toUTC;
 
 public class AddOccupationActivity extends AppCompatActivity {
 
+	private static final String LOG_TAG = AddOccupationActivity.class.getSimpleName();
 
 	@Bind(R.id.add_occupation_toolbar)
 	Toolbar bar;
@@ -120,7 +118,7 @@ public class AddOccupationActivity extends AppCompatActivity {
 	void updateDateButtons() {
 		if (startDate == null) {
 			enforceUTC(baseDate);
-            startDate = DateUtil.toLocal(baseDate);
+			startDate = DateUtil.toLocal(baseDate);
 		}
 
 		if (endDate == null) {
@@ -134,7 +132,7 @@ public class AddOccupationActivity extends AppCompatActivity {
 
 	private void initToolbar() {
 		setSupportActionBar(bar);
-		getSupportActionBar().setTitle("Add Occupation");
+		getSupportActionBar().setTitle(R.string.add_occupation_title);
 		getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 	}
 
@@ -154,12 +152,14 @@ public class AddOccupationActivity extends AppCompatActivity {
 					recycler.setAdapter(adapter);
 					initializing = false;
 				} else {
-					Snackbar.make(findViewById(android.R.id.content), "Could not fetch occupations!", Snackbar.LENGTH_LONG).setAction("Retry", new View.OnClickListener() {
+					Snackbar.make(findViewById(android.R.id.content), R.string.add_occupation_fetch_error, Snackbar.LENGTH_LONG).setAction("Retry", new View.OnClickListener() {
 						@Override
 						public void onClick(View v) {
+							initializing = false;
 							initRecycler();
 						}
 					}).show();
+					Log.e(LOG_TAG, "Could not fetch occupations!", error);
 					initializing = false;
 				}
 			}
@@ -196,11 +196,11 @@ public class AddOccupationActivity extends AppCompatActivity {
 
 	private boolean validate() {
 		if (endDate.isBefore(startDate.toInstant())) {
-			return alert("End Time cannot be before Start Date", false);
+			return alert(getString(R.string.add_occupation_invalid_dates), false);
 		}
 
 		if (adapter.getSelectedItem() == null) {
-			return alert("You must select an occupation!", false);
+			return alert(getString(R.string.add_occupation_no_selection), false);
 		}
 
 		return true;

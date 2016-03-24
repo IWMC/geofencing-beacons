@@ -291,14 +291,14 @@ public class DayRegistrationActivity extends AppCompatActivity {
 			@Override
 			public void onResult(Result result, Throwable error) {
 				if (result == Result.SUCCESS) {
-					Repositories.registeredOccupationRepository().save(DayRegistrationActivity.this, ro, new ResultCallback<RegisteredOccupation>() {
+					Repositories.registeredOccupationRepository().save(DayRegistrationActivity.this, ro, new ResultCallback<Long>() {
 						@Override
-						public void onResult(@NonNull Result result, @Nullable RegisteredOccupation data, @Nullable VolleyError error) {
+						public void onResult(@NonNull Result result, @Nullable Long data, @Nullable VolleyError error) {
 							if (result == Result.SUCCESS) {
-								Snackbar.make(findViewById(android.R.id.content), "The registration has been saved.", Snackbar.LENGTH_LONG).show();
+								Snackbar.make(findViewById(android.R.id.content), R.string.registration_notify_saved, Snackbar.LENGTH_LONG).show();
 								refreshCurrent();
 							} else if (error != null) {
-								Snackbar.make(findViewById(android.R.id.content), "Your registration was not saved!", Snackbar.LENGTH_LONG).show();
+								Snackbar.make(findViewById(android.R.id.content), R.string.registration_notify_not_saved, Snackbar.LENGTH_LONG).show();
 							}
 						}
 					});
