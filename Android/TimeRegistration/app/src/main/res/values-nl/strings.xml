@@ -25,4 +25,7 @@
     <string name="add_occupation_title">Voeg bezigheid toe</string>
     <string name="add_occupation_to">tot</string>
     <string name="add_occupation_fetch_error">De bezigheden konden niet opgehaald worden!</string>
+    <string name="menu_done">Opslaan</string>
+    <string name="menu_refresh">Vernieuwen</string>
+    <string name="menu_settings">Instellingen</string>
 </resources>

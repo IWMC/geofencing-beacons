@@ -24,4 +24,7 @@
     <string name="add_occupation_from">From</string>
     <string name="add_occupation_to">to</string>
     <string name="add_occupation_fetch_error">Could not fetch occupations!</string>
+    <string name="menu_refresh">Refresh</string>
+    <string name="menu_done">Save</string>
+    <string name="menu_settings">settings</string>
 </resources>

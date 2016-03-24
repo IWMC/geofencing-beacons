@@ -273,6 +273,12 @@ public class BackendServiceTest {
 		});
 	}
 
+	@Test(expected = NullPointerException.class)
+	public void testRemoveRegisteredOccupationWithNullCallbackThrowsNullPointerException() throws Exception {
+		BackendService service = BackendService.with(dummyContext1);
+		service.removeRegisteredOccupation(0, null);
+	}
+
 	public void makeEverythingPublic(Object o) {
 		Method[] methods = o.getClass().getDeclaredMethods();
 		Field[] fields = o.getClass().getDeclaredFields();
