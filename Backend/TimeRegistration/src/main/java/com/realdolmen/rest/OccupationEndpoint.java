@@ -177,7 +177,7 @@ public class OccupationEndpoint {
     @Authorized
     @Transactional
     public Response removeRegisteredOccupation(@PathParam("id") long id) {
-        RegisteredOccupation ro = (RegisteredOccupation) em.createNamedQuery("RegisteredOccupation.findOccupationByIdAndUser").setParameter("regId", id).setParameter("userId", sm.findEmployee().getId()).getSingleResult();
+        RegisteredOccupation ro = em.createNamedQuery("RegisteredOccupation.findOccupationByIdAndUser", RegisteredOccupation.class).setParameter("regId", id).setParameter("userId", sm.findEmployee().getId()).getSingleResult();
         if (ro != null) {
             em.remove(ro);
             return Response.ok().build();
