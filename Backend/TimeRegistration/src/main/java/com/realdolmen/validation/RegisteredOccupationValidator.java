@@ -22,10 +22,10 @@ public class RegisteredOccupationValidator implements Validator<RegisteredOccupa
         if(registeredOccupation.getRegisteredEnd() != null) {
             if(registeredOccupation.getRegisteredEnd().before(registeredOccupation.getRegisteredStart())) {
                 result.setValid(false);
-                result.getInvalidationTokens().add("occupation.date.outofbounds");
+                result.getInvalidationTokens().add("occupation.date.bounds");
             }
         }
 
-        return ValidationResult.fromConstraintViolations(validator.validate(registeredOccupation, groups));
+        return result;
     }
 }

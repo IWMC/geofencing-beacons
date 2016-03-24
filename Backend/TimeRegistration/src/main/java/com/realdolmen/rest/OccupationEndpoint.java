@@ -3,21 +3,27 @@ package com.realdolmen.rest;
 import com.realdolmen.annotations.Authorized;
 import com.realdolmen.annotations.UserGroup;
 import com.realdolmen.entity.*;
-import com.realdolmen.entity.PersistenceUnit;
+import com.realdolmen.entity.validation.New;
 import com.realdolmen.service.SecurityManager;
 import com.realdolmen.validation.DateUtil;
 import com.realdolmen.validation.ValidationResult;
 import com.realdolmen.validation.Validator;
+import org.hibernate.exception.ConstraintViolationException;
+import org.jboss.logging.Logger;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
 import org.joda.time.LocalDateTime;
 
-import javax.ejb.Stateless;
+import javax.annotation.Resource;
+import javax.ejb.*;
 import javax.inject.Inject;
 import javax.json.Json;
 import javax.json.JsonObject;
-import javax.persistence.*;
-import javax.transaction.Transactional;
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
+import javax.persistence.PersistenceException;
+import javax.persistence.TypedQuery;
+import javax.transaction.*;
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
@@ -31,6 +37,8 @@ import static org.joda.time.DateTimeFieldType.*;
 @SuppressWarnings("JpaQueryApiInspection")
 @Stateless
 @Path("/occupations")
+@TransactionManagement(TransactionManagementType.BEAN)
+@TransactionAttribute(TransactionAttributeType.MANDATORY)
 public class OccupationEndpoint {
 
     @PersistenceContext(unitName = PersistenceUnit.PRODUCTION)
@@ -39,14 +47,21 @@ public class OccupationEndpoint {
     @Inject
     private SecurityManager sm;
 
+    @Resource
+    private UserTransaction utx;
+
     @Inject
     private Validator<RegisteredOccupation> regOccValidator;
+
+    @Inject
+    private Validator<Occupation> occupationValidator;
 
     public static final long MINIMUM_EPOCH = DateTime.now().minusYears(1).getMillis();
 
     @GET
     @Authorized(UserGroup.MANAGEMENT)
     @Produces({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
+    @Transactional
     public Response listAll(@QueryParam("start") Integer startPosition,
                             @QueryParam("max") Integer maxResult) {
         TypedQuery<Occupation> findAllQuery = em.createNamedQuery("Occupation.findAll", Occupation.class);
@@ -67,6 +82,7 @@ public class OccupationEndpoint {
     @GET
     @Path("/{id:[0-9]+}")
     @Produces({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
+    @Transactional
     public Response findById(Long id) {
         if (id == null) {
             return Response.status(Response.Status.NOT_FOUND).build();
@@ -84,6 +100,7 @@ public class OccupationEndpoint {
     @Path("registration")
     @Authorized
     @Produces(MediaType.APPLICATION_JSON)
+    @Transactional
     public Response getRegisteredOccupations(@QueryParam("date") @DefaultValue("-1") long date) {
         if (date <= MINIMUM_EPOCH) {
             return Response.status(400).build();
@@ -145,6 +162,7 @@ public class OccupationEndpoint {
     @Authorized
     @Path("/available")
     @Produces(MediaType.APPLICATION_JSON)
+    @Transactional
     public Response getAvailableOccupations() {
         TypedQuery<Occupation> query = em.createNamedQuery("Occupation.findAvailableByEmployee", Occupation.class);
         List<Occupation> occupations = query.getResultList();
@@ -156,6 +174,7 @@ public class OccupationEndpoint {
     @Path("registration/range")
     @Authorized
     @Produces(MediaType.APPLICATION_JSON)
+    @Transactional
     public Response getRegisteredOccupationsOfLastXDays(@QueryParam("date") @DefaultValue("-1") long date, @QueryParam("count") @DefaultValue("7") int count) {
         List<RegisteredOccupation> occupations = new ArrayList<>();
         DateTime time = new DateTime(date, DateTimeZone.UTC);
@@ -202,6 +221,14 @@ public class OccupationEndpoint {
     }
 
     @PUT
+    @Path("/project")
+    @Authorized(UserGroup.MANAGEMENT_EMPLOYEE_ONLY)
+    @Consumes(MediaType.APPLICATION_JSON)
+    public Response addProject(Project project) {
+        return addOccupation(project);
+    }
+
+    @PUT
     @Path("/occupation")
     @Authorized(UserGroup.MANAGEMENT_EMPLOYEE_ONLY)
     @Consumes(MediaType.APPLICATION_JSON)
@@ -210,11 +237,28 @@ public class OccupationEndpoint {
             return Response.status(Response.Status.BAD_REQUEST).build();
         }
 
+        ValidationResult result = occupationValidator.validate(occupation, New.class);
+        if (!result.isValid()) {
+            return Response.status(Response.Status.BAD_REQUEST).entity(result).build();
+        }
+
         try {
-            em.persist(occupation);
-        } catch (PersistenceException pex) {
-            // Expected unique constraint to fail
-            return Response.status(Response.Status.CONFLICT).build();
+            utx.begin();
+        } catch (SystemException | javax.transaction.NotSupportedException e) {
+            Logger.getLogger(OccupationEndpoint.class).error("Couldn't start user transaction", e);
+            return Response.status(Response.Status.INTERNAL_SERVER_ERROR).build();
+        }
+
+        em.persist(occupation);
+
+        try {
+            utx.commit();
+        } catch (RollbackException rex) {
+            if (rex.getCause() != null && rex.getCause() instanceof PersistenceException && rex.getCause().getCause() != null && rex.getCause().getCause() instanceof ConstraintViolationException)
+                return Response.status(Response.Status.CONFLICT).build();
+        } catch (Exception e) {
+            Logger.getLogger(OccupationEndpoint.class).error("Couldn't commit user transaction", e);
+            return Response.status(Response.Status.INTERNAL_SERVER_ERROR).build();
         }
 
         return Response.created(UriBuilder.fromMethod(OccupationEndpoint.class, "findById").build(occupation.getId())).build();

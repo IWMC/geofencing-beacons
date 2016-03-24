@@ -36,6 +36,8 @@ public class Pages {
 
     public static Page detailsOccupation() { return new Page("/occupations/occupation-details.xhtml"); }
 
+    public static Page addProject() { return new Page("/occupations/project-add.xhtml"); }
+
     public static class Page {
 
         private String baseUrl;
