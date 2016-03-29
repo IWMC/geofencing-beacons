@@ -8,6 +8,7 @@ import android.support.annotation.Nullable;
 import android.support.design.widget.Snackbar;
 import android.support.design.widget.TabLayout;
 import android.support.v4.app.Fragment;
+import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
@@ -22,6 +23,7 @@ import com.realdolmen.timeregistration.model.Occupation;
 import com.realdolmen.timeregistration.model.RegisteredOccupation;
 import com.realdolmen.timeregistration.service.ResultCallback;
 import com.realdolmen.timeregistration.service.repository.LoadCallback;
+import com.realdolmen.timeregistration.service.repository.RegisteredOccupationRepository;
 import com.realdolmen.timeregistration.service.repository.Repositories;
 import com.realdolmen.timeregistration.util.DateUtil;
 import com.realdolmen.timeregistration.util.UTC;
@@ -219,13 +221,34 @@ public class DayRegistrationActivity extends AppCompatActivity {
 	@OnClick(R.id.day_registration_add_fab)
 	public void openAddOccupation() {
 		Intent i = new Intent(this, AddOccupationActivity.class);
+		i.setAction(AddOccupationActivity.ACTION_ADD);
 		i.putExtra(AddOccupationActivity.BASE_DATE, dates.get(viewPager.getCurrentItem()));
-		startActivityForResult(i, AddOccupationActivity.RESULT_CODE);
+		startActivityForResult(i, AddOccupationActivity.ADD_RESULT_CODE);
+	}
+
+	public void openEditOccupation(final RegisteredOccupation ro) {
+		final Intent i = new Intent(this, AddOccupationActivity.class);
+		i.setAction(AddOccupationActivity.ACTION_EDIT);
+		final DateTime element = dates.get(viewPager.getCurrentItem());
+		Repositories.loadRegisteredOccupationRepository(this).done(new DoneCallback<RegisteredOccupationRepository>() {
+			@Override
+			public void onDone(RegisteredOccupationRepository result) {
+				i.putExtra(AddOccupationActivity.BASE_DATE, element);
+				i.putExtra(AddOccupationActivity.START_DATE, ro.getRegisteredStart());
+				i.putExtra(AddOccupationActivity.END_DATE, ro.getRegisteredEnd());
+				i.putExtra(AddOccupationActivity.SELECTED_OCCUPATION, ro.getOccupation());
+				startActivityForResult(i, AddOccupationActivity.EDIT_RESULT_CODE);
+			}
+		});
+	}
+
+	public void refreshView(DayRegistrationFragment fragment) {
+		fragment.refreshData();
 	}
 
 	@Override
 	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-		if (requestCode == AddOccupationActivity.RESULT_CODE) {
+		if (requestCode == AddOccupationActivity.ADD_RESULT_CODE) {
 			if (resultCode == RESULT_OK) {
 				Occupation occ = (Occupation) data.getSerializableExtra(AddOccupationActivity.SELECTED_OCCUPATION);
 				DateTime start = (DateTime) data.getSerializableExtra(AddOccupationActivity.START_DATE);
@@ -233,6 +256,10 @@ public class DayRegistrationActivity extends AppCompatActivity {
 				DateUtil.enforceUTC(start, "Received start date that is not in UTC!");
 				DateUtil.enforceUTC(end, "Received end date that is not in UTC!");
 				handleNewlyRegisteredOccupation(occ, start, end);
+			}
+		} else if(requestCode == AddOccupationActivity.EDIT_RESULT_CODE) {
+			if(resultCode == RESULT_OK) {
+				//TODO: Add OK result
 			}
 		}
 	}

@@ -5,18 +5,19 @@ import android.view.View;
 
 import com.realdolmen.timeregistration.model.Occupation;
 import com.realdolmen.timeregistration.ui.OccupationCard;
+import com.realdolmen.timeregistration.ui.RegularOccupationCard;
 
 public class OccupationViewHolder extends RecyclerView.ViewHolder {
 
-	private OccupationCard view;
+	private OccupationCard<Occupation> view;
 
 
 	public OccupationViewHolder(View itemView) {
 		super(itemView);
-		this.view = (OccupationCard) itemView;
+		this.view = (RegularOccupationCard) itemView;
 	}
 
-	public OccupationCard getView() {
+	public OccupationCard<Occupation> getView() {
 		return view;
 	}
 

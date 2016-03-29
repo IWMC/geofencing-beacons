@@ -17,12 +17,14 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.LinearLayout;
 
+import com.andexert.library.RippleView;
 import com.android.volley.VolleyError;
 import com.realdolmen.timeregistration.R;
 import com.realdolmen.timeregistration.model.RegisteredOccupation;
 import com.realdolmen.timeregistration.service.ResultCallback;
 import com.realdolmen.timeregistration.service.repository.RegisteredOccupationRepository;
 import com.realdolmen.timeregistration.service.repository.Repositories;
+import com.realdolmen.timeregistration.util.RegisteredOccupationCardClickListener;
 import com.realdolmen.timeregistration.util.adapters.dayregistration.AdapterState;
 import com.realdolmen.timeregistration.util.adapters.dayregistration.RegisteredOccupationRecyclerAdapter;
 import com.realdolmen.timeregistration.util.adapters.dayregistration.RegisteredOccupationViewHolder;
@@ -35,6 +37,7 @@ import java.util.List;
 
 import butterknife.Bind;
 import butterknife.ButterKnife;
+import butterknife.OnClick;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -96,7 +99,12 @@ public class DayRegistrationFragment extends Fragment {
 		}
 		state = new AdapterState.NewlyEmptyState();
 		parent.setCurrentDate(selectedDate);
-		adapter = new RegisteredOccupationRecyclerAdapter(selectedDate);
+		adapter = new RegisteredOccupationRecyclerAdapter(selectedDate, new RegisteredOccupationCardClickListener() {
+			@Override
+			public void onClick(RegisteredOccupation ro) {
+				onEditClick(ro);
+			}
+		});
 		recyclerView.setAdapter(adapter);
 		state.doNotify(this, adapter);
 		Log.i(TAG, "(onViewCreated) Adding new adapter and state is " + state.getClass().getSimpleName());
@@ -130,7 +138,7 @@ public class DayRegistrationFragment extends Fragment {
 										repo.remove(getContext(), vh.getData()).done(new DoneCallback<Integer>() {
 											@Override
 											public void onDone(Integer result) {
-												if (result == 200) {
+												if (result == 204) {
 													recyclerView.getAdapter().notifyItemRemoved(viewHolder.getAdapterPosition());
 													checkState();
 												}
@@ -166,11 +174,20 @@ public class DayRegistrationFragment extends Fragment {
 			public void onResult(@NonNull Result result, @Nullable List<RegisteredOccupation> data, @Nullable VolleyError error) {
 				System.out.println(data.size());
 				if (result == Result.SUCCESS) {
-					recyclerView.setAdapter(new RegisteredOccupationRecyclerAdapter(selectedDate));
+					recyclerView.setAdapter(new RegisteredOccupationRecyclerAdapter(selectedDate, new RegisteredOccupationCardClickListener() {
+						@Override
+						public void onClick(RegisteredOccupation ro) {
+							onEditClick(ro);
+						}
+					}));
 				}
 				checkState();
 			}
 		});
+	}
+
+	private void onEditClick(RegisteredOccupation ro) {
+		parent.openEditOccupation(ro);
 	}
 
 	@Override

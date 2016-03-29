@@ -99,7 +99,7 @@ public class RegisteredOccupationRepository extends DataRepository<RegisteredOcc
 			public void onResult(@NonNull Result result, @Nullable Integer resultData, @Nullable VolleyError error) {
 				Log.d(LOG_TAG, "Remove result is " + resultData + " and error: " + error);
 				if (result == Result.SUCCESS) {
-					if (resultData == 200) {
+					if (resultData == 204) {
 						data.remove(element);
 						invalidateData();
 					}

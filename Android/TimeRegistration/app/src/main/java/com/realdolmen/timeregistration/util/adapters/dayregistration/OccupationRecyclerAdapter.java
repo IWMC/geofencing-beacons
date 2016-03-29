@@ -7,6 +7,7 @@ import android.view.ViewGroup;
 import com.realdolmen.timeregistration.model.Occupation;
 import com.realdolmen.timeregistration.service.repository.Repositories;
 import com.realdolmen.timeregistration.ui.OccupationCard;
+import com.realdolmen.timeregistration.ui.RegularOccupationCard;
 
 public class OccupationRecyclerAdapter extends RecyclerView.Adapter<OccupationViewHolder> {
 
@@ -20,11 +21,11 @@ public class OccupationRecyclerAdapter extends RecyclerView.Adapter<OccupationVi
 
 	@Override
 	public OccupationViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-		final OccupationCard card = new OccupationCard(parent);
+		final OccupationCard<Occupation> card = new RegularOccupationCard(parent);
 		card.setOnClickListener(new View.OnClickListener() {
 			@Override
 			public void onClick(View v) {
-				setSelectedItem(card.getOccupation());
+				setSelectedItem(card.getData());
 			}
 		});
 		return new OccupationViewHolder(card);
@@ -46,7 +47,7 @@ public class OccupationRecyclerAdapter extends RecyclerView.Adapter<OccupationVi
 	public void setSelectedItem(Occupation occ) {
 		selectedItem = occ;
 		for (int i = 0; i < getItemCount(); i++) {
-			OccupationCard card = (OccupationCard) owner.getChildAt(i);
+			OccupationCard<Occupation> card = (OccupationCard<Occupation>) owner.getChildAt(i);
 			if (card != null)
 				card.onUpdateSelectionState(selectedItem);
 		}

@@ -1,24 +1,18 @@
 package com.realdolmen.timeregistration.ui;
 
 import android.content.Context;
-import android.content.res.ColorStateList;
-import android.graphics.Color;
-import android.support.v7.widget.CardView;
 import android.util.AttributeSet;
-import android.util.TypedValue;
-import android.view.LayoutInflater;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
 import android.widget.TextView;
 
 import com.andexert.library.RippleView;
 import com.realdolmen.timeregistration.R;
-import com.realdolmen.timeregistration.model.Occupation;
+import com.realdolmen.timeregistration.util.adapters.dayregistration.Adaptable;
 
 import butterknife.Bind;
-import butterknife.ButterKnife;
 
-public class OccupationCard extends FrameLayout {
+public abstract class OccupationCard<E> extends FrameLayout implements Adaptable<E> {
 
 	@Bind(R.id.occupation_card_title)
 	TextView title;
@@ -29,9 +23,20 @@ public class OccupationCard extends FrameLayout {
 	@Bind(R.id.occupation_card_edit)
 	RippleView editButton;
 
-	private FrameLayout card;
+	FrameLayout frame;
 
-	private Occupation data;
+	E data;
+
+	private boolean editable;
+
+	public boolean isEditable() {
+		return editable;
+	}
+
+	public void setEditable(boolean editable) {
+		this.editable = editable;
+		updateViewState();
+	}
 
 	public OccupationCard(Context context) {
 		super(context);
@@ -48,47 +53,23 @@ public class OccupationCard extends FrameLayout {
 		init(null);
 	}
 
-	private void init(ViewGroup parent) {
-		FrameLayout view = (FrameLayout) LayoutInflater.from(getContext()).inflate(R.layout.occupation_card, parent, false);
-		ButterKnife.bind(this, view);
-		editButton.setVisibility(GONE);
-		LayoutParams params = new LayoutParams(view.getLayoutParams());
-		int leftRight = 0;//(int) view.getContext().getResources().getDimension(R.dimen.activity_horizontal_margin);
-		int top = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 0, view.getContext().getResources().getDisplayMetrics());
-		params.setMargins(leftRight, top, leftRight, 0);
-		view.setLayoutParams(params);
+	abstract void init(ViewGroup parent);
 
-		FrameLayout.LayoutParams frameParams = new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
-		setLayoutParams(frameParams);
-		addView(view);
-		card = view;
+	@Override
+	public abstract void bind(E o);
+
+	@Override
+	public void unbind() {
+		//Empty
 	}
 
-	public void bind(Occupation o) {
-		data = o;
-		title.setText(o.getName());
-		if(o.getDescription() != null && !o.getDescription().isEmpty()) {
-			description.setVisibility(VISIBLE);
-			description.setText(o.getDescription());
-		} else {
-			description.setText("");
-			description.setVisibility(GONE);
-		}
+	@Override
+	public abstract void updateViewState();
+
+	public void onUpdateSelectionState(E selectedItem) {
 	}
 
-	public void setSelected(boolean flag) {
-		 card.setSelected(flag);
-	}
-
-	public void onUpdateSelectionState(Occupation selectedItem) {
-		if(selectedItem.equals(data)) {
-			setSelected(true);
-		} else {
-			setSelected(false);
-		}
-	}
-
-	public Occupation getOccupation() {
+	public E getData() {
 		return data;
 	}
 }
