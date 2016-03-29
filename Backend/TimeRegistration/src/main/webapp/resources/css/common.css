@@ -130,6 +130,14 @@ nav + .container {
     text-align: justify;
 }
 
+#sub-project {
+    padding: 0px;
+}
+
+#sub-project ul {
+    margin: 0px;
+}
+
 @media only screen and (max-width: 600px) {
     .s0 {
        width: 0px;
@@ -143,6 +151,7 @@ nav + .container {
         margin-rightt: 0px !important;
     }
 }
+
 @media only screen and (min-width: 601px) {
     .small-container {
         width: 60% !important;
@@ -183,5 +192,10 @@ nav + .container {
 
     .lr0 {
         margin-rightt: 0px !important;
+    }
+
+    #sub-project {
+        margin-left: 20px;
+        width: calc(41.66667% - 20px);
     }
 }

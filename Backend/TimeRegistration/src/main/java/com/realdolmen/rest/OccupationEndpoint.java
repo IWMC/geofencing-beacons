@@ -92,6 +92,7 @@ public class OccupationEndpoint {
         if (occupation == null) {
             return Response.status(Response.Status.NOT_FOUND).build();
         } else {
+            Occupation.initialize(occupation);
             return Response.ok(occupation).build();
         }
     }
