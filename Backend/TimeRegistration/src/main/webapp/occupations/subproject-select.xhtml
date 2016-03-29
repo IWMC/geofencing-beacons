@@ -8,11 +8,15 @@
       xmlns:c="http://java.sun.com/jsp/jstl/core" xmlns:p="http://primefaces.org/ui"
       xmlns:a="http://xmlns.jcp.org/jsf/passthrough">
 <f:view>
+    <f:metadata>
+        <f:viewParam name="id" value="#{selectSubproject.occupationId}"/>
+        <f:event type="preRenderView" listener="#{selectSubproject.onPreRender}"/>
+    </f:metadata>
     <ui:composition template="../page-template.xhtml">
         <ui:define name="toolbar-after-logo">
             <h:form styleClass="right show-on-medium-and-up">
                 <div class="input-field">
-                    <p:inputText id="search" type="search" required="true" value="#{occupationSearch.searchTerms}"/>
+                    <p:inputText id="search" type="search" required="true" value="#{selectSubproject.searchTerms}"/>
                     <label for="search"><i class="material-icons">search</i></label>
                     <i class="material-icons">close</i>
                     <h:commandButton id="searchButton" value="#{msg['search']}" style="display: none;">
@@ -24,7 +28,7 @@
         <ui:define name="additional-toolbar-full">
             <h:form styleClass="lookup-form">
                 <div class="input-field">
-                    <p:inputText id="search" type="search" required="true" value="#{occupationSearch.searchTerms}"/>
+                    <p:inputText id="search" type="search" required="true" value="#{selectSubproject.searchTerms}"/>
                     <label for="search"><i class="material-icons">search</i></label>
                     <i class="material-icons">close</i>
                     <h:commandButton id="searchButton" value="#{msg['search']}" style="display: none;">
@@ -35,42 +39,27 @@
         </ui:define>
         <ui:define name="body">
             <div class="container">
-                <div class="fixed-action-btn">
-                    <h:link styleClass="btn-floating btn-large red">
-                        <i class="large material-icons">add</i>
-                    </h:link>
-                    <ul>
-                        <li class="tooltipped" data-position="left" data-delay="0"
-                            data-tooltip="#{msg['occupation.add']}">
-                            <h:link outcome="#{pages.addOccupation().jsf()}" styleClass="btn-floating green">
-                                <i class="large material-icons">assignment</i>
-                            </h:link>
-                        </li>
-                        <li class="tooltipped" data-position="left" data-delay="0"
-                            data-tooltip="#{msg['project.add']}">
-                            <h:link outcome="#{pages.addProject().jsf()}" styleClass="btn-floating blue">
-                                <i class="large material-icons">format_list_numbered</i>
-                            </h:link>
-                        </li>
-                    </ul>
-
-                </div>
                 <h:panelGroup id="search-results">
                     <div class="row">
-                        <ui:repeat value="#{occupationSearch.occupations}"
-                                   var="occupation">
+                        <ui:repeat value="#{selectSubproject.occupations}"
+                                   var="employee">
                             <div class="col m12 l6">
                                 <h:form>
                                     <div class="card">
                                         <div class="card-content">
                                             <h:outputText styleClass="card-title"
-                                                          value="#{occupation.name}"/><br/>
-                                            <h:outputText styleClass="occupation-content" value="#{occupation.description}"/>
+                                                          value="#{employee.name}"/><br/>
+                                            <h:outputText styleClass="occupation-content"
+                                                          value="#{employee.description}"/>
                                         </div>
                                         <div class="card-action">
-                                            <p:link styleClass="realdolmen-blue-text waves-effect waves-realdolmen-blue card-action-flat"
-                                                    value="#{msg['employee.search.open_details']}"
-                                                    outcome="#{pages.occupationDetailsFrom(occupation).param('id', occupation.id).redirect()}"/>
+                                            <h:form>
+                                                <h:commandButton
+                                                        style="padding-bottom: 10px; padding-left: 5px; padding-right: 5px;"
+                                                        styleClass="btn-flat realdolmen-blue-text waves-effect waves-realdolmen-blue"
+                                                        value="#{msg['project.select_subproject.add']}"
+                                                        action="#{selectSubproject.addAsSubProject(employee)}" />
+                                            </h:form>
                                         </div>
                                     </div>
                                 </h:form>

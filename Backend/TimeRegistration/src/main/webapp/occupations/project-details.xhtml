@@ -60,31 +60,52 @@
                             </div>
                         </div>
                     </div>
-                    <div id="sub-project" class="card col l5 s12">
-                        <div>
-                            <ul class="collection with-header">
-                                <li class="collection-header">
-                                    <div class="row">
-                                        <h5 class="col s8">
-                                            <c:if test="#{not empty project.details.subProjects}">
-                                                #{msg['project.details.subprojects']}
-                                            </c:if>
-                                            <c:if test="#{empty project.details.subProjects}">
-                                                #{msg['project.details.no_subprojects']}
-                                            </c:if>
-                                        </h5>
-                                        <div class="col s4">
-                                            <a href="#" style="margin: 10px 0px;"
-                                               class="right btn-floating">
-                                                <i class="material-icons left">add</i>
-                                            </a>
+                    <div class="col l5 s12 row">
+                        <div class="card s12" id="sub-project">
+                            <div>
+                                <ul class="collection with-header">
+                                    <li class="collection-header">
+                                        <div class="row no-margin">
+                                            <h5 class="col s8">
+                                                #{projectDetails.project.subProjects.size() > 0 ? msg['project.details.subprojects'] : msg['project.details.no_subprojects']}
+                                            </h5>
+                                            <div class="col s4">
+                                                <h:link outcome="#{pages.selectSubProject().param('id', projectDetails.occupationId).redirect()}"
+                                                        style="margin: 10px 0px;"
+                                                        class="right btn-floating">
+                                                    <i class="material-icons left">add</i>
+                                                </h:link>
+                                            </div>
                                         </div>
-                                    </div>
-                                </li>
-                                <ui:repeat value="#{of:setToList(projectDetails.project.subProjects)}" var="subproject">
-                                    <li class="collection-item">#{subproject.name}</li>
-                                </ui:repeat>
-                            </ul>
+                                    </li>
+                                    <ui:repeat value="#{of:setToList(projectDetails.project.subProjects)}" var="subproject">
+                                        <li class="collection-item">#{subproject.name}</li>
+                                    </ui:repeat>
+                                </ul>
+                            </div>
+                        </div>
+                        <div class="card s12" id="project-employees">
+                            <div>
+                                <ul class="collection with-header">
+                                    <li class="collection-header">
+                                        <div class="row no-margin">
+                                            <h5 class="col s8">
+                                                #{projectDetails.project.employees.size() > 0 ? msg['project.details.employees'] : msg['project.details.no_employees']}
+                                            </h5>
+                                            <div class="col s4">
+                                                <h:link outcome="#{pages.selectEmployee().param('id', projectDetails.occupationId).redirect()}"
+                                                        style="margin: 10px 0px;"
+                                                        class="right btn-floating">
+                                                    <i class="material-icons left">add</i>
+                                                </h:link>
+                                            </div>
+                                        </div>
+                                    </li>
+                                    <ui:repeat value="#{of:setToList(projectDetails.project.employees)}" var="employee">
+                                        <li class="collection-item">#{employee.firstName} #{employee.lastName}</li>
+                                    </ui:repeat>
+                                </ul>
+                            </div>
                         </div>
                     </div>
                 </div>

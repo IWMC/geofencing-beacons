@@ -16,7 +16,7 @@ import javax.ws.rs.core.Response;
 import java.util.List;
 
 /**
- * A controller for <code>/employees/search-occupations.xhtml</code>.
+ * A controller for <code>/occupations/search-occupations.xhtml</code>.
  */
 @Named("occupationSearch")
 @RequestScoped
@@ -68,5 +68,13 @@ public class OccupationSearchController {
 
     public void setSearchTerms(String searchTerms) {
         this.searchTerms = searchTerms;
+    }
+
+    public OccupationEndpoint getOccupationEndpoint() {
+        return endpoint;
+    }
+
+    public EntityManager getEntityManager() {
+        return em;
     }
 }

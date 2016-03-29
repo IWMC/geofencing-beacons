@@ -43,19 +43,19 @@
                 <h:panelGroup id="search-results">
                     <div class="row">
                         <ui:repeat value="#{employeeSearch.employees}"
-                                   var="occupation">
+                                   var="employee">
                             <div class="col s12 m6 l4">
                                 <h:form>
                                     <div class="card">
                                         <div class="card-content">
                                             <h:outputText styleClass="card-title"
-                                                          value="#{occupation.firstName} #{occupation.lastName}"/><br/>
-                                            <h:outputText styleClass="truncate" value="#{occupation.email}"/>
+                                                          value="#{employee.firstName} #{employee.lastName}"/><br/>
+                                            <h:outputText styleClass="truncate" value="#{employee.email}"/>
                                         </div>
                                         <div class="card-action">
                                             <p:link styleClass="realdolmen-blue-text waves-effect waves-realdolmen-blue card-action-flat"
                                                     value="#{msg['employee.search.open_details']}"
-                                                    outcome="#{pages.detailsEmployee().param('id', occupation.id).redirect()}"/>
+                                                    outcome="#{pages.detailsEmployee().param('id', employee.id).redirect()}"/>
                                         </div>
                                     </div>
                                 </h:form>

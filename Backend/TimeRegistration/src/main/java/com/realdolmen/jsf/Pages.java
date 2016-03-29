@@ -27,6 +27,8 @@ public class Pages {
 
     public static Page searchEmployee() { return new Page("/employees/search-employees.xhtml"); }
 
+    public static Page selectEmployee() { return new Page("/employees/employee-select.xhtml"); }
+
     public static Page detailsEmployee() { return new Page("/employees/employee-details.xhtml"); }
 
     public static Page editEmployee() { return new Page("/employees/employee-edit.xhtml"); }
@@ -42,6 +44,8 @@ public class Pages {
     public static Page addProject() { return new Page("/occupations/project-add.xhtml"); }
 
     public static Page detailsProject() { return new Page("/occupations/project-details.xhtml"); }
+
+    public static Page selectSubProject() { return new Page("/occupations/subproject-select.xhtml"); }
 
     public static Page occupationDetailsFrom(Occupation occupation) {
         if (occupation instanceof Project) {

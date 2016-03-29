@@ -38,6 +38,7 @@ public class Project extends Occupation implements Serializable {
         Hibernate.initialize(project.getLocations());
         Hibernate.initialize(project.getSubProjects());
         project.getSubProjects().forEach(Project::initialize);
+        project.getEmployees().forEach(Hibernate::initialize);
     }
 
     @Column(name = "startDate", nullable = false)

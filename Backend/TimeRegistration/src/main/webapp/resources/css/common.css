@@ -138,6 +138,10 @@ nav + .container {
     margin: 0px;
 }
 
+.no-margin {
+    margin: 0px !important;
+}
+
 @media only screen and (max-width: 600px) {
     .s0 {
        width: 0px;
@@ -192,10 +196,5 @@ nav + .container {
 
     .lr0 {
         margin-rightt: 0px !important;
-    }
-
-    #sub-project {
-        margin-left: 20px;
-        width: calc(41.66667% - 20px);
     }
 }

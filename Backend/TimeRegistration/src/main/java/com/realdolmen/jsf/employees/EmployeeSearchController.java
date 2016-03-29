@@ -72,4 +72,8 @@ public class EmployeeSearchController implements Serializable {
     public void setSearchTerms(String searchTerms) {
         this.searchTerms = searchTerms;
     }
+
+    public EntityManager getEntityManager() {
+        return em;
+    }
 }

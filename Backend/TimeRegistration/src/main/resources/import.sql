@@ -5,7 +5,7 @@ INSERT INTO project (id, description, name, endDate, projectNr, startDate, versi
 INSERT INTO project (id, description, name, endDate, projectNr, startDate, version) VALUES (6, 'Project 3 description', 'Project 1', '2016-03-01', 5, '2016-03-02', 0);
 INSERT INTO employee_project (employees_id, memberProjects_id) VALUES (2, 4);
 INSERT INTO employee (id, email, firstName, hash, lastName, salt, username, version) VALUES (7, 'sasa.berberovic@realdolmen.com', 'Sasa', 'r2Mf9eycuUxWrNr7FFu90ZOZhZO+tT/HDYRDxlydJH0=', 'Berberovic', '1jdbnoiqap5fen2hbb1t6tfpbbtuo9qqjvhj7ela9gdrh1tvkjce', 'sasab', 0);
-INSERT INTO employee (id, email, firstName, hash, lastName, salt, username, version) VALUES (8, 'test@realdolmen.com', 'Test', 'r2Mf9eycuUxWrNr7FFu90ZOZhZO+tT/HDYRDxlydJH0=', '', '1jdbnoiqap5fen2hbb1t6tfpbbtuo9qqjvhj7ela9gdrh1tvkjce', 'test', 0);
+INSERT INTO employee (id, email, firstName, hash, lastName, salt, username, version) VALUES (8, 'test@realdolmen.com', 'Test', 'r2Mf9eycuUxWrNr7FFu90ZOZhZO+tT/HDYRDxlydJH0=', 'Test', '1jdbnoiqap5fen2hbb1t6tfpbbtuo9qqjvhj7ela9gdrh1tvkjce', 'test', 0);
 INSERT INTO projectmanager VALUES (7);
 TRUNCATE TABLE hibernate_sequence;
 INSERT INTO hibernate_sequence (next_val) VALUES (9), (9), (9);
