@@ -1,5 +1,6 @@
 package com.realdolmen.jsf.occupations;
 
+import com.realdolmen.annotations.Filtered;
 import com.realdolmen.entity.Occupation;
 import com.realdolmen.entity.Project;
 import com.realdolmen.jsf.Pages;
@@ -24,6 +25,7 @@ import java.util.stream.Collectors;
  */
 @Named("selectSubproject")
 @ViewScoped
+@Filtered
 public class SubprojectSelectController extends OccupationSearchController implements Serializable {
 
     private String occupationId;
@@ -66,7 +68,7 @@ public class SubprojectSelectController extends OccupationSearchController imple
         }
     }
 
-    private List<Occupation> filterOccupations(List<Occupation> occupations) {
+    public List<Occupation> filterOccupations(List<Occupation> occupations) {
         if (occupations == null || project == null) {
             return occupations;
         }
@@ -127,5 +129,13 @@ public class SubprojectSelectController extends OccupationSearchController imple
 
     public void setOccupationId(String occupationId) {
         this.occupationId = occupationId;
+    }
+
+    public Project getProject() {
+        return project;
+    }
+
+    public void setProject(Project project) {
+        this.project = project;
     }
 }

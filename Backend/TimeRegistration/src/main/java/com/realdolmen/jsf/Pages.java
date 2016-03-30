@@ -97,6 +97,15 @@ public class Pages {
             builder.append(params.isEmpty() ? "?" : "&").append("faces-redirect=true");
             return builder.toString();
         }
-    }
 
+        @Override
+        public boolean equals(Object obj) {
+            if (!(obj instanceof Page)) {
+                return false;
+            }
+
+            Page page = (Page) obj;
+            return page.baseUrl.equals(this.baseUrl) && page.params.equals(this.params);
+        }
+    }
 }

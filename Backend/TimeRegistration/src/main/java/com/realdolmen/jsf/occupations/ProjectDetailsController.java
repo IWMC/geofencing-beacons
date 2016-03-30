@@ -116,7 +116,7 @@ public class ProjectDetailsController implements Serializable {
         return project;
     }
 
-    public void setOccupation(Project project) {
+    public void setProject(Project project) {
         this.project = project;
     }
 

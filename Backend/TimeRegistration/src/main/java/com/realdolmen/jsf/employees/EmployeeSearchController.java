@@ -7,6 +7,7 @@ import org.hibernate.search.jpa.FullTextEntityManager;
 import org.hibernate.search.query.dsl.QueryBuilder;
 
 import javax.enterprise.context.RequestScoped;
+import javax.enterprise.inject.Default;
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.persistence.EntityManager;
@@ -20,7 +21,7 @@ import java.util.List;
  * A controller for <code>/employees/search-employees.xhtml</code>.
  */
 @Named("employeeSearch")
-@RequestScoped
+@RequestScoped @Default
 public class EmployeeSearchController implements Serializable {
 
     @Inject

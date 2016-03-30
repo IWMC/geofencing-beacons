@@ -1,5 +1,6 @@
 package com.realdolmen.jsf.employees;
 
+import com.realdolmen.annotations.Filtered;
 import com.realdolmen.entity.Employee;
 import com.realdolmen.entity.Project;
 import com.realdolmen.jsf.Pages;
@@ -23,6 +24,7 @@ import java.util.stream.Collectors;
  */
 @Named("selectEmployee")
 @ViewScoped
+@Filtered
 public class EmployeeSelectController extends EmployeeSearchController {
 
     private String occupationId;
@@ -64,7 +66,7 @@ public class EmployeeSelectController extends EmployeeSearchController {
         }
     }
 
-    private List<Employee> filterEmployees(List<Employee> employees) {
+    public List<Employee> filterEmployees(List<Employee> employees) {
         if (employees == null || project == null) {
             return employees;
         }
@@ -106,6 +108,14 @@ public class EmployeeSelectController extends EmployeeSearchController {
         }
 
         return facesContext;
+    }
+
+    public Project getProject() {
+        return project;
+    }
+
+    public void setProject(Project project) {
+        this.project = project;
     }
 
     @TestOnly

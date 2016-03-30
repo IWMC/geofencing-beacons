@@ -146,6 +146,10 @@ nav + .container {
     padding: 0px !important;
 }
 
+.inline {
+    display: inline;
+}
+
 @media only screen and (max-width: 600px) {
     .s0 {
        width: 0px;

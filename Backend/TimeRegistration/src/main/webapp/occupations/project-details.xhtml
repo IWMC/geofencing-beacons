@@ -31,9 +31,14 @@
                     <div class="card col l7 s12">
                         <div class="card-content">
                             <div>
-                                <h1 class="thin">
-                                    #{projectDetails.project.name}<br/>
+                                <h1 class="inline thin">
+                                    #{projectDetails.project.name}
                                 </h1>
+                                <h3 class="inline grey-text thin">
+                                    ##{projectDetails.project.projectNr}
+                                </h3>
+                                <p class="thin">#{projectDetails.project.startDate} - #{projectDetails.project.endDate}</p>
+                                <br/>
                                 <p class="justify-text">#{projectDetails.project.description}</p>
                             </div>
                         </div>
