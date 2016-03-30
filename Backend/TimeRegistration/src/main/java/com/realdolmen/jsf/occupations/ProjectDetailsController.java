@@ -1,13 +1,19 @@
 package com.realdolmen.jsf.occupations;
 
+import com.realdolmen.entity.Location;
 import com.realdolmen.entity.PersistenceUnit;
 import com.realdolmen.entity.Project;
 import com.realdolmen.jsf.Pages;
 import com.realdolmen.rest.OccupationEndpoint;
 import org.jboss.logging.Logger;
 import org.jetbrains.annotations.TestOnly;
+import org.omnifaces.cdi.ViewScoped;
+import org.primefaces.event.map.PointSelectEvent;
+import org.primefaces.model.map.DefaultMapModel;
+import org.primefaces.model.map.LatLng;
+import org.primefaces.model.map.MapModel;
+import org.primefaces.model.map.Marker;
 
-import javax.enterprise.context.RequestScoped;
 import javax.faces.bean.ManagedProperty;
 import javax.faces.context.FacesContext;
 import javax.inject.Inject;
@@ -17,26 +23,29 @@ import javax.persistence.PersistenceContext;
 import javax.transaction.Transactional;
 import javax.ws.rs.core.Response;
 import java.io.IOException;
+import java.io.Serializable;
 
 /**
  * A controller for <code>/occupations/project-details.xhtml</code>.
  */
 @Named("projectDetails")
-@RequestScoped
-public class ProjectDetailsController {
+@ViewScoped
+public class ProjectDetailsController implements Serializable {
 
     @ManagedProperty(value = "#{param.occupationId}")
     private String occupationId;
 
     @Inject
-    private OccupationEndpoint occupationEndpoint;
+    private transient OccupationEndpoint occupationEndpoint;
 
     @PersistenceContext(unitName = PersistenceUnit.PRODUCTION)
-    private EntityManager em;
+    private transient EntityManager em;
+
+    private transient MapModel mapModel = new DefaultMapModel();
 
     private Project project;
 
-    private FacesContext facesContext = FacesContext.getCurrentInstance();
+    private transient FacesContext facesContext = FacesContext.getCurrentInstance();
 
     @Transactional
     public void onPreRender() {
@@ -51,6 +60,8 @@ public class ProjectDetailsController {
 
                 project = response.getStatus() == 200 ? (Project) response.getEntity() : null;
                 if (project != null) {
+                    project.getLocations().stream().map(l -> new Marker(new LatLng(l.getLatitude(), l.getLongitude())))
+                            .forEach(mapModel::addOverlay);
                     return;
                 }
             }
@@ -67,6 +78,30 @@ public class ProjectDetailsController {
         } catch (IOException e) {
             Logger.getLogger(OccupationDetailsController.class).error("couldn't redirect with FacesContext", e);
         }
+    }
+
+    public String getLocationOrDefault() {
+        return project.getLocations() != null && !project.getLocations().isEmpty() ?
+                project.getLocations().iterator().next().toString() : Location.REALDOLMEN_HEADQUARTERS.toString();
+    }
+
+    @Transactional
+    public void addMarker(PointSelectEvent psev) {
+        if (psev == null || psev.getLatLng() == null) {
+            return;
+        }
+
+        LatLng latLng = psev.getLatLng();
+        Marker marker = new Marker(latLng);
+        Location location = new Location(latLng.getLat(), latLng.getLng());
+        project.getLocations().add(location);
+        em.persist(location);
+        em.merge(project);
+        mapModel.addOverlay(marker);
+    }
+
+    public MapModel getMapModel() {
+        return mapModel;
     }
 
     public String getOccupationId() {

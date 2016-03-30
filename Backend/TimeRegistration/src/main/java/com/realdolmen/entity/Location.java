@@ -20,6 +20,8 @@ public class Location {
     @JsonProperty("long")
     private double longitude;
 
+    public static final Location REALDOLMEN_HEADQUARTERS = new Location(50.752625, 4.263215);
+
     public Location() {
     }
 
@@ -42,6 +44,11 @@ public class Location {
 
     public void setLongitude(double longitude) {
         this.longitude = longitude;
+    }
+
+    @Override
+    public String toString() {
+        return latitude + "," + longitude;
     }
 
     @Override

@@ -42,24 +42,22 @@
                 <h:panelGroup id="search-results">
                     <div class="row">
                         <ui:repeat value="#{selectSubproject.occupations}"
-                                   var="employee">
+                                   var="project">
                             <div class="col m12 l6">
                                 <h:form>
                                     <div class="card">
                                         <div class="card-content">
                                             <h:outputText styleClass="card-title"
-                                                          value="#{employee.name}"/><br/>
+                                                          value="#{project.name}"/><br/>
                                             <h:outputText styleClass="occupation-content"
-                                                          value="#{employee.description}"/>
+                                                          value="#{project.description}"/>
                                         </div>
                                         <div class="card-action">
-                                            <h:form>
-                                                <h:commandButton
-                                                        style="padding-bottom: 10px; padding-left: 5px; padding-right: 5px;"
-                                                        styleClass="btn-flat realdolmen-blue-text waves-effect waves-realdolmen-blue"
-                                                        value="#{msg['project.select_subproject.add']}"
-                                                        action="#{selectSubproject.addAsSubProject(employee)}" />
-                                            </h:form>
+                                            <h:commandButton
+                                                    style="padding-bottom: 10px; padding-left: 5px; padding-right: 5px;"
+                                                    styleClass="btn-flat realdolmen-blue-text waves-effect waves-realdolmen-blue"
+                                                    value="#{msg['project.select_subproject.add']}"
+                                                    action="#{selectSubproject.addAsSubProject(project)}"/>
                                         </div>
                                     </div>
                                 </h:form>

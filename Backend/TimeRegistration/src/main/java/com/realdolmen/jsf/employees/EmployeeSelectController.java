@@ -7,8 +7,8 @@ import com.realdolmen.jsf.occupations.OccupationDetailsController;
 import com.realdolmen.rest.OccupationEndpoint;
 import org.jboss.logging.Logger;
 import org.jetbrains.annotations.TestOnly;
+import org.omnifaces.cdi.ViewScoped;
 
-import javax.enterprise.context.RequestScoped;
 import javax.faces.context.FacesContext;
 import javax.inject.Inject;
 import javax.inject.Named;
@@ -22,7 +22,7 @@ import java.util.stream.Collectors;
  * A controller for <code>/employees/employee-select.xhtml</code>.
  */
 @Named("selectEmployee")
-@RequestScoped
+@ViewScoped
 public class EmployeeSelectController extends EmployeeSearchController {
 
     private String occupationId;

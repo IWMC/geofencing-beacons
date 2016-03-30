@@ -51,7 +51,9 @@
                                             <h:outputText styleClass="truncate" value="#{employee.email}"/>
                                         </div>
                                         <div class="card-action">
-                                            <h:commandLink styleClass="realdolmen-blue-text waves-effect waves-realdolmen-blue card-action-flat"
+                                            <h:commandButton
+                                                    style="padding-bottom: 10px; padding-left: 5px; padding-right: 5px;"
+                                                    styleClass="btn-flat realdolmen-blue-text waves-effect waves-realdolmen-blue"
                                                     value="#{msg['employee.select_employee.select']}"
                                                     action="#{selectEmployee.addEmployeeToProject(employee)}"/>
                                         </div>
