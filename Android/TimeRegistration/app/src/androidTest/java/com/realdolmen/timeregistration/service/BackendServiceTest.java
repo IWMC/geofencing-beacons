@@ -39,11 +39,5 @@ public class BackendServiceTest {
         Assert.assertEquals(service1, BackendService.with(dummyContext1));
         Assert.assertEquals(service2, BackendService.with(dummyContext2));
         Assert.assertEquals(service2, BackendService.with(dummyContext1));
-
-    }
-
-    @Test
-    public void testLogin() throws Exception {
-
     }
 }

@@ -31,6 +31,13 @@ public class RegisteredOccupationRepository extends DataRepository<RegisteredOcc
 	@UTC
 	private final Map<DateTime, List<RegisteredOccupation>> dataByDate = new HashMap<>();
 
+	/**
+	 * Calls {@link RegisteredOccupationRepository#reload(Context)} to initially load the data. Upon completion,
+	 * the optional {@link LoadCallback#onResult(LoadCallback.Result, Throwable)} is called.
+	 *
+	 * @param context  The {@link Context} used with the {@link BackendService}.
+	 * @param callback The optional {@link LoadCallback} to be used when data loading is complete.
+	 */
 	RegisteredOccupationRepository(@NonNull Context context, @Nullable final LoadCallback callback) {
 		reload(context).done(new DoneCallback<RegisteredOccupationRepository>() {
 			@Override
@@ -49,6 +56,17 @@ public class RegisteredOccupationRepository extends DataRepository<RegisteredOcc
 		});
 	}
 
+	/**
+	 * Saves a {@link RegisteredOccupation} to the backend. If the {@code RegisteredOccupation} does
+	 * not yet exist, it will be persisted as a new one. If it does, it is merged with the remote version.
+	 * <p/>
+	 * If the request succeeds, the {@code element}'s ID is filled in with the returned ID. Afterwards
+	 * it is added to the backing data list and {@link #invalidateData()} is called.
+	 *
+	 * @param context  The {@link Context} to use with {@link BackendService}.
+	 * @param element  The {@link RegisteredOccupation} to save to the backend.
+	 * @param callback The optional {@link ResultCallback<Long>} called upon completion.
+	 */
 	@Override
 	public void save(@NonNull Context context, @NonNull final RegisteredOccupation element, @Nullable final ResultCallback<Long> callback) {
 		BackendService.with(context).saveOccupation(data.contains(element), element, new ResultCallback<Long>() {
@@ -62,17 +80,30 @@ public class RegisteredOccupationRepository extends DataRepository<RegisteredOcc
 
 					invalidateData();
 				}
-				callback.onResult(result, data, error);
+				if (callback != null)
+					callback.onResult(result, data, error);
 			}
 		});
 		//TODO: Make use of local database
 	}
 
+	/**
+	 * Clears the lazy caching map used to group {@link RegisteredOccupation}s by {@link DateTime}.
+	 * This should only be called internally.
+	 */
 	private void invalidateData() {
 		dataByDate.clear();
 	}
 
-	public List<RegisteredOccupation> getAll(@UTC DateTime date) {
+	/**
+	 * Retrieves the {@link RegisteredOccupation}s who fall in the same day as the given {@code date}.
+	 * <p/>
+	 * After the first calculation of this subset it is stored in a map by the given date.
+	 *
+	 * @param date The {@code DateTime} in {@link org.joda.time.DateTimeZone#UTC} format.
+	 * @return The resulting unmodifiable subset of {@code RegisteredOccupation}s grouped by {@code date}.
+	 */
+	public List<RegisteredOccupation> getAll(@UTC @NonNull DateTime date) {
 		DateUtil.enforceUTC(date);
 		if (dataByDate.containsKey(date.withTimeAtStartOfDay())) {
 			return Collections.unmodifiableList(dataByDate.get(date.withTimeAtStartOfDay()));
@@ -91,10 +122,12 @@ public class RegisteredOccupationRepository extends DataRepository<RegisteredOcc
 
 	/**
 	 * Removes a {@link RegisteredOccupation} from the database.
+	 * If the HTTP status code is {@code 204 NO CONTENT} the {@code element} is removed
+	 * from the backing list and {@link #invalidateData()} is called.
 	 *
-	 * @param context
-	 * @param element
-	 * @param callback
+	 * @param context  The {@link Context} used with the {@link BackendService}.
+	 * @param element  The {@link RegisteredOccupation} to remove.
+	 * @param callback The optional {@link LoadCallback} to be used when the operation is complete.
 	 */
 	@Override
 	public void remove(@NonNull Context context, @NonNull final RegisteredOccupation element, @Nullable final ResultCallback<Integer> callback) {
@@ -108,14 +141,27 @@ public class RegisteredOccupationRepository extends DataRepository<RegisteredOcc
 						data.remove(element);
 						invalidateData();
 					}
-					callback.onResult(Result.SUCCESS, resultData, null);
+
+					if (callback != null)
+						callback.onResult(Result.SUCCESS, resultData, null);
 				} else {
-					callback.onResult(Result.FAIL, resultData, error);
+					if (callback != null)
+						callback.onResult(Result.FAIL, resultData, error);
 				}
 			}
 		});
 	}
 
+	/**
+	 * Reloads the data using the backend. <b>Upon a successful retrieval</b> of registered occupations from
+	 * the backend, the backing list will be cleared and all newly retrieved registrations will be
+	 * added. After that, the {@link Promise} is resolved.
+	 * <p/>
+	 * If the <b>retrieval fails</b>, the {@code Promise} will be rejected.
+	 *
+	 * @param context The {@link Context} to use for the {@link BackendService}.
+	 * @return The promise.
+	 */
 	@Override
 	public Promise<RegisteredOccupationRepository, VolleyError, Object> reload(Context context) {
 		final Deferred<RegisteredOccupationRepository, VolleyError, Object> def = new DeferredObject<>();
@@ -142,7 +188,7 @@ public class RegisteredOccupationRepository extends DataRepository<RegisteredOcc
 			@Override
 			public void onResult(@NonNull Result result, @Nullable Integer data, @Nullable VolleyError error) {
 				if (result == Result.SUCCESS) {
-					for(RegisteredOccupation ro : getAll(date)) {
+					for (RegisteredOccupation ro : getAll(date)) {
 						ro.confirm();
 					}
 					def.resolve(data);

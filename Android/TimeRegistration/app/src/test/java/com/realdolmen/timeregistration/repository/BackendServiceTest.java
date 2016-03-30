@@ -140,7 +140,7 @@ public class BackendServiceTest {
 	}
 
 	@Test
-	public void testRegisterOccupationWithNullInputFails() {
+	public void testWithNullInputFails() {
 		BackendService service = BackendService.with(dummyContext1);
 		service.saveOccupation(null, new ResultCallback() {
 			@Override
@@ -154,13 +154,13 @@ public class BackendServiceTest {
 	}
 
 	@Test(expected = NullPointerException.class)
-	public void testRegisterOccupationWithNullCallbackFails() {
+	public void testSaveOccupationWithNullCallbackFails() {
 		BackendService service = BackendService.with(dummyContext1);
 		service.saveOccupation(null, null);
 	}
 
 	@Test(expected = NullPointerException.class)
-	public void testRegisterOccupationWithNullCallbackAndNonNullInputFails() {
+	public void testSaveOccupationWithNullCallbackAndNonNullInputFails() {
 		BackendService service = BackendService.with(dummyContext1);
 		service.saveOccupation(dummyOccupation, null);
 	}

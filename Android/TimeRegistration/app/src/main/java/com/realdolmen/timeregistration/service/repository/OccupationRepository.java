@@ -18,7 +18,14 @@ import java.util.List;
 
 public class OccupationRepository extends DataRepository<Occupation, Occupation, Occupation> {
 
-	OccupationRepository(Context context, final LoadCallback callback) {
+	/**
+	 * Calls {@link OccupationRepository#reload(Context)} to initially load the data. Upon completion,
+	 * the optional {@link LoadCallback#onResult(LoadCallback.Result, Throwable)} is called.
+	 *
+	 * @param context  The {@link Context} used with the {@link BackendService}.
+	 * @param callback The optional {@link LoadCallback} to be used when data loading is complete.
+	 */
+	OccupationRepository(@NonNull Context context, final @Nullable LoadCallback callback) {
 		reload(context).done(new DoneCallback<OccupationRepository>() {
 			@Override
 			public void onDone(OccupationRepository result) {
@@ -36,16 +43,42 @@ public class OccupationRepository extends DataRepository<Occupation, Occupation,
 		});
 	}
 
+	/**
+	 * The app is not allowed to save occupations to the backend. Therefore it is not implemented.
+	 *
+	 * @param context  /
+	 * @param element  /
+	 * @param callback /
+	 * @throws UnsupportedOperationException
+	 */
 	@Override
 	public void save(@NonNull Context context, @NonNull Occupation element, @Nullable ResultCallback<Occupation> callback) {
 		throw new UnsupportedOperationException("Occupations cannot be added!");
 	}
 
+	/**
+	 * The app is not allowed to remove occupations from the backend. Therefore it is not implemented.
+	 *
+	 * @param context  /
+	 * @param element  /
+	 * @param callback /
+	 * @throws UnsupportedOperationException
+	 */
 	@Override
 	public void remove(@NonNull Context context, @NonNull Occupation element, @Nullable ResultCallback<Occupation> callback) {
 		throw new UnsupportedOperationException("Occupations cannot be removed!");
 	}
 
+	/**
+	 * Reloads the data using the backend. <b>Upon a successful retrieval</b> of occupations from
+	 * the backend, the backing list will be cleared and all newly retrieved occupations will be
+	 * added. After that, the {@link Promise} is resolved.
+	 * <p/>
+	 * If the <b>retrieval fails</b>, the {@code Promise} will be rejected.
+	 *
+	 * @param context The {@link Context} to use for the {@link BackendService}.
+	 * @return The promise.
+	 */
 	@Override
 	public Promise<OccupationRepository, VolleyError, Object> reload(Context context) {
 		final Deferred<OccupationRepository, VolleyError, Object> def = new DeferredObject<>();
