@@ -10,6 +10,7 @@ import com.realdolmen.timeregistration.util.RegisteredOccupationCardClickListene
 
 import org.joda.time.DateTime;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class RegisteredOccupationRecyclerAdapter extends RecyclerView.Adapter<RegisteredOccupationViewHolder> {
@@ -17,6 +18,8 @@ public class RegisteredOccupationRecyclerAdapter extends RecyclerView.Adapter<Re
 	private DateTime date;
 
 	private RegisteredOccupationCardClickListener onEditClickListener;
+
+	private List<RegisteredOccupationViewHolder> viewHolders = new ArrayList<>();
 
 	public RegisteredOccupationRecyclerAdapter(DateTime date) {
 		this.date = date;
@@ -36,7 +39,9 @@ public class RegisteredOccupationRecyclerAdapter extends RecyclerView.Adapter<Re
 		RegisteredOccupationCard regOccView = new RegisteredOccupationCard(parent);
 		regOccView.setEditable(true);
 		regOccView.setOnEditClickListener(onEditClickListener);
-		return new RegisteredOccupationViewHolder(regOccView);
+		RegisteredOccupationViewHolder rovh = new RegisteredOccupationViewHolder(regOccView);
+		viewHolders.add(rovh);
+		return rovh;
 	}
 
 	@Override
@@ -51,5 +56,11 @@ public class RegisteredOccupationRecyclerAdapter extends RecyclerView.Adapter<Re
 
 	public List<RegisteredOccupation> getData() {
 		return Repositories.registeredOccupationRepository().getAll(date);
+	}
+
+	public void refreshViews() {
+		for (RegisteredOccupationViewHolder viewHolder : viewHolders) {
+			viewHolder.update();
+		}
 	}
 }

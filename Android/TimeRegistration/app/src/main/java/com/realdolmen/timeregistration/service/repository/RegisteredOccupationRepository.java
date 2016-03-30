@@ -55,7 +55,7 @@ public class RegisteredOccupationRepository extends DataRepository<RegisteredOcc
 			@Override
 			public void onResult(@NonNull Result result, @Nullable Long data, @Nullable VolleyError error) {
 				if (result == Result.SUCCESS) {
-					if(data != null) {
+					if (data != null) {
 						element.setId(data);
 						RegisteredOccupationRepository.this.data.add(element);
 					}
@@ -131,6 +131,23 @@ public class RegisteredOccupationRepository extends DataRepository<RegisteredOcc
 				} else {
 					def.reject(error);
 				}
+			}
+		});
+		return def.promise();
+	}
+
+	public Promise<Integer, VolleyError, Object> confirmDate(@NonNull Context context, @UTC final DateTime date) {
+		final Deferred<Integer, VolleyError, Object> def = new DeferredObject<>();
+		BackendService.with(context).confirmOccupations(date, new ResultCallback<Integer>() {
+			@Override
+			public void onResult(@NonNull Result result, @Nullable Integer data, @Nullable VolleyError error) {
+				if (result == Result.SUCCESS) {
+					for(RegisteredOccupation ro : getAll(date)) {
+						ro.confirm();
+					}
+					def.resolve(data);
+				} else
+					def.reject(error);
 			}
 		});
 		return def.promise();

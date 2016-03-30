@@ -51,7 +51,6 @@ public class RegisteredOccupationCard extends OccupationCard<RegisteredOccupatio
 		setLayoutParams(frameParams);
 		addView(view);
 		frame = view;
-		updateViewState();
 	}
 
 	public void bind(RegisteredOccupation o) {
@@ -62,6 +61,7 @@ public class RegisteredOccupationCard extends OccupationCard<RegisteredOccupatio
 			description.setText(DateUtil.formatToHours(DateUtil.toLocal(data.getRegisteredStart())) + " - " + (DateUtil.toLocal(data.getRegisteredEnd()) == null ? "Ongoing..." : DateUtil.formatToHours(DateUtil.toLocal(data.getRegisteredEnd()))));
 		else
 			description.setText("No duration set!");
+		updateViewState();
 	}
 
 	@Override
@@ -71,10 +71,18 @@ public class RegisteredOccupationCard extends OccupationCard<RegisteredOccupatio
 
 	@Override
 	public void updateViewState() {
-		if (isEditable()) {
-			editButton.setVisibility(VISIBLE);
+		if (data != null) {
+			if (isEditable() && !data.isConfirmed()) {
+				editButton.setVisibility(VISIBLE);
+			} else {
+				editButton.setVisibility(INVISIBLE);
+			}
 		} else {
-			editButton.setVisibility(GONE);
+			if (isEditable()) {
+				editButton.setVisibility(VISIBLE);
+			} else {
+				editButton.setVisibility(INVISIBLE);
+			}
 		}
 	}
 

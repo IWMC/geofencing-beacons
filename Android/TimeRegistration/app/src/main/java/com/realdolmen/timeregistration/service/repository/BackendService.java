@@ -33,6 +33,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * A backend interface to facilitate communication with the backend. It also manages caching using SQLite.
@@ -40,7 +41,6 @@ import java.util.Map;
 public class BackendService {
 
 	private static final String HOST = "http://10.16.26.142";
-	private int statusCode = 0;
 
 	private static final String
 			API_LOGIN_URI = HOST + "/api/user/login",
@@ -203,7 +203,7 @@ public class BackendService {
 		return headers;
 	}
 
-	public void confirmOccupations(@UTC DateTime date, @NonNull final ResultCallback callback) {
+	public void confirmOccupations(@UTC DateTime date, @NonNull final ResultCallback<Integer> callback) {
 		if (callback == null) {
 			throw new NullPointerException("Callback may not be null!");
 		}
@@ -217,11 +217,14 @@ public class BackendService {
 		if (DateUtil.enforceUTC(date, callback)) {
 			return;
 		}
+
+		final AtomicInteger statusCode = new AtomicInteger(0);
+
 		JsonObjectRequest req = new JsonObjectRequest(Request.Method.PUT, params(API_CONFIRM_OCCUPATIONS,
-				date.toDateTime(DateTimeZone.UTC).getMillis()), "", new Response.Listener() {
+				date.getMillis()), "", new Response.Listener() {
 			@Override
 			public void onResponse(Object response) {
-				callback.onResult(ResultCallback.Result.SUCCESS, response, null);
+				callback.onResult(ResultCallback.Result.SUCCESS, statusCode.get(), null);
 			}
 		}, new Response.ErrorListener() {
 			@Override
@@ -232,6 +235,15 @@ public class BackendService {
 			@Override
 			public Map<String, String> getHeaders() throws AuthFailureError {
 				return auth(super.getHeaders());
+			}
+
+			@Override
+			protected Response<JSONObject> parseNetworkResponse(NetworkResponse response) {
+				statusCode.set(response.statusCode);
+				if (response.data.length == 0) {
+					response = new NetworkResponse(response.statusCode, "{}".getBytes(), response.headers, response.notModified);
+				}
+				return super.parseNetworkResponse(response);
 			}
 		};
 
@@ -306,6 +318,8 @@ public class BackendService {
 			return;
 		}
 
+		final AtomicInteger statusCode = new AtomicInteger(0);
+
 		Request req = new JsonObjectRequest(existing ? Request.Method.PUT : Request.Method.POST, API_ADD_OCCUPATION_REGISTRATION, compactGson.toJson(ro), new Response.Listener<JSONObject>() {
 			@Override
 			public void onResponse(JSONObject response) {
@@ -316,7 +330,7 @@ public class BackendService {
 						callback.onResult(ResultCallback.Result.FAIL, null, new GenericVolleyError(e));
 					}
 				else if (existing) {
-					if(statusCode == 204) {
+					if(statusCode.get() == 204) {
 						callback.onResult(ResultCallback.Result.SUCCESS, null, null);
 					} else {
 						callback.onResult(ResultCallback.Result.FAIL, null, new GenericVolleyError("Unable to update backend (status code: " + statusCode + ")"));
@@ -337,7 +351,7 @@ public class BackendService {
 
 			@Override
 			protected Response<JSONObject> parseNetworkResponse(NetworkResponse response) {
-				statusCode = response.statusCode;
+				statusCode.set(response.statusCode);
 				if (response.data.length == 0) {
 					response = new NetworkResponse(response.statusCode, "{}".getBytes(), response.headers, response.notModified);
 				}
@@ -353,6 +367,8 @@ public class BackendService {
 			throw new NullPointerException("Callback cannot be null");
 		}
 
+		final AtomicInteger statusCode = new AtomicInteger(0);
+
 		JsonObjectRequest req = new JsonObjectRequest(
 				Request.Method.DELETE,
 				params(API_REMOVE_REGISTERED_OCCUPATION, elementId),
@@ -360,9 +376,7 @@ public class BackendService {
 				new Response.Listener<JSONObject>() {
 					@Override
 					public void onResponse(JSONObject response) {
-						int code = statusCode;
-						statusCode = 0;
-						callback.onResult(ResultCallback.Result.SUCCESS, code, null);
+						callback.onResult(ResultCallback.Result.SUCCESS, statusCode.get(), null);
 					}
 				},
 				new Response.ErrorListener() {
@@ -379,7 +393,7 @@ public class BackendService {
 
 			@Override
 			protected Response<JSONObject> parseNetworkResponse(NetworkResponse response) {
-				statusCode = response.statusCode;
+				statusCode.set(response.statusCode);
 				if (response.data.length == 0) {
 					response = new NetworkResponse(response.statusCode, "{}".getBytes(), response.headers, response.notModified);
 				}

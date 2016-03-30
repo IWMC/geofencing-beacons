@@ -16,7 +16,8 @@ public class RegisteredOccupationViewHolder extends RecyclerView.ViewHolder {
 	}
 
 	public void update() {
-		view.updateViewState();
+		if (view != null)
+			view.updateViewState();
 	}
 
 	public View getView() {

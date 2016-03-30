@@ -11,13 +11,16 @@ import android.support.v4.app.Fragment;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
+import android.view.View;
 import android.widget.Toast;
 
 import com.android.volley.VolleyError;
 import com.github.clans.fab.FloatingActionButton;
+import com.github.clans.fab.FloatingActionMenu;
 import com.realdolmen.timeregistration.R;
 import com.realdolmen.timeregistration.model.Occupation;
 import com.realdolmen.timeregistration.model.RegisteredOccupation;
@@ -29,6 +32,7 @@ import com.realdolmen.timeregistration.util.DateUtil;
 import com.realdolmen.timeregistration.util.UTC;
 import com.realdolmen.timeregistration.util.adapters.dayregistration.DayRegistrationFragmentPagerAdapter;
 
+import org.jdeferred.AlwaysCallback;
 import org.jdeferred.Deferred;
 import org.jdeferred.DoneCallback;
 import org.jdeferred.DoneFilter;
@@ -46,6 +50,7 @@ import butterknife.OnClick;
 
 public class DayRegistrationActivity extends AppCompatActivity {
 
+	private static final String LOG_TAG = DayRegistrationActivity.class.getSimpleName();
 
 	@Bind(R.id.day_registration_toolbar)
 	Toolbar bar;
@@ -59,6 +64,9 @@ public class DayRegistrationActivity extends AppCompatActivity {
 	@Bind(R.id.day_registration_confirm_fab)
 	FloatingActionButton confirmFab;
 
+	@Bind(R.id.day_registration_fab_menu)
+	FloatingActionMenu fabMenu;
+
 	private boolean doubleBack;
 
 	private DayRegistrationFragmentPagerAdapter pagerAdapter;
@@ -66,8 +74,6 @@ public class DayRegistrationActivity extends AppCompatActivity {
 	private List<DateTime> dates = new ArrayList<>();
 
 	public static final String SELECTED_DAY = "SELECTED_DAY";
-
-	private DateTime currentDate;
 
 	//region Initialization methods
 
@@ -92,6 +98,23 @@ public class DayRegistrationActivity extends AppCompatActivity {
 
 	private void initViewPager() {
 		viewPager.setSwipePagingEnabled(false);
+		viewPager.setOnPageChangeListener(new ViewPager.OnPageChangeListener() {
+			@Override
+			public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
+
+			}
+
+			@Override
+			public void onPageSelected(int position) {
+				refreshTabIcons();
+				refreshFabs(dates.get(position));
+			}
+
+			@Override
+			public void onPageScrollStateChanged(int state) {
+
+			}
+		});
 		dates = DateUtil.pastWorkWeek();
 		pagerAdapter = new DayRegistrationFragmentPagerAdapter(this, getSupportFragmentManager());
 		viewPager.setAdapter(pagerAdapter);
@@ -103,7 +126,7 @@ public class DayRegistrationActivity extends AppCompatActivity {
 	}
 
 	public DateTime getCurrentDate() {
-		return currentDate;
+		return dates.get(viewPager.getCurrentItem());
 	}
 
 	@Override
@@ -159,23 +182,7 @@ public class DayRegistrationActivity extends AppCompatActivity {
 	}
 
 	public void refreshCurrent() {
-		Repositories.loadRegisteredOccupationRepository(this).done(new DoneCallback<RegisteredOccupationRepository>() {
-			@Override
-			public void onDone(RegisteredOccupationRepository result) {
-				result.reload(DayRegistrationActivity.this).done(new DoneCallback<RegisteredOccupationRepository>() {
-					@Override
-					public void onDone(RegisteredOccupationRepository result) {
-						Fragment page = getSupportFragmentManager().findFragmentByTag("android:switcher:" + R.id.day_registration_viewpager + ":" + viewPager.getCurrentItem());
-						if (page != null) {
-							if (page instanceof DayRegistrationFragment) {
-								DayRegistrationFragment fragment = (DayRegistrationFragment) page;
-								fragment.refreshData();
-							}
-						}
-					}
-				});
-			}
-		});
+		refreshView(viewPager.getCurrentItem());
 	}
 
 	public Promise<Boolean, Object, Object> isDateConfirmed(@UTC final DateTime date) {
@@ -226,7 +233,7 @@ public class DayRegistrationActivity extends AppCompatActivity {
 
 	@OnClick(R.id.day_registration_confirm_fab)
 	public void doConfirm() {
-		confirm(currentDate, null);
+		confirm(getCurrentDate(), null);
 	}
 
 	@OnClick(R.id.day_registration_add_fab)
@@ -251,8 +258,36 @@ public class DayRegistrationActivity extends AppCompatActivity {
 		});
 	}
 
-	public void refreshView(DayRegistrationFragment fragment) {
-		fragment.refreshData();
+	public void refreshView(final int position) {
+		final DateTime date = dates.get(position);
+		refreshTabIcons();
+		refreshFabs(date);
+		Repositories.loadRegisteredOccupationRepository(this).done(new DoneCallback<RegisteredOccupationRepository>() {
+			@Override
+			public void onDone(RegisteredOccupationRepository result) {
+				result.reload(DayRegistrationActivity.this).done(new DoneCallback<RegisteredOccupationRepository>() {
+					@Override
+					public void onDone(RegisteredOccupationRepository result) {
+						Fragment page = getSupportFragmentManager().findFragmentByTag("android:switcher:" + R.id.day_registration_viewpager + ":" + position);
+						if (page != null) {
+							if (page instanceof DayRegistrationFragment) {
+								final DayRegistrationFragment fragment = (DayRegistrationFragment) page;
+								isDateConfirmed(date).always(new AlwaysCallback<Boolean, Object>() {
+									@Override
+									public void onAlways(Promise.State state, Boolean resolved, Object rejected) {
+										fragment.setDeletable(!resolved);
+										fragment.refreshData();
+									}
+								});
+								Log.d(LOG_TAG, "Refreshed views on index " + position + " -> " + page.getClass().getSimpleName());
+							} else {
+								Log.w(LOG_TAG, "Refreshing views did not refresh the fragment data -> " + page.getClass().getSimpleName());
+							}
+						}
+					}
+				});
+			}
+		});
 	}
 
 	@Override
@@ -266,8 +301,8 @@ public class DayRegistrationActivity extends AppCompatActivity {
 				DateUtil.enforceUTC(end, "Received end date that is not in UTC!");
 				handleNewlyRegisteredOccupation(occ, start, end);
 			}
-		} else if(requestCode == AddOccupationActivity.EDIT_RESULT_CODE) {
-			if(resultCode == RESULT_OK) {
+		} else if (requestCode == AddOccupationActivity.EDIT_RESULT_CODE) {
+			if (resultCode == RESULT_OK) {
 				//TODO: Add OK result
 				handleUpdatedRegisteredOccupation((RegisteredOccupation) data.getSerializableExtra(AddOccupationActivity.EDITING_OCCUPATION));
 			}
@@ -275,33 +310,40 @@ public class DayRegistrationActivity extends AppCompatActivity {
 	}
 
 	public void setCurrentDate(DateTime currentDate) {
-		this.currentDate = currentDate;
+		//this.currentDate = currentDate;
 	}
 
-	public void confirm(@NonNull DateTime date, @Nullable final ResultCallback callback) {
+	public void confirm(@NonNull final DateTime date, @Nullable final ResultCallback callback) {
 		confirmFab.setIndeterminate(true);
 		confirmFab.setEnabled(false);
-
-		//TODO: Edit this to the new repository system.
-		/*BackendService.with(this).confirmOccupations(date, new ResultCallback() {
+		Repositories.loadRegisteredOccupationRepository(this).done(new DoneCallback<RegisteredOccupationRepository>() {
 			@Override
-			public void onSuccess(Object data) {
-				if (callback != null)
-					callback.onSuccess(data);
-				refreshTabIcons();
-				confirmFab.setIndeterminate(false);
-				confirmFab.setEnabled(false);
-				Snackbar.make(findViewById(android.R.id.content), R.string.day_registration_confirm_message, Snackbar.LENGTH_LONG).show();
-			}
+			public void onDone(RegisteredOccupationRepository result) {
+				result.confirmDate(DayRegistrationActivity.this, date).done(new DoneCallback<Integer>() {
+					@Override
+					public void onDone(Integer result) {
+						if (callback != null)
+							callback.onResult(ResultCallback.Result.SUCCESS, result, null);
+						System.out.println("Confirm status code: " + result);
+						refreshCurrent();
+						confirmFab.setIndeterminate(false);
+						confirmFab.setEnabled(true);
+						Snackbar.make(findViewById(R.id.day_registration_root_view), R.string.day_registration_confirm_message, Snackbar.LENGTH_LONG).show();
+					}
+				}).fail(new FailCallback<VolleyError>() {
+					@Override
+					public void onFail(VolleyError result) {
+						if (callback != null)
+							callback.onResult(ResultCallback.Result.FAIL, null, result);
 
-			@Override
-			public void onError(VolleyError error) {
-				if (callback != null)
-					callback.onError(error);
-				confirmFab.setIndeterminate(false);
-				confirmFab.setEnabled(true);
+						System.out.println("Confirm status code: " + result.toString());
+						confirmFab.setIndeterminate(false);
+						confirmFab.setEnabled(true);
+						Snackbar.make(findViewById(R.id.day_registration_root_view), "There was a problem confirming your registration!", Snackbar.LENGTH_LONG).show();
+					}
+				});
 			}
-		});*/
+		});
 	}
 
 	public void refreshTabIcons() {
@@ -317,10 +359,9 @@ public class DayRegistrationActivity extends AppCompatActivity {
 	}
 
 	private void handleUpdatedRegisteredOccupation(final RegisteredOccupation ro) {
-		if(ro == null) {
+		if (ro == null) {
 			return;
 		}
-		System.out.println("BALALALALLA");
 		DateUtil.enforceUTC(ro.getRegisteredStart());
 		DateUtil.enforceUTC(ro.getRegisteredEnd());
 		Repositories.loadRegisteredOccupationRepository(this).done(new DoneCallback<RegisteredOccupationRepository>() {
@@ -353,10 +394,10 @@ public class DayRegistrationActivity extends AppCompatActivity {
 						@Override
 						public void onResult(@NonNull Result result, @Nullable Long data, @Nullable VolleyError error) {
 							if (result == Result.SUCCESS) {
-								Snackbar.make(findViewById(android.R.id.content), R.string.registration_notify_saved, Snackbar.LENGTH_LONG).show();
+								Snackbar.make(findViewById(R.id.day_registration_root_view), R.string.registration_notify_saved, Snackbar.LENGTH_LONG).show();
 								refreshCurrent();
 							} else if (error != null) {
-								Snackbar.make(findViewById(android.R.id.content), R.string.registration_notify_not_saved, Snackbar.LENGTH_LONG).show();
+								Snackbar.make(findViewById(R.id.day_registration_root_view), R.string.registration_notify_not_saved, Snackbar.LENGTH_LONG).show();
 							}
 						}
 					});
@@ -379,6 +420,19 @@ public class DayRegistrationActivity extends AppCompatActivity {
 	public void onSaveInstanceState(Bundle outState) {
 		super.onSaveInstanceState(outState);
 		outState.putInt(SELECTED_DAY, tabLayout.getSelectedTabPosition());
+	}
+
+	public void refreshFabs(DateTime currentDate) {
+		isDateConfirmed(currentDate).done(new DoneCallback<Boolean>() {
+			@Override
+			public void onDone(Boolean result) {
+				if (result) {
+					fabMenu.setVisibility(View.GONE);
+				} else {
+					fabMenu.setVisibility(View.VISIBLE);
+				}
+			}
+		});
 	}
 
 	@Override
