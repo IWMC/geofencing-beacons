@@ -1,4 +1,4 @@
-package com.realdolmen.timeregistration.ui;
+package com.realdolmen.timeregistration.ui.cards;
 
 import android.content.Context;
 import android.util.AttributeSet;

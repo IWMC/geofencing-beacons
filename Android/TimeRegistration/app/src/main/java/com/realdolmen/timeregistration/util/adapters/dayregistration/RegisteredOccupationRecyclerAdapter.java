@@ -1,15 +1,11 @@
 package com.realdolmen.timeregistration.util.adapters.dayregistration;
 
 import android.support.v7.widget.RecyclerView;
-import android.view.LayoutInflater;
-import android.view.View;
 import android.view.ViewGroup;
 
-import com.realdolmen.timeregistration.R;
 import com.realdolmen.timeregistration.model.RegisteredOccupation;
 import com.realdolmen.timeregistration.service.repository.Repositories;
-import com.realdolmen.timeregistration.ui.OccupationCard;
-import com.realdolmen.timeregistration.ui.RegisteredOccupationCard;
+import com.realdolmen.timeregistration.ui.cards.RegisteredOccupationCard;
 import com.realdolmen.timeregistration.util.RegisteredOccupationCardClickListener;
 
 import org.joda.time.DateTime;

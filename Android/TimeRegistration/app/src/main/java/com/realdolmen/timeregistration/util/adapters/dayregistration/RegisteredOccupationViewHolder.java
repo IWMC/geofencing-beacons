@@ -4,8 +4,7 @@ import android.support.v7.widget.RecyclerView;
 import android.view.View;
 
 import com.realdolmen.timeregistration.model.RegisteredOccupation;
-import com.realdolmen.timeregistration.ui.OccupationCard;
-import com.realdolmen.timeregistration.ui.RegisteredOccupationCard;
+import com.realdolmen.timeregistration.ui.cards.RegisteredOccupationCard;
 
 public class RegisteredOccupationViewHolder extends RecyclerView.ViewHolder {
 

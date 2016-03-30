@@ -6,8 +6,8 @@ import android.view.ViewGroup;
 
 import com.realdolmen.timeregistration.model.Occupation;
 import com.realdolmen.timeregistration.service.repository.Repositories;
-import com.realdolmen.timeregistration.ui.OccupationCard;
-import com.realdolmen.timeregistration.ui.RegularOccupationCard;
+import com.realdolmen.timeregistration.ui.cards.OccupationCard;
+import com.realdolmen.timeregistration.ui.cards.RegularOccupationCard;
 
 public class OccupationRecyclerAdapter extends RecyclerView.Adapter<OccupationViewHolder> {
 

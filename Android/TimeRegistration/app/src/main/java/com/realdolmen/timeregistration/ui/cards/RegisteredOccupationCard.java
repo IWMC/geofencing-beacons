@@ -1,9 +1,8 @@
-package com.realdolmen.timeregistration.ui;
+package com.realdolmen.timeregistration.ui.cards;
 
 import android.content.Context;
 import android.util.TypedValue;
 import android.view.LayoutInflater;
-import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
 
@@ -58,7 +57,7 @@ public class RegisteredOccupationCard extends OccupationCard<RegisteredOccupatio
 	public void bind(RegisteredOccupation o) {
 		data = o;
 		title.setText(data.getOccupation().getName());
-		description.setVisibility(View.VISIBLE);
+		description.setVisibility(VISIBLE);
 		if (data.getRegisteredStart() != null)
 			description.setText(DateUtil.formatToHours(DateUtil.toLocal(data.getRegisteredStart())) + " - " + (DateUtil.toLocal(data.getRegisteredEnd()) == null ? "Ongoing..." : DateUtil.formatToHours(DateUtil.toLocal(data.getRegisteredEnd()))));
 		else
