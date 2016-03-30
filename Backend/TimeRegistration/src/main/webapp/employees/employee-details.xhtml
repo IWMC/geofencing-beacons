@@ -42,8 +42,9 @@
                             <h4 class="thin"><h:outputText value="#{msg['employee.projects_present']}" /></h4>
                             <div class="collection small-collection center-block">
                                 <ui:repeat value="#{of:setToList(employeeDetails.employee.memberProjects)}"
-                                           var="employee">
-                                    <h:link styleClass="collection-item" value="#{employee.name}"/>
+                                           var="project">
+                                    <h:link outcome="#{pages.detailsProject().param('id', project.id).jsf()}"
+                                            styleClass="collection-item" value="#{project.name}"/>
                                 </ui:repeat>
                             </div>
                         </h:panelGroup>

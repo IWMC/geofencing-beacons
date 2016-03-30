@@ -65,8 +65,8 @@
                     <div class="col l5 s12 row">
                         <div class="card s12" id="sub-project">
                             <div>
-                                <ul class="collection with-header">
-                                    <li class="collection-header">
+                                <div class="collection with-header">
+                                    <div class="collection-header">
                                         <div class="row no-margin">
                                             <h5 class="col s8">
                                                 #{projectDetails.project.subProjects.size() > 0 ? msg['project.details.subprojects'] : msg['project.details.no_subprojects']}
@@ -79,18 +79,19 @@
                                                 </h:link>
                                             </div>
                                         </div>
-                                    </li>
+                                    </div>
                                     <ui:repeat value="#{of:setToList(projectDetails.project.subProjects)}"
                                                var="subproject">
-                                        <li class="collection-item">#{subproject.name}</li>
+                                        <h:link outcome="#{pages.detailsProject().param('id', subproject.id).jsf()}"
+                                                class="collection-item">#{subproject.name}</h:link>
                                     </ui:repeat>
-                                </ul>
+                                </div>
                             </div>
                         </div>
                         <div class="card s12" id="project-employees">
                             <div>
-                                <ul class="collection with-header">
-                                    <li class="collection-header">
+                                <div class="collection with-header">
+                                    <div class="collection-header">
                                         <div class="row no-margin">
                                             <h5 class="col s8">
                                                 #{projectDetails.project.employees.size() > 0 ? msg['project.details.employees'] : msg['project.details.no_employees']}
@@ -103,16 +104,18 @@
                                                 </h:link>
                                             </div>
                                         </div>
-                                    </li>
+                                    </div>
                                     <ui:repeat value="#{of:setToList(projectDetails.project.employees)}" var="employee">
-                                        <li class="collection-item">#{employee.firstName} #{employee.lastName}</li>
+                                        <h:link outcome="#{pages.detailsEmployee().param('id', employee.id).jsf()}"
+                                                class="collection-item">#{employee.firstName} #{employee.lastName}</h:link>
                                     </ui:repeat>
-                                </ul>
+                                </div>
                             </div>
                         </div>
                     </div>
                     <div class="card col s12 no-padding map">
-                        <p:gmap type="HYBRID" center="#{projectDetails.locationOrDefault}" model="#{projectDetails.mapModel}" zoom="15">
+                        <p:gmap type="HYBRID" center="#{projectDetails.locationOrDefault}"
+                                model="#{projectDetails.mapModel}" zoom="15">
                             <p:ajax event="pointSelect" listener="#{projectDetails.addMarker}" update="@this"/>
                         </p:gmap>
                     </div>
