@@ -75,6 +75,10 @@ public class RegisteredOccupationBodyReader implements MessageBodyReader<Registe
                 System.out.println(ro.getRegisteredEnd() + " - and millis: " + ro.getRegisteredEnd().getTime());
             }
 
+            if(root.containsKey("id")) {
+                ro.setId(Long.parseLong(root.get("id").toString()));
+            }
+
             if(root.containsKey("occupation")) {
                 JsonObject occ = root.getJsonObject("occupation");
                 if(occ.containsKey("id")) {

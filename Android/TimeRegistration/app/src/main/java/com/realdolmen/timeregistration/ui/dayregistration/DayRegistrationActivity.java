@@ -32,6 +32,7 @@ import com.realdolmen.timeregistration.util.adapters.dayregistration.DayRegistra
 import org.jdeferred.Deferred;
 import org.jdeferred.DoneCallback;
 import org.jdeferred.DoneFilter;
+import org.jdeferred.FailCallback;
 import org.jdeferred.Promise;
 import org.jdeferred.impl.DeferredObject;
 import org.joda.time.DateTime;
@@ -158,13 +159,23 @@ public class DayRegistrationActivity extends AppCompatActivity {
 	}
 
 	public void refreshCurrent() {
-		Fragment page = getSupportFragmentManager().findFragmentByTag("android:switcher:" + R.id.day_registration_viewpager + ":" + viewPager.getCurrentItem());
-		if (page != null) {
-			if (page instanceof DayRegistrationFragment) {
-				DayRegistrationFragment fragment = (DayRegistrationFragment) page;
-				fragment.refreshData();
+		Repositories.loadRegisteredOccupationRepository(this).done(new DoneCallback<RegisteredOccupationRepository>() {
+			@Override
+			public void onDone(RegisteredOccupationRepository result) {
+				result.reload(DayRegistrationActivity.this).done(new DoneCallback<RegisteredOccupationRepository>() {
+					@Override
+					public void onDone(RegisteredOccupationRepository result) {
+						Fragment page = getSupportFragmentManager().findFragmentByTag("android:switcher:" + R.id.day_registration_viewpager + ":" + viewPager.getCurrentItem());
+						if (page != null) {
+							if (page instanceof DayRegistrationFragment) {
+								DayRegistrationFragment fragment = (DayRegistrationFragment) page;
+								fragment.refreshData();
+							}
+						}
+					}
+				});
 			}
-		}
+		});
 	}
 
 	public Promise<Boolean, Object, Object> isDateConfirmed(@UTC final DateTime date) {
@@ -234,9 +245,7 @@ public class DayRegistrationActivity extends AppCompatActivity {
 			@Override
 			public void onDone(RegisteredOccupationRepository result) {
 				i.putExtra(AddOccupationActivity.BASE_DATE, element);
-				i.putExtra(AddOccupationActivity.START_DATE, ro.getRegisteredStart());
-				i.putExtra(AddOccupationActivity.END_DATE, ro.getRegisteredEnd());
-				i.putExtra(AddOccupationActivity.SELECTED_OCCUPATION, ro.getOccupation());
+				i.putExtra(AddOccupationActivity.EDITING_OCCUPATION, ro);
 				startActivityForResult(i, AddOccupationActivity.EDIT_RESULT_CODE);
 			}
 		});
@@ -260,6 +269,7 @@ public class DayRegistrationActivity extends AppCompatActivity {
 		} else if(requestCode == AddOccupationActivity.EDIT_RESULT_CODE) {
 			if(resultCode == RESULT_OK) {
 				//TODO: Add OK result
+				handleUpdatedRegisteredOccupation((RegisteredOccupation) data.getSerializableExtra(AddOccupationActivity.EDITING_OCCUPATION));
 			}
 		}
 	}
@@ -304,6 +314,27 @@ public class DayRegistrationActivity extends AppCompatActivity {
 				}
 			});
 		}
+	}
+
+	private void handleUpdatedRegisteredOccupation(final RegisteredOccupation ro) {
+		if(ro == null) {
+			return;
+		}
+		System.out.println("BALALALALLA");
+		DateUtil.enforceUTC(ro.getRegisteredStart());
+		DateUtil.enforceUTC(ro.getRegisteredEnd());
+		Repositories.loadRegisteredOccupationRepository(this).done(new DoneCallback<RegisteredOccupationRepository>() {
+			@Override
+			public void onDone(RegisteredOccupationRepository result) {
+				result.save(DayRegistrationActivity.this, ro, new ResultCallback<Long>() {
+					@Override
+					public void onResult(@NonNull Result result, @Nullable Long data, @Nullable VolleyError error) {
+						System.out.println("" + result + data + error);
+						refreshCurrent();
+					}
+				});
+			}
+		});
 	}
 
 	private void handleNewlyRegisteredOccupation(Occupation occ, @UTC DateTime start, @UTC DateTime end) {

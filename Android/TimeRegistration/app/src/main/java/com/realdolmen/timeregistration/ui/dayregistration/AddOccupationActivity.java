@@ -22,6 +22,7 @@ import android.widget.TimePicker;
 
 import com.realdolmen.timeregistration.R;
 import com.realdolmen.timeregistration.model.Occupation;
+import com.realdolmen.timeregistration.model.RegisteredOccupation;
 import com.realdolmen.timeregistration.service.repository.LoadCallback;
 import com.realdolmen.timeregistration.service.repository.Repositories;
 import com.realdolmen.timeregistration.util.DateUtil;
@@ -29,13 +30,13 @@ import com.realdolmen.timeregistration.util.UTC;
 import com.realdolmen.timeregistration.util.adapters.dayregistration.OccupationRecyclerAdapter;
 
 import org.joda.time.DateTime;
-import org.joda.time.DateTimeFieldType;
 
 import butterknife.Bind;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
 
 import static com.realdolmen.timeregistration.util.DateUtil.enforceUTC;
+import static com.realdolmen.timeregistration.util.DateUtil.toLocal;
 import static com.realdolmen.timeregistration.util.DateUtil.toUTC;
 
 public class AddOccupationActivity extends AppCompatActivity {
@@ -61,7 +62,7 @@ public class AddOccupationActivity extends AppCompatActivity {
 
 	private OccupationRecyclerAdapter adapter;
 
-	public static final String START_DATE = "SD", END_DATE = "ED", BASE_DATE = "BD", SELECTED_OCCUPATION = "SO";
+	public static final String START_DATE = "SD", END_DATE = "ED", BASE_DATE = "BD", SELECTED_OCCUPATION = "SO", EDITING_OCCUPATION = "EO";
 
 	private static final String EDIT_MODE = "EDIT_MODE";
 	public static final int ADD_RESULT_CODE = 1, EDIT_RESULT_CODE = 2;
@@ -73,6 +74,8 @@ public class AddOccupationActivity extends AppCompatActivity {
 
 	@Bind(R.id.add_occupation_date_title_container)
 	TableRow titleContainer;
+
+	private RegisteredOccupation registeredOccupationToBeEdited;
 
 	private boolean editMode;
 
@@ -89,12 +92,11 @@ public class AddOccupationActivity extends AppCompatActivity {
 		baseDate = bd;
 
 		if (getIntent().getAction().equals(ACTION_EDIT)) {
-			if (!getIntent().hasExtra(SELECTED_OCCUPATION)
-					|| !getIntent().hasExtra(START_DATE)
-					|| !getIntent().hasExtra(END_DATE)) {
-				throw new IllegalArgumentException("When in edit mode, selected occupation, start and end date are required as extras!");
+			if (!getIntent().hasExtra(EDITING_OCCUPATION)) {
+				throw new IllegalArgumentException("When in edit mode, a RegisteredOccupation (EDITING_OCCUPATION) is required as extra!");
 			}
 			editMode = true;
+			registeredOccupationToBeEdited = (RegisteredOccupation) getIntent().getSerializableExtra(EDITING_OCCUPATION);
 		}
 		initToolbar();
 		initRecycler();
@@ -118,11 +120,11 @@ public class AddOccupationActivity extends AppCompatActivity {
 	@OnClick(R.id.add_occupation_startTime)
 	void openStartDateSelectionDialog() {
 		TimePickerDialog dialog = null;
-		if(!editMode) {
+		if (!editMode) {
 			dialog = new TimePickerDialog(this, new TimePickerDialog.OnTimeSetListener() {
 				@Override
 				public void onTimeSet(TimePicker view, int hourOfDay, int minute) {
-					startDate = DateUtil.toLocal(baseDate).withHourOfDay(hourOfDay).withMinuteOfHour(minute);
+					startDate = toLocal(baseDate).withHourOfDay(hourOfDay).withMinuteOfHour(minute);
 					updateDateButtons();
 				}
 			}, DateTime.now().getHourOfDay(), DateTime.now().getMinuteOfHour(), DateFormat.is24HourFormat(this));
@@ -130,10 +132,10 @@ public class AddOccupationActivity extends AppCompatActivity {
 			dialog = new TimePickerDialog(this, new TimePickerDialog.OnTimeSetListener() {
 				@Override
 				public void onTimeSet(TimePicker view, int hourOfDay, int minute) {
-					startDate = DateUtil.toLocal(baseDate).withHourOfDay(hourOfDay).withMinuteOfHour(minute);
+					startDate = toLocal(baseDate).withHourOfDay(hourOfDay).withMinuteOfHour(minute);
 					updateDateButtons();
 				}
-			}, startDate.getHourOfDay(), startDate.getMinuteOfHour(), DateFormat.is24HourFormat(this));
+			}, toLocal(startDate).getHourOfDay(), startDate.getMinuteOfHour(), DateFormat.is24HourFormat(this));
 		}
 		dialog.show();
 	}
@@ -146,7 +148,7 @@ public class AddOccupationActivity extends AppCompatActivity {
 			dialog = new TimePickerDialog(this, new TimePickerDialog.OnTimeSetListener() {
 				@Override
 				public void onTimeSet(TimePicker view, int hourOfDay, int minute) {
-					endDate = DateUtil.toLocal(baseDate).withHourOfDay(hourOfDay).withMinuteOfHour(minute);
+					endDate = toLocal(baseDate).withHourOfDay(hourOfDay).withMinuteOfHour(minute);
 					updateDateButtons();
 				}
 			}, DateTime.now().getHourOfDay(), DateTime.now().getMinuteOfHour(), DateFormat.is24HourFormat(this));
@@ -154,10 +156,10 @@ public class AddOccupationActivity extends AppCompatActivity {
 			dialog = new TimePickerDialog(this, new TimePickerDialog.OnTimeSetListener() {
 				@Override
 				public void onTimeSet(TimePicker view, int hourOfDay, int minute) {
-					endDate = DateUtil.toLocal(baseDate).withHourOfDay(hourOfDay).withMinuteOfHour(minute);
+					endDate = toLocal(baseDate).withHourOfDay(hourOfDay).withMinuteOfHour(minute);
 					updateDateButtons();
 				}
-			}, endDate.getHourOfDay(), endDate.getMinuteOfHour(), DateFormat.is24HourFormat(this));
+			}, toLocal(endDate).getHourOfDay(), endDate.getMinuteOfHour(), DateFormat.is24HourFormat(this));
 		}
 
 		dialog.show();
@@ -167,19 +169,19 @@ public class AddOccupationActivity extends AppCompatActivity {
 		if (!editMode) {
 			if (startDate == null) {
 				enforceUTC(baseDate);
-				startDate = DateUtil.toLocal(baseDate);
+				startDate = toLocal(baseDate);
 			}
 
 			if (endDate == null) {
 				enforceUTC(baseDate);
-				endDate = DateUtil.toLocal(baseDate);
+				endDate = toLocal(baseDate);
 			}
 		} else {
 			if (startDate == null)
-				startDate = (DateTime) getIntent().getSerializableExtra(START_DATE);
+				startDate = toLocal(registeredOccupationToBeEdited.getRegisteredStart());
 
 			if (endDate == null)
-				endDate = (DateTime) getIntent().getSerializableExtra(END_DATE);
+				endDate = toLocal(registeredOccupationToBeEdited.getRegisteredEnd());
 		}
 		System.out.println("Update buttons! START: " + startDate + " END: " + endDate);
 		startButton.setText(DateUtil.formatToHours(startDate, DateFormat.is24HourFormat(getApplicationContext())));
@@ -209,7 +211,8 @@ public class AddOccupationActivity extends AppCompatActivity {
 				if (result == Result.SUCCESS) {
 					adapter = new OccupationRecyclerAdapter(recycler);
 					recycler.setAdapter(adapter);
-					adapter.setSelectedItem((Occupation) getIntent().getSerializableExtra(SELECTED_OCCUPATION));
+					if (editMode)
+						adapter.setSelectedItem(registeredOccupationToBeEdited.getOccupation());
 					initializing = false;
 				} else {
 					Snackbar.make(findViewById(android.R.id.content), R.string.add_occupation_fetch_error, Snackbar.LENGTH_LONG).setAction("Retry", new View.OnClickListener() {
@@ -244,9 +247,16 @@ public class AddOccupationActivity extends AppCompatActivity {
 		if (item.getItemId() == R.id.add_occupation_done) {
 			if (validate()) {
 				Intent i = new Intent();
-				i.putExtra(SELECTED_OCCUPATION, adapter.getSelectedItem());
-				i.putExtra(START_DATE, toUTC(startDate));
-				i.putExtra(END_DATE, toUTC(endDate));
+				if (!editMode) {
+					i.putExtra(SELECTED_OCCUPATION, adapter.getSelectedItem());
+					i.putExtra(START_DATE, toUTC(startDate));
+					i.putExtra(END_DATE, toUTC(endDate));
+				} else {
+					registeredOccupationToBeEdited.setOccupation(adapter.getSelectedItem());
+					registeredOccupationToBeEdited.setRegisteredStart(toUTC(startDate));
+					registeredOccupationToBeEdited.setRegisteredEnd(toUTC(endDate));
+					i.putExtra(EDITING_OCCUPATION, registeredOccupationToBeEdited);
+				}
 				setResult(RESULT_OK, i);
 				finish();
 			}
@@ -275,25 +285,25 @@ public class AddOccupationActivity extends AppCompatActivity {
 	@Override
 	protected void onSaveInstanceState(Bundle outState) {
 		super.onSaveInstanceState(outState);
-		enforceUTC(startDate);
-		enforceUTC(endDate);
-		enforceUTC(baseDate);
+		startDate = DateUtil.toUTC(startDate);
+		endDate = DateUtil.toUTC(endDate);
+		baseDate = DateUtil.toUTC(baseDate);
 		outState.putSerializable(START_DATE, startDate);
 		outState.putSerializable(END_DATE, endDate);
 		outState.putSerializable(BASE_DATE, baseDate);
 		outState.putBoolean(EDIT_MODE, editMode);
-		if (adapter.getSelectedItem() != null)
+		if (adapter != null && adapter.getSelectedItem() != null)
 			outState.putSerializable(SELECTED_OCCUPATION, adapter.getSelectedItem());
 	}
 
 	@Override
 	protected void onRestoreInstanceState(Bundle savedInstanceState) {
 		super.onRestoreInstanceState(savedInstanceState);
-		startDate = (DateTime) savedInstanceState.getSerializable(START_DATE);
-		endDate = (DateTime) savedInstanceState.getSerializable(END_DATE);
-		baseDate = (DateTime) savedInstanceState.getSerializable(BASE_DATE);
+		startDate = toLocal((DateTime) savedInstanceState.getSerializable(START_DATE));
+		endDate = toLocal((DateTime) savedInstanceState.getSerializable(END_DATE));
+		baseDate = toLocal((DateTime) savedInstanceState.getSerializable(BASE_DATE));
 		editMode = savedInstanceState.getBoolean(EDIT_MODE);
-		if (savedInstanceState.getSerializable(SELECTED_OCCUPATION) != null)
+		if (savedInstanceState.getSerializable(SELECTED_OCCUPATION) != null && adapter != null)
 			adapter.setSelectedItem((Occupation) savedInstanceState.getSerializable(SELECTED_OCCUPATION));
 		updateDateButtons();
 	}

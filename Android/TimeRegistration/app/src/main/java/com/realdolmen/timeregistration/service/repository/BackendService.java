@@ -292,7 +292,11 @@ public class BackendService {
 		requestQueue.add(req);
 	}
 
-	public void registerOccupation(@NonNull RegisteredOccupation ro, @NonNull final ResultCallback<Long> callback) {
+	public void saveOccupation(@NonNull RegisteredOccupation ro, @NonNull final ResultCallback<Long> callback) {
+		saveOccupation(false, ro, callback);
+	}
+
+	public void saveOccupation(final boolean existing, @NonNull RegisteredOccupation ro, @NonNull final ResultCallback<Long> callback) {
 		if (callback == null) {
 			throw new NullPointerException("Callback cannot be null!");
 		}
@@ -302,16 +306,22 @@ public class BackendService {
 			return;
 		}
 
-		Request req = new JsonObjectRequest(Request.Method.POST, API_ADD_OCCUPATION_REGISTRATION, compactGson.toJson(ro), new Response.Listener<JSONObject>() {
+		Request req = new JsonObjectRequest(existing ? Request.Method.PUT : Request.Method.POST, API_ADD_OCCUPATION_REGISTRATION, compactGson.toJson(ro), new Response.Listener<JSONObject>() {
 			@Override
 			public void onResponse(JSONObject response) {
-				if (response.has("id"))
+				if (!existing && response.has("id"))
 					try {
 						callback.onResult(ResultCallback.Result.SUCCESS, response.getLong("id"), null);
 					} catch (JSONException e) {
 						callback.onResult(ResultCallback.Result.FAIL, null, new GenericVolleyError(e));
 					}
-				else
+				else if (existing) {
+					if(statusCode == 204) {
+						callback.onResult(ResultCallback.Result.SUCCESS, null, null);
+					} else {
+						callback.onResult(ResultCallback.Result.FAIL, null, new GenericVolleyError("Unable to update backend (status code: " + statusCode + ")"));
+					}
+				} else
 					callback.onResult(ResultCallback.Result.FAIL, null, new GenericVolleyError(new NullPointerException("Server did not return id!")));
 			}
 		}, new Response.ErrorListener() {
@@ -327,6 +337,7 @@ public class BackendService {
 
 			@Override
 			protected Response<JSONObject> parseNetworkResponse(NetworkResponse response) {
+				statusCode = response.statusCode;
 				if (response.data.length == 0) {
 					response = new NetworkResponse(response.statusCode, "{}".getBytes(), response.headers, response.notModified);
 				}

@@ -11,6 +11,11 @@ import com.realdolmen.timeregistration.service.ResultCallback;
 import com.realdolmen.timeregistration.util.DateUtil;
 import com.realdolmen.timeregistration.util.UTC;
 
+import org.jdeferred.Deferred;
+import org.jdeferred.DoneCallback;
+import org.jdeferred.FailCallback;
+import org.jdeferred.Promise;
+import org.jdeferred.impl.DeferredObject;
 import org.joda.time.DateTime;
 
 import java.util.ArrayList;
@@ -23,39 +28,39 @@ public class RegisteredOccupationRepository extends DataRepository<RegisteredOcc
 
 	private static final String LOG_TAG = RegisteredOccupationRepository.class.getSimpleName();
 
-
-	private final
 	@UTC
-	Map<DateTime, List<RegisteredOccupation>> dataByDate = new HashMap<>();
+	private final Map<DateTime, List<RegisteredOccupation>> dataByDate = new HashMap<>();
 
 	RegisteredOccupationRepository(@NonNull Context context, @Nullable final LoadCallback callback) {
-		BackendService.with(context).getRegisteredOccupationsRangeUntilNow(DateUtil.today(), 7, new ResultCallback<List<RegisteredOccupation>>() {
+		reload(context).done(new DoneCallback<RegisteredOccupationRepository>() {
 			@Override
-			public void onResult(@NonNull Result result, @Nullable List<RegisteredOccupation> data, @Nullable VolleyError error) {
-				if (result == Result.SUCCESS) {
-					RegisteredOccupationRepository.this.data.addAll(data);
-					setLoaded(true, null);
-					if (callback != null)
-						callback.onResult(LoadCallback.Result.SUCCESS, null);
-
-				} else if (callback != null) {
-					setLoaded(false, error);
-					callback.onResult(LoadCallback.Result.FAIL, error);
+			public void onDone(RegisteredOccupationRepository result) {
+				if (callback != null)
+					callback.onResult(LoadCallback.Result.SUCCESS, null);
+			}
+		}).fail(new FailCallback<VolleyError>() {
+			@Override
+			public void onFail(VolleyError result) {
+				if (callback != null) {
+					setLoaded(false, result);
+					callback.onResult(LoadCallback.Result.FAIL, result);
 				}
-
 			}
 		});
 	}
 
 	@Override
 	public void save(@NonNull Context context, @NonNull final RegisteredOccupation element, @Nullable final ResultCallback<Long> callback) {
-		data.add(element);
-		invalidateData();
-		BackendService.with(context).registerOccupation(element, new ResultCallback<Long>() {
+		BackendService.with(context).saveOccupation(data.contains(element), element, new ResultCallback<Long>() {
 			@Override
 			public void onResult(@NonNull Result result, @Nullable Long data, @Nullable VolleyError error) {
 				if (result == Result.SUCCESS) {
-					element.setId(data);
+					if(data != null) {
+						element.setId(data);
+						RegisteredOccupationRepository.this.data.add(element);
+					}
+
+					invalidateData();
 				}
 				callback.onResult(result, data, error);
 			}
@@ -109,5 +114,25 @@ public class RegisteredOccupationRepository extends DataRepository<RegisteredOcc
 				}
 			}
 		});
+	}
+
+	@Override
+	public Promise<RegisteredOccupationRepository, VolleyError, Object> reload(Context context) {
+		final Deferred<RegisteredOccupationRepository, VolleyError, Object> def = new DeferredObject<>();
+		BackendService.with(context).getRegisteredOccupationsRangeUntilNow(DateUtil.today(), 7, new ResultCallback<List<RegisteredOccupation>>() {
+			@Override
+			public void onResult(@NonNull Result result, @Nullable List<RegisteredOccupation> data, @Nullable VolleyError error) {
+				if (result == Result.SUCCESS) {
+					RegisteredOccupationRepository.this.data.clear();
+					invalidateData();
+					RegisteredOccupationRepository.this.data.addAll(data);
+					setLoaded(true, null);
+					def.resolve(RegisteredOccupationRepository.this);
+				} else {
+					def.reject(error);
+				}
+			}
+		});
+		return def.promise();
 	}
 }
