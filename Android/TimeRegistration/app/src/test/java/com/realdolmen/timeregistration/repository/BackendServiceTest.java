@@ -140,9 +140,9 @@ public class BackendServiceTest {
 	}
 
 	@Test
-	public void testRegisterOccupationWithNullInputFails() {
+	public void testWithNullInputFails() {
 		BackendService service = BackendService.with(dummyContext1);
-		service.registerOccupation(null, new ResultCallback() {
+		service.saveOccupation(null, new ResultCallback() {
 			@Override
 			public void onResult(@NonNull Result result, @Nullable Object data, @Nullable VolleyError error) {
 				assertEquals("Result should be failed!", Result.FAIL, result);
@@ -154,15 +154,15 @@ public class BackendServiceTest {
 	}
 
 	@Test(expected = NullPointerException.class)
-	public void testRegisterOccupationWithNullCallbackFails() {
+	public void testSaveOccupationWithNullCallbackFails() {
 		BackendService service = BackendService.with(dummyContext1);
-		service.registerOccupation(null, null);
+		service.saveOccupation(null, null);
 	}
 
 	@Test(expected = NullPointerException.class)
-	public void testRegisterOccupationWithNullCallbackAndNonNullInputFails() {
+	public void testSaveOccupationWithNullCallbackAndNonNullInputFails() {
 		BackendService service = BackendService.with(dummyContext1);
-		service.registerOccupation(dummyOccupation, null);
+		service.saveOccupation(dummyOccupation, null);
 	}
 
 	@Test(expected = NullPointerException.class)

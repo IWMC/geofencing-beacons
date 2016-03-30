@@ -76,4 +76,6 @@ public abstract class DataRepository<E, RM_OUT, SAVE_OUT> {
 		});
 		return def.promise();
 	}
+
+	public abstract Promise<? extends DataRepository, VolleyError, Object> reload(Context context);
 }

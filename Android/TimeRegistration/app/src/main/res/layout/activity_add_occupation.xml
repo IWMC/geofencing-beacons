@@ -38,7 +38,7 @@
             <TableRow
                 android:layout_width="match_parent"
                 android:layout_height="60dp"
-                android:padding="10dp">
+                android:padding="10dp" android:id="@+id/add_occupation_date_title_container">
 
                 <ImageView
                     android:id="@+id/_internal_add_occupation_date_icon"

@@ -5,8 +5,8 @@ import android.os.Build;
 
 import com.realdolmen.timeregistration.BuildConfig;
 import com.realdolmen.timeregistration.service.repository.BackendService;
+import com.realdolmen.timeregistration.ui.dayregistration.AddOccupationActivity;
 import com.realdolmen.timeregistration.ui.login.LoginActivity;
-import com.realdolmen.timeregistration.UITestActivity;
 
 import org.junit.Assert;
 import org.junit.Before;
@@ -27,7 +27,7 @@ public class BackendServiceTest {
     @Before
     public void setUp() throws Exception {
         dummyContext1 = Robolectric.setupActivity(LoginActivity.class);
-        dummyContext2 = Robolectric.setupActivity(UITestActivity.class);
+        dummyContext2 = Robolectric.setupActivity(AddOccupationActivity.class);
     }
 
     @Test
@@ -39,11 +39,5 @@ public class BackendServiceTest {
         Assert.assertEquals(service1, BackendService.with(dummyContext1));
         Assert.assertEquals(service2, BackendService.with(dummyContext2));
         Assert.assertEquals(service2, BackendService.with(dummyContext1));
-
-    }
-
-    @Test
-    public void testLogin() throws Exception {
-
     }
 }

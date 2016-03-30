@@ -5,10 +5,12 @@ import com.realdolmen.timeregistration.util.UTC;
 
 import org.joda.time.DateTime;
 
+import java.io.Serializable;
+
 /**
  * An entity class that represents a single time registration about an {@link Occupation} for a single Employee.
  */
-public class RegisteredOccupation {
+public class RegisteredOccupation implements Serializable {
 
 	private Occupation occupation;
 
@@ -66,4 +68,19 @@ public class RegisteredOccupation {
 		return confirmed;
 	}
 
+	@Override
+	public boolean equals(Object o) {
+		if (this == o) return true;
+		if (o == null || getClass() != o.getClass()) return false;
+
+		RegisteredOccupation that = (RegisteredOccupation) o;
+
+		return id == that.id;
+
+	}
+
+	@Override
+	public int hashCode() {
+		return (int) (id ^ (id >>> 32));
+	}
 }

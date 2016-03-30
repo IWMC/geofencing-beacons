@@ -182,7 +182,7 @@ public class OccupationEndpoint {
         if (count <= 0) {
             count = 1;
         }
-        for (int i = 0; i < count; i++) {
+        for (int i = 0; i <= count; i++) {
             occupations.addAll((List<RegisteredOccupation>) getRegisteredOccupations(time.minusDays(i).getMillis()).getEntity());
         }
         return Response.ok(occupations).build();
@@ -206,6 +206,23 @@ public class OccupationEndpoint {
         return Response.created(URI.create("/" + ro.getId())).entity(
                 Json.createObjectBuilder().add("id", ro.getId()).build()
         ).build();
+    }
+
+    @PUT
+    @Transactional
+    @Path("registration")
+    @Authorized
+    @Consumes(MediaType.APPLICATION_JSON)
+    public Response updateOccupationRegistration(RegisteredOccupation ro) {
+        ValidationResult validationResult = regOccValidator.validate(ro);
+        if (!validationResult.isValid())
+            return Response.status(400).entity(validationResult.getInvalidationTokens()).build();
+
+        Employee foundEmployee = em.find(Employee.class, ro.getRegistrar().getId());
+        ro.setRegistrar(foundEmployee);
+        em.merge(ro);
+
+        return Response.status(204).build();
     }
 
     @DELETE
