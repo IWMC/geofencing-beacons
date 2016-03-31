@@ -165,9 +165,12 @@ public class OccupationEndpoint {
     @Produces(MediaType.APPLICATION_JSON)
     @Transactional
     public Response getAvailableOccupations() {
-        TypedQuery<Occupation> query = em.createNamedQuery("Occupation.findAvailableByEmployee", Occupation.class);
+        TypedQuery<Occupation> query = em.createNamedQuery("Occupation.findOnlyOccupations", Occupation.class);
         List<Occupation> occupations = query.getResultList();
         occupations.forEach(Occupation::initialize);
+        Employee e = sm.findEmployee();
+        Employee.initialize(e);
+        occupations.addAll(e.getMemberProjects());
         return Response.ok(occupations).build();
     }
 

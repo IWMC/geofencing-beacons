@@ -40,7 +40,7 @@ import java.util.concurrent.atomic.AtomicInteger;
  */
 public class BackendService {
 
-	private static final String HOST = "http://10.16.26.142";
+	private static final String HOST = "http://10.16.25.84";
 
 	private static final String
 			API_LOGIN_URI = HOST + "/api/user/login",

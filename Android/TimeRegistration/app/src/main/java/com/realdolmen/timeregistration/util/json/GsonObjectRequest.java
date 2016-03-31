@@ -9,6 +9,7 @@ import com.android.volley.toolbox.HttpHeaderParser;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonSyntaxException;
+import com.realdolmen.timeregistration.model.Occupation;
 
 import org.joda.time.DateTime;
 
@@ -22,7 +23,12 @@ import java.util.Map;
  * @param <T> The class type of the target deserialized class.
  */
 public class GsonObjectRequest<T> extends Request<T> {
-	private final Gson gson = new GsonBuilder().registerTypeAdapter(DateTime.class, new DateDeserializer()).registerTypeAdapter(DateTime.class, new DateSerializer()).create();
+	private final Gson gson = new GsonBuilder()
+			.registerTypeAdapter(DateTime.class, new DateDeserializer())
+			.registerTypeAdapter(DateTime.class, new DateSerializer())
+			.registerTypeAdapter(Occupation.class, new OccupationDeserializer())
+			.create();
+
 	private final Class<T> clazz;
 	private final Map<String, String> headers;
 	private final Response.Listener<T> listener;

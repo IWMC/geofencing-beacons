@@ -25,6 +25,7 @@ import com.realdolmen.timeregistration.R;
 import com.realdolmen.timeregistration.model.Occupation;
 import com.realdolmen.timeregistration.model.RegisteredOccupation;
 import com.realdolmen.timeregistration.service.ResultCallback;
+import com.realdolmen.timeregistration.service.location.LocationManager;
 import com.realdolmen.timeregistration.service.repository.LoadCallback;
 import com.realdolmen.timeregistration.service.repository.RegisteredOccupationRepository;
 import com.realdolmen.timeregistration.service.repository.Repositories;
@@ -52,6 +53,8 @@ public class DayRegistrationActivity extends AppCompatActivity {
 
 	private static final String LOG_TAG = DayRegistrationActivity.class.getSimpleName();
 
+	//region UI fields
+
 	@Bind(R.id.day_registration_toolbar)
 	Toolbar bar;
 
@@ -66,6 +69,7 @@ public class DayRegistrationActivity extends AppCompatActivity {
 
 	@Bind(R.id.day_registration_fab_menu)
 	FloatingActionMenu fabMenu;
+	//endregion
 
 	private boolean doubleBack;
 
@@ -74,6 +78,8 @@ public class DayRegistrationActivity extends AppCompatActivity {
 	private List<DateTime> dates = new ArrayList<>();
 
 	public static final String SELECTED_DAY = "SELECTED_DAY";
+
+	private LocationManager locationManager;
 
 	//region Initialization methods
 
@@ -86,6 +92,18 @@ public class DayRegistrationActivity extends AppCompatActivity {
 		initViewPager();
 		refreshTabIcons();
 		selectToday();
+		initLocationServices();
+	}
+
+	private void initLocationServices() {
+		locationManager = LocationManager.get(this);
+		Repositories.loadOccupationRepository(this, new LoadCallback() {
+			@Override
+			public void onResult(Result result, Throwable error) {
+				if (result == Result.SUCCESS)
+					locationManager.addGeofences();
+			}
+		});
 	}
 
 	private void initSupportActionBar() {
@@ -229,7 +247,7 @@ public class DayRegistrationActivity extends AppCompatActivity {
 	private void selectToday() {
 		viewPager.setCurrentItem(tabLayout.getTabCount() - 1);
 	}
-	//endregion
+
 
 	@OnClick(R.id.day_registration_confirm_fab)
 	public void doConfirm() {
@@ -262,6 +280,7 @@ public class DayRegistrationActivity extends AppCompatActivity {
 		final DateTime date = dates.get(position);
 		refreshTabIcons();
 		refreshFabs(date);
+		//region loadRegisteredOccupationRepo
 		Repositories.loadRegisteredOccupationRepository(this).done(new DoneCallback<RegisteredOccupationRepository>() {
 			@Override
 			public void onDone(RegisteredOccupationRepository result) {
@@ -288,6 +307,9 @@ public class DayRegistrationActivity extends AppCompatActivity {
 				});
 			}
 		});
+		//endregion
+
+		Repositories.occupationRepository().reload(this);
 	}
 
 	@Override
@@ -405,6 +427,8 @@ public class DayRegistrationActivity extends AppCompatActivity {
 			}
 		});
 	}
+
+	//endregion
 
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {

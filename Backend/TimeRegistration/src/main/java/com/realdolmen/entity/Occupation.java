@@ -17,7 +17,7 @@ import javax.validation.constraints.Size;
 @Entity
 @Inheritance(strategy = InheritanceType.JOINED)
 @NamedQueries({
-        @NamedQuery(name = "Occupation.findAvailableByEmployee", query = "SELECT o FROM Occupation o ORDER BY o.name"),
+        @NamedQuery(name = "Occupation.findOnlyOccupations", query = "SELECT o FROM Occupation o WHERE TYPE(o) IN (Occupation) ORDER BY o.name"),
         @NamedQuery(name = "Occupation.findAll", query = "SELECT o FROM Occupation o")
 })
 @Indexed

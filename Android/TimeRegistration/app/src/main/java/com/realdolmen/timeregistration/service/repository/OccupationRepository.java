@@ -6,6 +6,7 @@ import android.support.annotation.Nullable;
 
 import com.android.volley.VolleyError;
 import com.realdolmen.timeregistration.model.Occupation;
+import com.realdolmen.timeregistration.model.Project;
 import com.realdolmen.timeregistration.service.ResultCallback;
 
 import org.jdeferred.Deferred;
@@ -14,6 +15,7 @@ import org.jdeferred.FailCallback;
 import org.jdeferred.Promise;
 import org.jdeferred.impl.DeferredObject;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class OccupationRepository extends DataRepository<Occupation, Occupation, Occupation> {
@@ -41,6 +43,16 @@ public class OccupationRepository extends DataRepository<Occupation, Occupation,
 				}
 			}
 		});
+	}
+
+	public List<Project> getAllProjects() {
+		List<Project> out = new ArrayList<>();
+		for (Occupation occupation : data) {
+			if (occupation instanceof Project) {
+				out.add((Project) occupation);
+			}
+		}
+		return out;
 	}
 
 	/**

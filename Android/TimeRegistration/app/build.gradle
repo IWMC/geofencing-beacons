@@ -37,4 +37,5 @@ dependencies {
     compile 'com.google.guava:guava:19.0'
     compile 'joda-time:joda-time:2.9.2'
     compile 'org.jdeferred:jdeferred-android-aar:1.2.4'
+    compile 'com.google.android.gms:play-services-location:8.4.0'
 }
