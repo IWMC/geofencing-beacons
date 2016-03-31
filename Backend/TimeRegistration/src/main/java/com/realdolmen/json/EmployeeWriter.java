@@ -1,20 +1,14 @@
 package com.realdolmen.json;
 
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.realdolmen.entity.Employee;
-import com.realdolmen.entity.Project;
-import org.hibernate.Hibernate;
 
-import javax.annotation.Resource;
 import javax.json.*;
-import javax.transaction.*;
 import javax.ws.rs.Produces;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.ext.MessageBodyWriter;
-import javax.ws.rs.ext.Provider;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.lang.annotation.Annotation;

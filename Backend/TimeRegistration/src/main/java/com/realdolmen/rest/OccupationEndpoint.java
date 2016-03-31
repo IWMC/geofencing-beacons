@@ -3,6 +3,7 @@ package com.realdolmen.rest;
 import com.realdolmen.annotations.Authorized;
 import com.realdolmen.annotations.UserGroup;
 import com.realdolmen.entity.*;
+import com.realdolmen.entity.validation.Existing;
 import com.realdolmen.entity.validation.New;
 import com.realdolmen.service.SecurityManager;
 import com.realdolmen.validation.DateUtil;
@@ -23,7 +24,10 @@ import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.persistence.PersistenceException;
 import javax.persistence.TypedQuery;
-import javax.transaction.*;
+import javax.transaction.RollbackException;
+import javax.transaction.SystemException;
+import javax.transaction.Transactional;
+import javax.transaction.UserTransaction;
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
@@ -31,6 +35,8 @@ import javax.ws.rs.core.UriBuilder;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Function;
+import java.util.function.Supplier;
 
 import static org.joda.time.DateTimeFieldType.*;
 
@@ -40,6 +46,8 @@ import static org.joda.time.DateTimeFieldType.*;
 @TransactionManagement(TransactionManagementType.BEAN)
 @TransactionAttribute(TransactionAttributeType.MANDATORY)
 public class OccupationEndpoint {
+
+    public static final long MINIMUM_EPOCH = DateTime.now().minusYears(1).getMillis();
 
     @PersistenceContext(unitName = PersistenceUnit.PRODUCTION)
     private EntityManager em;
@@ -55,8 +63,6 @@ public class OccupationEndpoint {
 
     @Inject
     private Validator<Occupation> occupationValidator;
-
-    public static final long MINIMUM_EPOCH = DateTime.now().minusYears(1).getMillis();
 
     @GET
     @Authorized(UserGroup.MANAGEMENT)
@@ -95,6 +101,35 @@ public class OccupationEndpoint {
             Occupation.initialize(occupation);
             return Response.ok(occupation).build();
         }
+    }
+
+    @GET
+    @Authorized
+    @Path("/available")
+    @Produces(MediaType.APPLICATION_JSON)
+    @Transactional
+    public Response getAvailableOccupations() {
+        TypedQuery<Occupation> query = em.createNamedQuery("Occupation.findAvailableByEmployee", Occupation.class);
+        List<Occupation> occupations = query.getResultList();
+        occupations.forEach(Occupation::initialize);
+        return Response.ok(occupations).build();
+    }
+
+    @GET
+    @Path("registration/range")
+    @Authorized
+    @Produces(MediaType.APPLICATION_JSON)
+    @Transactional
+    public Response getRegisteredOccupationsOfLastXDays(@QueryParam("date") @DefaultValue("-1") long date, @QueryParam("count") @DefaultValue("7") int count) {
+        List<RegisteredOccupation> occupations = new ArrayList<>();
+        DateTime time = new DateTime(date, DateTimeZone.UTC);
+        if (count <= 0) {
+            count = 1;
+        }
+        for (int i = 0; i < count; i++) {
+            occupations.addAll((List<RegisteredOccupation>) getRegisteredOccupations(time.minusDays(i).getMillis()).getEntity());
+        }
+        return Response.ok(occupations).build();
     }
 
     @GET
@@ -140,6 +175,19 @@ public class OccupationEndpoint {
         return Response.ok(occupations).build();
     }
 
+    @DELETE
+    @Path("/registration/{id:[0-9][0-9]*}")
+    @Authorized
+    @Transactional
+    public Response removeRegisteredOccupation(@PathParam("id") long id) {
+        RegisteredOccupation ro = em.createNamedQuery("RegisteredOccupation.findOccupationByIdAndUser", RegisteredOccupation.class).setParameter("regId", id).setParameter("userId", sm.findEmployee().getId()).getSingleResult();
+        if (ro != null) {
+            em.remove(ro);
+            return Response.noContent().build();
+        }
+        return Response.notModified().build();
+    }
+
     @PUT
     @Path("registration/{date}/confirm")
     @Transactional
@@ -157,35 +205,6 @@ public class OccupationEndpoint {
 
         occupations.forEach(em::merge);
         return Response.ok().build();
-    }
-
-    @GET
-    @Authorized
-    @Path("/available")
-    @Produces(MediaType.APPLICATION_JSON)
-    @Transactional
-    public Response getAvailableOccupations() {
-        TypedQuery<Occupation> query = em.createNamedQuery("Occupation.findAvailableByEmployee", Occupation.class);
-        List<Occupation> occupations = query.getResultList();
-        occupations.forEach(Occupation::initialize);
-        return Response.ok(occupations).build();
-    }
-
-    @GET
-    @Path("registration/range")
-    @Authorized
-    @Produces(MediaType.APPLICATION_JSON)
-    @Transactional
-    public Response getRegisteredOccupationsOfLastXDays(@QueryParam("date") @DefaultValue("-1") long date, @QueryParam("count") @DefaultValue("7") int count) {
-        List<RegisteredOccupation> occupations = new ArrayList<>();
-        DateTime time = new DateTime(date, DateTimeZone.UTC);
-        if (count <= 0) {
-            count = 1;
-        }
-        for (int i = 0; i < count; i++) {
-            occupations.addAll((List<RegisteredOccupation>) getRegisteredOccupations(time.minusDays(i).getMillis()).getEntity());
-        }
-        return Response.ok(occupations).build();
     }
 
     @POST
@@ -206,19 +225,6 @@ public class OccupationEndpoint {
         return Response.created(URI.create("/" + ro.getId())).entity(
                 Json.createObjectBuilder().add("id", ro.getId()).build()
         ).build();
-    }
-
-    @DELETE
-    @Path("/registration/{id:[0-9][0-9]*}")
-    @Authorized
-    @Transactional
-    public Response removeRegisteredOccupation(@PathParam("id") long id) {
-        RegisteredOccupation ro = em.createNamedQuery("RegisteredOccupation.findOccupationByIdAndUser", RegisteredOccupation.class).setParameter("regId", id).setParameter("userId", sm.findEmployee().getId()).getSingleResult();
-        if (ro != null) {
-            em.remove(ro);
-            return Response.noContent().build();
-        }
-        return Response.notModified().build();
     }
 
     @PUT
@@ -243,26 +249,13 @@ public class OccupationEndpoint {
             return Response.status(Response.Status.BAD_REQUEST).entity(result).build();
         }
 
-        try {
-            utx.begin();
-        } catch (SystemException | javax.transaction.NotSupportedException e) {
-            Logger.getLogger(OccupationEndpoint.class).error("Couldn't start user transaction", e);
-            return Response.status(Response.Status.INTERNAL_SERVER_ERROR).build();
-        }
-
-        em.persist(occupation);
-
-        try {
-            utx.commit();
-        } catch (RollbackException rex) {
-            if (rex.getCause() != null && rex.getCause() instanceof PersistenceException && rex.getCause().getCause() != null && rex.getCause().getCause() instanceof ConstraintViolationException)
-                return Response.status(Response.Status.CONFLICT).build();
-        } catch (Exception e) {
-            Logger.getLogger(OccupationEndpoint.class).error("Couldn't commit user transaction", e);
-            return Response.status(Response.Status.INTERNAL_SERVER_ERROR).build();
-        }
-
-        return Response.created(UriBuilder.fromMethod(OccupationEndpoint.class, "findById").build(occupation.getId())).build();
+        return runAsTransaction(() -> em.persist(occupation),
+                () -> Response.created(UriBuilder.fromMethod(OccupationEndpoint.class, "findById").build(occupation.getId())).build(),
+                e -> e.getCause() != null && e.getCause() instanceof PersistenceException && e.getCause().getCause() != null
+                        && e.getCause().getCause() instanceof ConstraintViolationException ?
+                        Response.status(Response.Status.CONFLICT).build() :
+                        Response.status(Response.Status.INTERNAL_SERVER_ERROR).build()
+        );
     }
 
     @POST
@@ -306,5 +299,65 @@ public class OccupationEndpoint {
         }
 
         return Response.noContent().build();
+    }
+
+    @PUT
+    @Authorized(UserGroup.MANAGEMENT)
+    @Path("/{id:[0-9][0-9]*}")
+    @Consumes(MediaType.APPLICATION_JSON)
+    public Response update(@QueryParam("id") Long id, Occupation occupation) {
+        if (id == null || id.equals(0)) {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
+
+        if (occupation == null) {
+            return Response.status(Response.Status.BAD_REQUEST).build();
+        }
+
+        if (occupation.getId() != id) {
+            return Response.status(Response.Status.CONFLICT).build();
+        }
+
+        ValidationResult validationResult = occupationValidator.validate(occupation, Existing.class);
+        if (!validationResult.isValid()) {
+            return Response.status(Response.Status.BAD_REQUEST).entity(validationResult).build();
+        }
+
+        return runAsTransaction(() -> em.merge(occupation),
+                () -> Response.noContent().build(),
+                e -> e.getCause() != null && e.getCause() instanceof PersistenceException && e.getCause().getCause() != null
+                        && e.getCause().getCause() instanceof ConstraintViolationException ?
+                        Response.status(Response.Status.CONFLICT).build() :
+                        Response.status(Response.Status.INTERNAL_SERVER_ERROR).build()
+        );
+    }
+
+    /**
+     * Run something encapsulated in a JTA {@link UserTransaction}, useful if the result of a transaction commit should
+     * be used in the business logic.
+     *
+     * @param command               the code that will run in the transaction
+     * @param successResultSupplier a {@link Supplier} returning the end result when the transaction succeeded,
+     *                              allows for lazy loading and possible handling that can only be done after a
+     * @param exceptionConsumer     an exception handler for a {@link RollbackException} during a transaction commit
+     */
+    public <E> E runAsTransaction(Runnable command, Supplier<E> successResultSupplier, Function<RollbackException, E> exceptionConsumer) {
+        try {
+            utx.begin();
+        } catch (SystemException | javax.transaction.NotSupportedException e) {
+            Logger.getLogger(OccupationEndpoint.class).error("Couldn't start user transaction", e);
+        }
+
+        command.run();
+
+        try {
+            utx.commit();
+        } catch (RollbackException rex) {
+            return exceptionConsumer.apply(rex);
+        } catch (Exception e) {
+            Logger.getLogger(OccupationEndpoint.class).error("Couldn't commit user transaction", e);
+        }
+
+        return successResultSupplier.get();
     }
 }

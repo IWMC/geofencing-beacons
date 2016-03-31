@@ -5,6 +5,7 @@ import com.realdolmen.entity.Project;
 
 import javax.enterprise.context.RequestScoped;
 import javax.inject.Named;
+import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.util.HashMap;
@@ -41,6 +42,8 @@ public class Pages {
 
     public static Page detailsOccupation() { return new Page("/occupations/occupation-details.xhtml"); }
 
+    public static Page editOccupation() { return new Page("/occupations/occupation-edit.xhtml"); }
+
     public static Page addProject() { return new Page("/occupations/project-add.xhtml"); }
 
     public static Page detailsProject() { return new Page("/occupations/project-details.xhtml"); }
@@ -55,7 +58,7 @@ public class Pages {
         }
     }
 
-    public static class Page {
+    public static class Page implements Serializable {
 
         private String baseUrl;
         private Map<String, String> params = new HashMap<>();

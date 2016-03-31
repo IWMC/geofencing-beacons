@@ -4,7 +4,7 @@ import com.realdolmen.annotations.Filtered;
 import com.realdolmen.entity.Employee;
 import com.realdolmen.entity.Project;
 import com.realdolmen.jsf.Pages;
-import com.realdolmen.jsf.occupations.OccupationDetailsController;
+import com.realdolmen.jsf.occupations.OccupationDetailController;
 import com.realdolmen.rest.OccupationEndpoint;
 import org.jboss.logging.Logger;
 import org.jetbrains.annotations.TestOnly;
@@ -59,10 +59,10 @@ public class EmployeeSelectController extends EmployeeSearchController {
                 (facesContext == null ? FacesContext.getCurrentInstance() : facesContext)
                         .getExternalContext().redirect(Pages.searchOccupation().noRedirect());
             } catch (IOException e) {
-                Logger.getLogger(OccupationDetailsController.class).error("couldn't redirect with FacesContext", e);
+                Logger.getLogger(OccupationDetailController.class).error("couldn't redirect with FacesContext", e);
             }
         } catch (IOException e) {
-            Logger.getLogger(OccupationDetailsController.class).error("couldn't redirect with FacesContext", e);
+            Logger.getLogger(OccupationDetailController.class).error("couldn't redirect with FacesContext", e);
         }
     }
 

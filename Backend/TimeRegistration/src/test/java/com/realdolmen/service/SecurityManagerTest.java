@@ -9,10 +9,8 @@ import io.jsonwebtoken.impl.crypto.MacProvider;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import org.mockito.Spy;
 
 import java.nio.charset.Charset;
-import java.security.Key;
 import java.security.MessageDigest;
 import java.util.Base64;
 import java.util.Date;

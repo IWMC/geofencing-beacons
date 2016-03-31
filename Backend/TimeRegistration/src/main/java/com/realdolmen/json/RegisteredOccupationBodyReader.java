@@ -28,9 +28,7 @@ import java.lang.annotation.Annotation;
 import java.lang.reflect.Type;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
-import java.time.temporal.TemporalAccessor;
 import java.util.Date;
-import java.util.TimeZone;
 
 @Produces(MediaType.APPLICATION_JSON)
 @Provider

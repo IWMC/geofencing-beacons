@@ -61,10 +61,10 @@ public class SubprojectSelectController extends OccupationSearchController imple
             try {
                 getFacesContext().getExternalContext().redirect(Pages.searchOccupation().noRedirect());
             } catch (IOException e) {
-                Logger.getLogger(OccupationDetailsController.class).error("couldn't redirect with FacesContext", e);
+                Logger.getLogger(OccupationDetailController.class).error("couldn't redirect with FacesContext", e);
             }
         } catch (IOException e) {
-            Logger.getLogger(OccupationDetailsController.class).error("couldn't redirect with FacesContext", e);
+            Logger.getLogger(OccupationDetailController.class).error("couldn't redirect with FacesContext", e);
         }
     }
 

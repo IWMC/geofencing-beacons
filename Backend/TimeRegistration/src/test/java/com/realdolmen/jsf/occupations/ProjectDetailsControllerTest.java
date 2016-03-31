@@ -28,7 +28,6 @@ import javax.ws.rs.core.Response;
 import java.util.Date;
 
 import static org.junit.Assert.assertEquals;
-import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.*;
 
 
@@ -64,6 +63,8 @@ public class ProjectDetailsControllerTest {
         controller.setFacesContext(facesContext);
     }
 
+    // TODO: 31/03/2016 Move tests to separate test class
+
     @Test
     public void testControllerRedirectsWhenNoOccupationId() throws Exception {
         ExternalContext externalContext = mock(ExternalContext.class);
@@ -77,9 +78,9 @@ public class ProjectDetailsControllerTest {
         ExternalContext externalContext = mock(ExternalContext.class);
         when(facesContext.getExternalContext()).thenReturn(externalContext);
         when(endpoint.findById(project.getId())).thenReturn(Response.ok(project).build());
-        controller.setOccupationId(String.valueOf(project.getId()));
+        controller.setId(String.valueOf(project.getId()));
         controller.onPreRender();
-        assertEquals("controller should set the correct active project", project, controller.getProject());
+        assertEquals("controller should set the correct active project", project, controller.getEntity());
         verify(externalContext, never()).redirect(any());
     }
 
@@ -88,7 +89,7 @@ public class ProjectDetailsControllerTest {
         ExternalContext externalContext = mock(ExternalContext.class);
         when(facesContext.getExternalContext()).thenReturn(externalContext);
         when(endpoint.findById(project.getId())).thenReturn(Response.status(Response.Status.NOT_FOUND).build());
-        controller.setOccupationId(String.valueOf(project.getId()));
+        controller.setId(String.valueOf(project.getId()));
         controller.onPreRender();
         verify(externalContext, atLeastOnce()).redirect(Pages.searchOccupation().noRedirect());
     }
@@ -98,14 +99,14 @@ public class ProjectDetailsControllerTest {
     public void testGetLocationOrDefaultReturnsFirstLocationFromProject() throws Exception {
         Location location = new Location(10, 10);
         project.getLocations().add(location);
-        controller.setProject(project);
+        controller.setEntity(project);
         assertEquals(location.toString(), controller.getLocationOrDefault());
     }
 
     @Test
     public void testGetLocationOrDefaultReturnsDefaultLocationWhenNoProjectLocations() throws Exception {
         project.getLocations().clear();
-        controller.setProject(project);
+        controller.setEntity(project);
         assertEquals(Location.REALDOLMEN_HEADQUARTERS.toString(), controller.getLocationOrDefault());
     }
 
@@ -114,7 +115,7 @@ public class ProjectDetailsControllerTest {
         Location location = new Location(10, 10);
         PointSelectEvent event = new PointSelectEvent(mock(UIComponent.class), mock(Behavior.class),
                 new LatLng(location.getLatitude(), location.getLongitude()));
-        controller.setProject(project);
+        controller.setEntity(project);
         controller.addMarker(event);
         verify(entityManager, times(1)).persist(location);
         verify(entityManager, times(1)).merge(project);
@@ -127,7 +128,7 @@ public class ProjectDetailsControllerTest {
         Location location = new Location(10, 10);
         LatLng latLng = new LatLng(location.getLatitude(), location.getLongitude());
         PointSelectEvent event = new PointSelectEvent(mock(UIComponent.class), mock(Behavior.class), latLng);
-        controller.setProject(project);
+        controller.setEntity(project);
         controller.addMarker(event);
         verify(model, times(1)).addOverlay(new Marker(latLng));
     }

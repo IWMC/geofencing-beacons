@@ -1,6 +1,5 @@
 package com.realdolmen.annotations;
 
-import javax.enterprise.util.Nonbinding;
 import javax.interceptor.InterceptorBinding;
 import java.lang.annotation.*;
 

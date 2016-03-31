@@ -8,7 +8,7 @@
       xmlns:of="http://omnifaces.org/functions" xmlns:mp="http://primefaces.org/ui/material">
 <f:view>
     <f:metadata>
-        <f:viewParam name="id" value="#{occupationDetails.occupationId}"/>
+        <f:viewParam name="id" value="#{occupationDetails.id}"/>
         <f:event type="preRenderView" listener="#{occupationDetails.onPreRender}"/>
     </f:metadata>
     <ui:composition template="../page-template.xhtml">
@@ -27,12 +27,12 @@
                 <div class="card">
                     <div class="card-content text-center">
                         <h1 class="thin">
-                            #{occupationDetails.occupation.name}<br/>
+                            #{occupationDetails.entity.name}<br/>
                         </h1>
-                        <p>#{occupationDetails.occupation.description}</p>
+                        <p>#{occupationDetails.entity.description}</p>
                     </div>
                     <div class="card-action">
-                        <h:link outcome="#{pages.editEmployee().param('id', employeeDetails.userId).jsf()}"
+                        <h:link outcome="#{pages.editOccupation().param('id', occupationDetails.id).jsf()}"
                                 styleClass="waves-effect waves-orange card-action-flat" value="#{msg['edit']}"/>
                         <a class="red-text text-lighten-1 right modal-trigger waves-effect waves-red card-action-flat"
                            href="#remove-warning"><h:outputText value="#{msg['remove']}"/></a>

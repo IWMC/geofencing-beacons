@@ -1,17 +1,13 @@
 package com.realdolmen.jsf;
 
 import com.realdolmen.entity.Employee;
-import com.realdolmen.json.JsonWebToken;
 import com.realdolmen.rest.UserEndpoint;
 
 import javax.enterprise.context.RequestScoped;
 import javax.faces.application.FacesMessage;
-import javax.faces.component.UIComponent;
 import javax.faces.context.FacesContext;
 import javax.inject.Inject;
 import javax.inject.Named;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpSession;
 import javax.ws.rs.core.Response;
 import java.io.Serializable;
 import java.security.NoSuchAlgorithmException;

@@ -22,7 +22,6 @@ import javax.faces.context.FacesContext;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriBuilder;
 
-import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.*;
 
 @RunWith(Arquillian.class)

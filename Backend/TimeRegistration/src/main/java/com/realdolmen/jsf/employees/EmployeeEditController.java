@@ -26,8 +26,8 @@ import java.security.NoSuchAlgorithmException;
 /**
  * A controller for <code>/employees/employee-edit.xhtml</code>.
  */
-@ViewScoped
 @Named("employeeEdit")
+@ViewScoped
 public class EmployeeEditController implements Serializable {
 
     private String userId;

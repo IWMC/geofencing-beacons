@@ -48,7 +48,7 @@ public class Language implements Serializable {
 
         public static final String EMPLOYEE_EDIT_PASSWORD_INVALID = "employee.edit.password.invalid";
         public static final String EMPLOYEE_EDIT_PASSWORD_SAVED = "employee.edit.password_saved";
-        public static final String OCCUPATION_ADD_NAME_TAKEN = "occupation.add.name_taken";
+        public static final String OCCUPATION_ADD_NAME_TAKEN = "occupation.name_taken";
         public static final String PROJECT_DATE_OUT_OF_BOUNDS = "project.date.bounds";
         public static final String SELECT_SUBPROJECT_ADDED = "project.select_subproject.added";
     }

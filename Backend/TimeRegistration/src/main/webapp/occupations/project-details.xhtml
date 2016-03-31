@@ -10,13 +10,13 @@
       xmlns:p="http://primefaces.org/ui">
 <f:view>
     <f:metadata>
-        <f:viewParam name="id" value="#{projectDetails.occupationId}"/>
+        <f:viewParam name="id" value="#{projectDetails.id}"/>
         <f:event type="preRenderView" listener="#{projectDetails.onPreRender}"/>
     </f:metadata>
     <ui:composition template="../page-template.xhtml">
         <ui:define name="toolbar-after-logo">
-            <h5 class="col s12 hide-on-med-and-down" id="subtitle"><h:outputText
-                    value="#{msg['project.details.title']}"/>
+            <h5 class="col s12 hide-on-med-and-down" id="subtitle">
+                <h:outputText value="#{msg['project.details.title']}"/>
             </h5>
         </ui:define>
         <ui:define name="additional-toolbar-full">
@@ -32,14 +32,14 @@
                         <div class="card-content">
                             <div>
                                 <h1 class="inline thin">
-                                    #{projectDetails.project.name}
+                                    #{projectDetails.entity.name}
                                 </h1>
                                 <h3 class="inline grey-text thin">
-                                    ##{projectDetails.project.projectNr}
+                                    ##{projectDetails.entity.projectNr}
                                 </h3>
-                                <p class="thin">#{projectDetails.project.startDate} - #{projectDetails.project.endDate}</p>
+                                <p class="thin">#{projectDetails.entity.startDate} - #{projectDetails.entity.endDate}</p>
                                 <br/>
-                                <p class="justify-text">#{projectDetails.project.description}</p>
+                                <p class="justify-text">#{projectDetails.entity.description}</p>
                             </div>
                         </div>
                         <div class="card-action">
@@ -74,10 +74,10 @@
                                     <div class="collection-header">
                                         <div class="row no-margin">
                                             <h5 class="col s8">
-                                                #{projectDetails.project.subProjects.size() > 0 ? msg['project.details.subprojects'] : msg['project.details.no_subprojects']}
+                                                #{projectDetails.entity.subProjects.size() > 0 ? msg['project.details.subprojects'] : msg['project.details.no_subprojects']}
                                             </h5>
                                             <div class="col s4">
-                                                <h:link outcome="#{pages.selectSubProject().param('id', projectDetails.occupationId).redirect()}"
+                                                <h:link outcome="#{pages.selectSubProject().param('id', projectDetails.id).redirect()}"
                                                         style="margin: 10px 0px;"
                                                         class="right btn-floating">
                                                     <i class="material-icons left">add</i>
@@ -85,7 +85,7 @@
                                             </div>
                                         </div>
                                     </div>
-                                    <ui:repeat value="#{of:setToList(projectDetails.project.subProjects)}"
+                                    <ui:repeat value="#{of:setToList(projectDetails.entity.subProjects)}"
                                                var="subproject">
                                         <h:link outcome="#{pages.detailsProject().param('id', subproject.id).jsf()}"
                                                 class="collection-item">#{subproject.name}</h:link>
@@ -99,10 +99,10 @@
                                     <div class="collection-header">
                                         <div class="row no-margin">
                                             <h5 class="col s8">
-                                                #{projectDetails.project.employees.size() > 0 ? msg['project.details.employees'] : msg['project.details.no_employees']}
+                                                #{projectDetails.entity.employees.size() > 0 ? msg['project.details.employees'] : msg['project.details.no_employees']}
                                             </h5>
                                             <div class="col s4">
-                                                <h:link outcome="#{pages.selectEmployee().param('id', projectDetails.occupationId).redirect()}"
+                                                <h:link outcome="#{pages.selectEmployee().param('id', projectDetails.id).redirect()}"
                                                         style="margin: 10px 0px;"
                                                         class="right btn-floating">
                                                     <i class="material-icons left">add</i>
@@ -110,7 +110,7 @@
                                             </div>
                                         </div>
                                     </div>
-                                    <ui:repeat value="#{of:setToList(projectDetails.project.employees)}" var="employee">
+                                    <ui:repeat value="#{of:setToList(projectDetails.entity.employees)}" var="employee">
                                         <h:link outcome="#{pages.detailsEmployee().param('id', employee.id).jsf()}"
                                                 class="collection-item">#{employee.firstName} #{employee.lastName}</h:link>
                                     </ui:repeat>

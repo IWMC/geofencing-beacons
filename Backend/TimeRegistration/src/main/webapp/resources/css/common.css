@@ -150,6 +150,24 @@ nav + .container {
     display: inline;
 }
 
+.edit-medium-with-margin {
+    font-size: 21px !important;
+    margin-bottom: 21px !important;
+}
+
+.edit-big-with-margin {
+    font-size: 45px !important;
+    margin-bottom: 45px !important;
+}
+
+.edit-medium {
+    font-size: 21px !important;
+}
+
+.edit-big {
+    font-size: 45px !important;
+}
+
 @media only screen and (max-width: 600px) {
     .s0 {
        width: 0px;
