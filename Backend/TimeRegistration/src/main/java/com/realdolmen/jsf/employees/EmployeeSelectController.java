@@ -43,7 +43,7 @@ public class EmployeeSelectController extends EmployeeSearchController {
                 Response response = occupationEndpoint.findById(id);
 
                 if (response.getEntity() != null && !(response.getEntity() instanceof Project)) {
-                    getFacesContext().getExternalContext().redirect(Pages.detailsProject().param("id", occupationId).redirect());
+                    getFacesContext().getExternalContext().redirect(Pages.detailsOccupation().param("id", occupationId).redirect());
                 }
 
                 project = response.getStatus() == 200 ? (Project) response.getEntity() : null;
@@ -90,7 +90,7 @@ public class EmployeeSelectController extends EmployeeSearchController {
         employee.getMemberProjects().add(project);
         getEntityManager().merge(project);
         getEntityManager().merge(employee);
-        return Pages.detailsProject().param("id", occupationId).redirect();
+        return Pages.editProject().param("id", occupationId).redirect();
     }
 
     public String getOccupationId() {

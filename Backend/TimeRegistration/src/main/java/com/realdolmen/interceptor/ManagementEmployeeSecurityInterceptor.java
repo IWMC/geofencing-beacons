@@ -2,7 +2,8 @@ package com.realdolmen.interceptor;
 
 import com.realdolmen.annotations.Authorized;
 import com.realdolmen.annotations.UserGroup;
-import com.realdolmen.entity.*;
+import com.realdolmen.entity.Employee;
+import com.realdolmen.entity.ManagementEmployee;
 import com.realdolmen.jsf.Session;
 import com.realdolmen.json.JsonWebToken;
 import com.realdolmen.service.SecurityManager;
@@ -14,6 +15,7 @@ import javax.interceptor.Interceptor;
 import javax.interceptor.InvocationContext;
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.core.Response;
+import java.io.Serializable;
 
 /**
  * Interceptor for checking authorization before accessing certain resources, such as JAX-RS resources.
@@ -22,16 +24,16 @@ import javax.ws.rs.core.Response;
 @Authorized(UserGroup.MANAGEMENT_EMPLOYEE_ONLY)
 @Interceptor
 @Priority(Interceptor.Priority.APPLICATION)
-public class ManagementEmployeeSecurityInterceptor {
+public class ManagementEmployeeSecurityInterceptor implements Serializable {
 
     @Inject
-    private HttpServletRequest request;
+    private transient HttpServletRequest request;
 
     @Inject
-    private Session session;
+    private transient Session session;
 
     @Inject
-    private SecurityManager securityManager;
+    private transient SecurityManager securityManager;
 
     @AroundInvoke
     public Object manageTransaction(InvocationContext ctx) throws Exception {

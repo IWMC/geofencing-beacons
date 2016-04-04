@@ -14,13 +14,8 @@ import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
-import org.primefaces.event.map.PointSelectEvent;
-import org.primefaces.model.map.LatLng;
 import org.primefaces.model.map.MapModel;
-import org.primefaces.model.map.Marker;
 
-import javax.faces.component.UIComponent;
-import javax.faces.component.behavior.Behavior;
 import javax.faces.context.ExternalContext;
 import javax.faces.context.FacesContext;
 import javax.persistence.EntityManager;
@@ -32,7 +27,7 @@ import static org.mockito.Mockito.*;
 
 
 @RunWith(Arquillian.class)
-public class ProjectDetailsControllerTest {
+public class ProjectDetailControllerTest {
 
     @Mock
     private EntityManager entityManager;
@@ -49,7 +44,7 @@ public class ProjectDetailsControllerTest {
     private OccupationEndpoint endpoint = new OccupationEndpoint();
 
     @InjectMocks
-    private ProjectDetailsController controller = new ProjectDetailsController();
+    private ProjectDetailController controller = new ProjectDetailController();
 
     @Deployment
     public static WebArchive createDeployment() {
@@ -108,28 +103,5 @@ public class ProjectDetailsControllerTest {
         project.getLocations().clear();
         controller.setEntity(project);
         assertEquals(Location.REALDOLMEN_HEADQUARTERS.toString(), controller.getLocationOrDefault());
-    }
-
-    @Test
-    public void testAddMarkerPersistsNewLocation() throws Exception {
-        Location location = new Location(10, 10);
-        PointSelectEvent event = new PointSelectEvent(mock(UIComponent.class), mock(Behavior.class),
-                new LatLng(location.getLatitude(), location.getLongitude()));
-        controller.setEntity(project);
-        controller.addMarker(event);
-        verify(entityManager, times(1)).persist(location);
-        verify(entityManager, times(1)).merge(project);
-        assertEquals("project should contain a new location", 1, project.getLocations().size());
-        assertEquals("project should contain the right location", location, project.getLocations().iterator().next());
-    }
-
-    @Test
-    public void testAddMarkerAddsMarkerToModel() throws Exception {
-        Location location = new Location(10, 10);
-        LatLng latLng = new LatLng(location.getLatitude(), location.getLongitude());
-        PointSelectEvent event = new PointSelectEvent(mock(UIComponent.class), mock(Behavior.class), latLng);
-        controller.setEntity(project);
-        controller.addMarker(event);
-        verify(model, times(1)).addOverlay(new Marker(latLng));
     }
 }

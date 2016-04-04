@@ -43,7 +43,7 @@
                             </div>
                         </div>
                         <div class="card-action">
-                            <h:link outcome="#{pages.editEmployee().param('id', employeeDetails.userId).jsf()}"
+                            <h:link outcome="#{pages.editProject().param('id', projectDetails.id).jsf()}"
                                     styleClass="waves-effect waves-orange card-action-flat" value="#{msg['edit']}"/>
                             <a class="red-text text-lighten-1 right modal-trigger waves-effect waves-red card-action-flat"
                                href="#remove-warning"><h:outputText value="#{msg['remove']}"/></a>
@@ -73,16 +73,9 @@
                                 <div class="collection with-header">
                                     <div class="collection-header">
                                         <div class="row no-margin">
-                                            <h5 class="col s8">
+                                            <h5 class="col s12">
                                                 #{projectDetails.entity.subProjects.size() > 0 ? msg['project.details.subprojects'] : msg['project.details.no_subprojects']}
                                             </h5>
-                                            <div class="col s4">
-                                                <h:link outcome="#{pages.selectSubProject().param('id', projectDetails.id).redirect()}"
-                                                        style="margin: 10px 0px;"
-                                                        class="right btn-floating">
-                                                    <i class="material-icons left">add</i>
-                                                </h:link>
-                                            </div>
                                         </div>
                                     </div>
                                     <ui:repeat value="#{of:setToList(projectDetails.entity.subProjects)}"
@@ -98,16 +91,9 @@
                                 <div class="collection with-header">
                                     <div class="collection-header">
                                         <div class="row no-margin">
-                                            <h5 class="col s8">
+                                            <h5 class="col s12">
                                                 #{projectDetails.entity.employees.size() > 0 ? msg['project.details.employees'] : msg['project.details.no_employees']}
                                             </h5>
-                                            <div class="col s4">
-                                                <h:link outcome="#{pages.selectEmployee().param('id', projectDetails.id).redirect()}"
-                                                        style="margin: 10px 0px;"
-                                                        class="right btn-floating">
-                                                    <i class="material-icons left">add</i>
-                                                </h:link>
-                                            </div>
                                         </div>
                                     </div>
                                     <ui:repeat value="#{of:setToList(projectDetails.entity.employees)}" var="employee">
@@ -121,7 +107,6 @@
                     <div class="card col s12 no-padding map">
                         <p:gmap type="HYBRID" center="#{projectDetails.locationOrDefault}"
                                 model="#{projectDetails.mapModel}" zoom="15">
-                            <p:ajax event="pointSelect" listener="#{projectDetails.addMarker}" update="@this"/>
                         </p:gmap>
                     </div>
                 </div>

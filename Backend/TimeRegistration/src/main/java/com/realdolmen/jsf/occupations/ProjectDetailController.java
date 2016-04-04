@@ -1,24 +1,27 @@
 package com.realdolmen.jsf.occupations;
 
+import com.realdolmen.annotations.Authorized;
+import com.realdolmen.annotations.UserGroup;
 import com.realdolmen.entity.Location;
 import com.realdolmen.entity.PersistenceUnit;
 import com.realdolmen.entity.Project;
 import com.realdolmen.jsf.DetailController;
 import com.realdolmen.jsf.Pages;
 import com.realdolmen.rest.OccupationEndpoint;
-import org.omnifaces.cdi.ViewScoped;
 import org.primefaces.event.map.PointSelectEvent;
 import org.primefaces.model.map.DefaultMapModel;
 import org.primefaces.model.map.LatLng;
 import org.primefaces.model.map.MapModel;
 import org.primefaces.model.map.Marker;
 
+import javax.faces.view.ViewScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.transaction.Transactional;
 import javax.ws.rs.core.Response;
+import java.io.IOException;
 import java.io.Serializable;
 
 /**
@@ -26,17 +29,17 @@ import java.io.Serializable;
  */
 @Named("projectDetails")
 @ViewScoped
-public class ProjectDetailsController extends DetailController<Project> implements Serializable {
+public class ProjectDetailController extends DetailController<Project> implements Serializable {
 
     @PersistenceContext(unitName = PersistenceUnit.PRODUCTION)
-    private EntityManager em;
+    private transient EntityManager em;
 
     @Inject
     private transient OccupationEndpoint occupationEndpoint;
 
     private transient MapModel mapModel = new DefaultMapModel();
 
-    public ProjectDetailsController() {
+    public ProjectDetailController() {
         super(Pages.searchOccupation());
     }
 
@@ -57,7 +60,12 @@ public class ProjectDetailsController extends DetailController<Project> implemen
                 getEntity().getLocations().iterator().next().toString() : Location.REALDOLMEN_HEADQUARTERS.toString();
     }
 
+    public MapModel getMapModel() {
+        return mapModel;
+    }
+
     @Transactional
+    @Authorized(UserGroup.PROJECT_MANAGER_ONLY)
     public void addMarker(PointSelectEvent psev) {
         if (psev == null || psev.getLatLng() == null) {
             return;
@@ -69,10 +77,19 @@ public class ProjectDetailsController extends DetailController<Project> implemen
         getEntity().getLocations().add(location);
         em.persist(location);
         em.merge(getEntity());
-        mapModel.addOverlay(marker);
+        getMapModel().addOverlay(marker);
     }
 
-    public MapModel getMapModel() {
-        return mapModel;
+    public void saveProject() throws IOException {
+        Response response = getOccupationEndpoint().update(getEntity().getId(), getEntity());
+        if (response.getStatus() == Response.Status.NO_CONTENT.getStatusCode()) {
+            redirect(Pages.occupationDetailsFrom(getEntity()));
+        } else {
+            getToastService().newToast(getLanguage().getString("occupation.name_taken"));
+        }
+    }
+
+    public OccupationEndpoint getOccupationEndpoint() {
+        return occupationEndpoint;
     }
 }

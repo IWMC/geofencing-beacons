@@ -35,6 +35,10 @@ public abstract class DetailController<E> extends Controller implements Serializ
 
     @Transactional
     public void onPreRender() throws IOException {
+        if (entity != null) {
+            return;
+        }
+
         if (id == null || id.equals(0)) {
             redirectToErrorPage();
             return;

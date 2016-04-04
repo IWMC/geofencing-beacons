@@ -46,7 +46,7 @@ public class SubprojectSelectController extends OccupationSearchController imple
                 Response response = getOccupationEndpoint().findById(id);
 
                 if (response.getEntity() != null && !(response.getEntity() instanceof Project)) {
-                    getFacesContext().getExternalContext().redirect(Pages.detailsProject().param("id", occupationId).redirect());
+                    getFacesContext().getExternalContext().redirect(Pages.detailsOccupation().param("id", occupationId).redirect());
                 }
 
                 project = response.getStatus() == 200 ? (Project) response.getEntity() : null;
@@ -94,7 +94,7 @@ public class SubprojectSelectController extends OccupationSearchController imple
     public String addAsSubProject(Project selectedProject) {
         project.getSubProjects().add(selectedProject);
         getEntityManager().merge(project);
-        return Pages.detailsProject().param("id", occupationId).redirect();
+        return Pages.editProject().param("id", occupationId).redirect();
     }
 
     public FacesContext getFacesContext() {

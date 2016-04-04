@@ -50,11 +50,13 @@ public class Pages {
 
     public static Page selectSubProject() { return new Page("/occupations/subproject-select.xhtml"); }
 
+    public static Page editProject() { return new Page("/occupations/project-edit.xhtml"); }
+
     public static Page occupationDetailsFrom(Occupation occupation) {
         if (occupation instanceof Project) {
-            return Pages.detailsProject();
+            return Pages.detailsProject().param("id", String.valueOf(occupation.getId()));
         } else {
-            return Pages.detailsOccupation();
+            return Pages.detailsOccupation().param("id", String.valueOf(occupation.getId()));
         }
     }
 

@@ -13,6 +13,7 @@ import javax.interceptor.Interceptor;
 import javax.interceptor.InvocationContext;
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.core.Response;
+import java.io.Serializable;
 
 /**
  * Interceptor for checking authorization before accessing certain resources, such as JAX-RS resources.
@@ -21,16 +22,16 @@ import javax.ws.rs.core.Response;
 @Authorized(UserGroup.EMPLOYEE)
 @Interceptor
 @Priority(Interceptor.Priority.APPLICATION)
-public class EmployeeSecurityInterceptor {
+public class EmployeeSecurityInterceptor implements Serializable {
 
     @Inject
-    private HttpServletRequest request;
+    private transient HttpServletRequest request;
 
     @Inject
-    private Session session;
+    private transient Session session;
 
     @Inject
-    private SecurityManager securityManager;
+    private transient SecurityManager securityManager;
 
     @AroundInvoke
     public Object manageTransaction(InvocationContext ctx) throws Exception {
