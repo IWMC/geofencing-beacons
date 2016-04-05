@@ -22,7 +22,17 @@
         <activity android:name=".ui.dayregistration.AddOccupationActivity" android:parentActivityName=".ui.dayregistration.DayRegistrationActivity">
         </activity>
 
-        <service android:name=".service.location.GeofencingService" />
+        <service android:name=".service.location.geofence.GeoService" />
+
+        <receiver android:name=".service.location.geofence.GeofencingBroadcastReceiver" android:exported="false">
+            <intent-filter>
+                <action android:name="com.aol.android.geofence.ACTION_RECEIVE_GEOFENCE" />
+            </intent-filter>
+        </receiver>
+
+        <meta-data
+            android:name="com.google.android.gms.version"
+            android:value="@integer/google_play_services_version" />
     </application>
 
 </manifest>

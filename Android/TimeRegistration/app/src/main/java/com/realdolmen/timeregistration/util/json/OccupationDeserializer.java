@@ -71,7 +71,7 @@ public class OccupationDeserializer implements JsonDeserializer<Occupation> {
 		p.setId(id);
 		Map<Location, Geofence> map = new HashMap<>();
 		for (Location location : locations) {
-			map.put(location, LocationManager.createGeofence(location));
+			map.put(location, LocationManager.createGeofence(id, location));
 		}
 		p.setGeofenceMap(map);
 

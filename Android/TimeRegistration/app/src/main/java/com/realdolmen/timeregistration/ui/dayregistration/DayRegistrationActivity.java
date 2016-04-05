@@ -1,6 +1,7 @@
 package com.realdolmen.timeregistration.ui.dayregistration;
 
 import android.content.Intent;
+import android.location.Location;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.annotation.NonNull;
@@ -21,12 +22,17 @@ import android.widget.Toast;
 import com.android.volley.VolleyError;
 import com.github.clans.fab.FloatingActionButton;
 import com.github.clans.fab.FloatingActionMenu;
+import com.google.android.gms.location.Geofence;
 import com.realdolmen.timeregistration.R;
 import com.realdolmen.timeregistration.model.Occupation;
+import com.realdolmen.timeregistration.model.Project;
 import com.realdolmen.timeregistration.model.RegisteredOccupation;
 import com.realdolmen.timeregistration.service.ResultCallback;
 import com.realdolmen.timeregistration.service.location.LocationManager;
+import com.realdolmen.timeregistration.service.location.geofence.GeoService;
+import com.realdolmen.timeregistration.service.location.geofence.GeofenceRequester;
 import com.realdolmen.timeregistration.service.repository.LoadCallback;
+import com.realdolmen.timeregistration.service.repository.OccupationRepository;
 import com.realdolmen.timeregistration.service.repository.RegisteredOccupationRepository;
 import com.realdolmen.timeregistration.service.repository.Repositories;
 import com.realdolmen.timeregistration.util.DateUtil;
@@ -79,7 +85,7 @@ public class DayRegistrationActivity extends AppCompatActivity {
 
 	public static final String SELECTED_DAY = "SELECTED_DAY";
 
-	private LocationManager locationManager;
+	private GeofenceRequester geofenceRequester;
 
 	//region Initialization methods
 
@@ -96,12 +102,16 @@ public class DayRegistrationActivity extends AppCompatActivity {
 	}
 
 	private void initLocationServices() {
-		locationManager = LocationManager.get(this);
-		Repositories.loadOccupationRepository(this, new LoadCallback() {
+		startService(new Intent(this, GeoService.class));
+		geofenceRequester = new GeofenceRequester(this);
+		Repositories.loadOccupationRepository(this).done(new DoneCallback<OccupationRepository>() {
 			@Override
-			public void onResult(Result result, Throwable error) {
-				if (result == Result.SUCCESS)
-					locationManager.addGeofences();
+			public void onDone(OccupationRepository result) {
+				List<Geofence> geofences = new ArrayList<>();
+				for (Project project : Repositories.occupationRepository().getAllProjects()) {
+					geofences.addAll(project.getGeofences());
+				}
+				geofenceRequester.addGeofences(geofences);
 			}
 		});
 	}
@@ -433,7 +443,9 @@ public class DayRegistrationActivity extends AppCompatActivity {
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
 		if (item.getItemId() == R.id.menu_refresh) {
-			refreshCurrent();
+			//refreshCurrent();
+			Location loc = LocationManager.get(this).lastKnownLocation();
+			System.out.println("Retrieving location: " + loc);
 			return true;
 		}
 		return false;

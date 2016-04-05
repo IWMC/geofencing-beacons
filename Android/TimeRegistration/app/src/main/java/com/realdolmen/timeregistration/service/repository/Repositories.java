@@ -27,12 +27,29 @@ public class Repositories {
 		}
 	}
 
+	public static Promise<OccupationRepository, Throwable, Object> loadOccupationRepository(@NonNull Context context) {
+		final Deferred<OccupationRepository, Throwable, Object> def = new DeferredObject<>();
+		loadOccupationRepository(context, new LoadCallback() {
+			@Override
+			public void onResult(Result result, Throwable error) {
+				if(result == Result.SUCCESS)
+					def.resolve(occupationRepository);
+				else
+					def.reject(error);
+			}
+		});
+		return def.promise();
+	}
+
 	public static Promise<RegisteredOccupationRepository, Object, Object> loadRegisteredOccupationRepository(@NonNull Context context) {
 		final Deferred<RegisteredOccupationRepository, Object, Object> def = new DeferredObject<>();
 		loadRegisteredOccupationRepository(context, new LoadCallback() {
 			@Override
 			public void onResult(Result result, Throwable error) {
-				def.resolve(registeredOccupationRepository);
+				if (result == Result.SUCCESS)
+					def.resolve(registeredOccupationRepository);
+				else
+					def.reject(error);
 			}
 		});
 		return def.promise();

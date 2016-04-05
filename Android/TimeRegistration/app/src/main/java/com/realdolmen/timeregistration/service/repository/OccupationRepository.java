@@ -5,6 +5,7 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
 import com.android.volley.VolleyError;
+import com.google.android.gms.location.Geofence;
 import com.realdolmen.timeregistration.model.Occupation;
 import com.realdolmen.timeregistration.model.Project;
 import com.realdolmen.timeregistration.service.ResultCallback;
@@ -108,5 +109,13 @@ public class OccupationRepository extends DataRepository<Occupation, Occupation,
 			}
 		});
 		return def.promise();
+	}
+
+	public Project getByGeofence(Geofence geofence) {
+		for (Project p : getAllProjects()) {
+			if (p.getGeofences().contains(geofence))
+				return p;
+		}
+		return null;
 	}
 }
