@@ -143,7 +143,8 @@
                                             </div>
                                         </div>
                                     </div>
-                                    <ui:repeat value="#{util.setToList(projectDetails.entity.employees)}" var="employee">
+                                    <ui:repeat value="#{util.setToList(projectDetails.entity.employees)}"
+                                               var="employee">
                                         <div class="collection-item">
                                             <h:form>
                                                 <h:link outcome="#{pages.detailsEmployee().param('id', employee.id).jsf()}">
@@ -162,15 +163,24 @@
                             </h:panelGroup>
                         </div>
                     </div>
+                </div>
+                <div class="row map-row">
+                    <h:inputText id="pac-input" styleClass="col s6 m3 s2" a:placeholder="#{msg['search']}"/>
                     <div class="card col s12 no-padding map">
-                        <p:gmap type="HYBRID" center="#{projectDetails.locationOrDefault}"
-                                model="#{projectDetails.mapModel}" zoom="15">
-                            <p:ajax event="pointSelect" listener="#{projectDetails.addMarker}" update="@this" />
-                            <p:ajax event="overlaySelect" listener="#{projectDetails.removeMarker}" update="@this" />
+                        <p:gmap type="MAP" center="#{projectDetails.locationOrDefault}"
+                                model="#{projectDetails.mapModel}" zoom="15" widgetVar="geoMap">
+                            <p:ajax event="pointSelect" listener="#{projectDetails.addMarker}" update="@this"/>
+                            <p:ajax event="overlaySelect" listener="#{projectDetails.removeMarker}" update="@this"/>
+                            <p:ajax event="geocode" listener="#{projectDetails.geocodeLookup}" update="@this"/>
                         </p:gmap>
                     </div>
                 </div>
             </div>
+            <script type="text/javascript">
+                $ = jQuery;
+                $(document).ready(function () {
+                });
+            </script>
         </ui:define>
     </ui:composition>
 </f:view>

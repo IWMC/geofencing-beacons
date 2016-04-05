@@ -15,6 +15,17 @@ $(document).ready(function () {
         datepicker.attr('placeholder', value);
         l.remove();
     });
+
+    $('#pac-input').keypress(function (event) {
+        var keycode = (event.keyCode ? event.keyCode : event.which);
+        if (keycode == '13') {
+            geocode();
+        }
+    });
+
+    function geocode() {
+        PF('geoMap').geocode(document.getElementById('pac-input').value);
+    }
 });
 
 window.validate_field = function (e) {

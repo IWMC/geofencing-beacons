@@ -2,10 +2,14 @@ package com.realdolmen.jsf.occupations;
 
 import com.realdolmen.annotations.Authorized;
 import com.realdolmen.annotations.UserGroup;
-import com.realdolmen.entity.*;
+import com.realdolmen.entity.Employee;
+import com.realdolmen.entity.Location;
+import com.realdolmen.entity.PersistenceUnit;
+import com.realdolmen.entity.Project;
 import com.realdolmen.jsf.DetailController;
 import com.realdolmen.jsf.Pages;
 import com.realdolmen.rest.OccupationEndpoint;
+import org.primefaces.event.map.GeocodeEvent;
 import org.primefaces.event.map.OverlaySelectEvent;
 import org.primefaces.event.map.PointSelectEvent;
 import org.primefaces.model.map.DefaultMapModel;
@@ -36,6 +40,8 @@ public class ProjectDetailController extends DetailController<Project> implement
     @Inject
     private transient OccupationEndpoint occupationEndpoint;
 
+    private Location searchLocation;
+
     private transient MapModel mapModel = new DefaultMapModel();
 
     public ProjectDetailController() {
@@ -56,6 +62,10 @@ public class ProjectDetailController extends DetailController<Project> implement
     }
 
     public String getLocationOrDefault() {
+        if (searchLocation != null) {
+            return searchLocation.toString();
+        }
+
         return getEntity().getLocations() != null && !getEntity().getLocations().isEmpty() ?
                 getEntity().getLocations().iterator().next().toString() : Location.REALDOLMEN_HEADQUARTERS.toString();
     }
@@ -131,6 +141,15 @@ public class ProjectDetailController extends DetailController<Project> implement
         getEntity().getEmployees().remove(employee);
         employee.getMemberProjects().remove(getEntity());
         setEntity(em.merge(getEntity()));
+    }
+
+    public void geocodeLookup(GeocodeEvent e) {
+        if (e.getResults() == null || e.getResults().isEmpty()) {
+            return;
+        }
+
+        LatLng location = e.getResults().get(0).getLatLng();
+        searchLocation = new Location(location.getLat(), location.getLng());
     }
 
     @Override
