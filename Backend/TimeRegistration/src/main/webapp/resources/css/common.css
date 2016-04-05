@@ -168,6 +168,15 @@ nav + .container {
     font-size: 45px !important;
 }
 
+.btn-small, .btn-small > i {
+    width: 26px !important;
+    height: 26px !important;
+}
+
+.btn-small > i {
+    line-height: 27px !important;
+}
+
 @media only screen and (max-width: 600px) {
     .s0 {
        width: 0px;

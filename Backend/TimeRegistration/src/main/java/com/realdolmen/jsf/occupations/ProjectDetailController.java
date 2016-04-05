@@ -2,12 +2,11 @@ package com.realdolmen.jsf.occupations;
 
 import com.realdolmen.annotations.Authorized;
 import com.realdolmen.annotations.UserGroup;
-import com.realdolmen.entity.Location;
-import com.realdolmen.entity.PersistenceUnit;
-import com.realdolmen.entity.Project;
+import com.realdolmen.entity.*;
 import com.realdolmen.jsf.DetailController;
 import com.realdolmen.jsf.Pages;
 import com.realdolmen.rest.OccupationEndpoint;
+import org.primefaces.event.map.OverlaySelectEvent;
 import org.primefaces.event.map.PointSelectEvent;
 import org.primefaces.model.map.DefaultMapModel;
 import org.primefaces.model.map.LatLng;
@@ -52,6 +51,7 @@ public class ProjectDetailController extends DetailController<Project> implement
                     .forEach(mapModel::addOverlay);
         }
 
+        Project.initialize(project);
         return project;
     }
 
@@ -76,8 +76,22 @@ public class ProjectDetailController extends DetailController<Project> implement
         Location location = new Location(latLng.getLat(), latLng.getLng());
         getEntity().getLocations().add(location);
         em.persist(location);
-        em.merge(getEntity());
+        setEntity(em.merge(getEntity()));
+        marker.setClickable(true);
         getMapModel().addOverlay(marker);
+    }
+
+    @Transactional
+    @Authorized(UserGroup.PROJECT_MANAGER_ONLY)
+    public void removeMarker(OverlaySelectEvent e) {
+        if (e.getOverlay() instanceof Marker) {
+            Marker marker = (Marker) e.getOverlay();
+            Location location = new Location(marker.getLatlng().getLat(), marker.getLatlng().getLng());
+            Project project = em.merge(getEntity());
+            project.getLocations().removeIf(l -> l.getLatitude() == location.getLatitude() && l.getLongitude() == location.getLongitude());
+            setEntity(em.merge(project));
+            getMapModel().getMarkers().remove(marker);
+        }
     }
 
     public void saveProject() throws IOException {
@@ -91,5 +105,37 @@ public class ProjectDetailController extends DetailController<Project> implement
 
     public OccupationEndpoint getOccupationEndpoint() {
         return occupationEndpoint;
+    }
+
+    /**
+     * Remove a subproject from the subproject list from the current project.
+     *
+     * @param subproject the subproject that should be removed
+     */
+    @Authorized(UserGroup.PROJECT_MANAGER_ONLY)
+    @Transactional
+    public void unlinkSubproject(Project subproject) {
+        getEntity().getSubProjects().remove(subproject);
+        setEntity(em.merge(getEntity()));
+    }
+
+    /**
+     * Remove an employee from the list of employees from the current project.
+     *
+     * @param employee the employee that should be removed
+     */
+    @Authorized(UserGroup.PROJECT_MANAGER_ONLY)
+    @Transactional
+    public void unlinkEmployee(Employee employee) {
+        employee = em.merge(employee);
+        getEntity().getEmployees().remove(employee);
+        employee.getMemberProjects().remove(getEntity());
+        setEntity(em.merge(getEntity()));
+    }
+
+    @Override
+    public void setEntity(Project entity) {
+        Project.initialize(entity);
+        super.setEntity(entity);
     }
 }

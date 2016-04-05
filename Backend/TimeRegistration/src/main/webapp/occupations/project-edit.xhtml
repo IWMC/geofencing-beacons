@@ -91,7 +91,7 @@
                     </div>
                     <div class="col l5 s12 row">
                         <div class="card s12" id="sub-project">
-                            <div>
+                            <h:panelGroup id="subprojects">
                                 <div class="collection with-header">
                                     <div class="collection-header">
                                         <div class="row no-margin">
@@ -107,20 +107,27 @@
                                             </div>
                                         </div>
                                     </div>
-                                    <ui:repeat value="#{of:setToList(projectDetails.entity.subProjects)}"
+                                    <ui:repeat value="#{util.setToList(projectDetails.entity.subProjects)}"
                                                var="subproject">
                                         <div class="collection-item">
-                                            <h:link outcome="#{pages.detailsProject().param('id', subproject.id).jsf()}">
-                                                #{subproject.name}
-                                            </h:link>
-                                            <i class="material-icons right-align">remove_circle_outline</i>
+                                            <h:form>
+                                                <h:link outcome="#{pages.detailsProject().param('id', subproject.id).jsf()}">
+                                                    #{subproject.name}
+                                                </h:link>
+                                                <h:commandLink style="top: -2px; right: 16px;"
+                                                               class="right btn-small btn-floating red"
+                                                               action="#{projectDetails.unlinkSubproject(subproject)}">
+                                                    <f:ajax render=":subprojects" execute="@form"/>
+                                                    <i class="material-icons">remove</i>
+                                                </h:commandLink>
+                                            </h:form>
                                         </div>
                                     </ui:repeat>
                                 </div>
-                            </div>
+                            </h:panelGroup>
                         </div>
                         <div class="card s12" id="project-employees">
-                            <div>
+                            <h:panelGroup id="projectEmployees">
                                 <div class="collection with-header">
                                     <div class="collection-header">
                                         <div class="row no-margin">
@@ -136,18 +143,30 @@
                                             </div>
                                         </div>
                                     </div>
-                                    <ui:repeat value="#{of:setToList(projectDetails.entity.employees)}" var="employee">
-                                        <h:link outcome="#{pages.detailsEmployee().param('id', employee.id).jsf()}"
-                                                class="collection-item">#{employee.firstName} #{employee.lastName}</h:link>
+                                    <ui:repeat value="#{util.setToList(projectDetails.entity.employees)}" var="employee">
+                                        <div class="collection-item">
+                                            <h:form>
+                                                <h:link outcome="#{pages.detailsEmployee().param('id', employee.id).jsf()}">
+                                                    #{employee.firstName} #{employee.lastName}
+                                                </h:link>
+                                                <h:commandLink style="top: -2px; right: 16px;"
+                                                               class="right btn-small btn-floating red"
+                                                               action="#{projectDetails.unlinkEmployee(employee)}">
+                                                    <f:ajax render=":projectEmployees" execute="@form"/>
+                                                    <i class="material-icons">remove</i>
+                                                </h:commandLink>
+                                            </h:form>
+                                        </div>
                                     </ui:repeat>
                                 </div>
-                            </div>
+                            </h:panelGroup>
                         </div>
                     </div>
                     <div class="card col s12 no-padding map">
                         <p:gmap type="HYBRID" center="#{projectDetails.locationOrDefault}"
                                 model="#{projectDetails.mapModel}" zoom="15">
-                            <p:ajax event="pointSelect" listener="#{projectDetails.addMarker}" update="@this"/>
+                            <p:ajax event="pointSelect" listener="#{projectDetails.addMarker}" update="@this" />
+                            <p:ajax event="overlaySelect" listener="#{projectDetails.removeMarker}" update="@this" />
                         </p:gmap>
                     </div>
                 </div>
