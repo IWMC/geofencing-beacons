@@ -51,8 +51,13 @@ public class ScrollAwareFabBehavior extends FabBehavior {
 			int distanceToScroll = fab.getHeight() + fabBottomMargin;
 			float ratio = (float) dependency.getY() / (float) toolbarHeight;
 			fab.setTranslationY(-distanceToScroll * ratio);
+			return true;
+		} else if (dependency instanceof Snackbar.SnackbarLayout) {
+			float translationY = Math.min(0, dependency.getTranslationY() - dependency.getHeight());
+			fab.setTranslationY(translationY);
+			return true;
 		}
-		return true;
+		return false;
 	}
 
 }

@@ -9,6 +9,9 @@ import com.realdolmen.timeregistration.ui.dayregistration.DayRegistrationActivit
 import com.realdolmen.timeregistration.ui.dayregistration.DayRegistrationFragment;
 import com.realdolmen.timeregistration.util.DateUtil;
 
+import org.jdeferred.DoneCallback;
+import org.joda.time.DateTime;
+
 /**
  * Fragment adapter for the {@link android.support.v4.view.ViewPager} of {@link DayRegistrationActivity}.
  */
@@ -23,9 +26,16 @@ public class DayRegistrationFragmentPagerAdapter extends FragmentPagerAdapter {
 
 	@Override
 	public Fragment getItem(int position) {
-		DayRegistrationFragment fragment = new DayRegistrationFragment();
+		final DayRegistrationFragment fragment = new DayRegistrationFragment();
 		Bundle args = new Bundle();
-		args.putSerializable(DayRegistrationFragment.DATE_PARAM, activity.getDates().get(position));
+		DateTime date = activity.getDates().get(position);
+		args.putSerializable(DayRegistrationFragment.DATE_PARAM, date);
+		activity.isDateConfirmed(date).done(new DoneCallback<Boolean>() {
+			@Override
+			public void onDone(Boolean result) {
+				fragment.setDeletable(!result);
+			}
+		});
 		fragment.setArguments(args);
 		return fragment;
 	}

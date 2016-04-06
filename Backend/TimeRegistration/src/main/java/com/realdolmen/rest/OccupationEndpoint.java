@@ -227,6 +227,24 @@ public class OccupationEndpoint {
         ).build();
     }
 
+
+    @PUT
+    @Transactional
+    @Path("registration")
+    @Authorized
+    @Consumes(MediaType.APPLICATION_JSON)
+    public Response updateOccupationRegistration(RegisteredOccupation ro) {
+        ValidationResult validationResult = regOccValidator.validate(ro);
+        if (!validationResult.isValid())
+            return Response.status(400).entity(validationResult.getInvalidationTokens()).build();
+
+        Employee foundEmployee = em.find(Employee.class, ro.getRegistrar().getId());
+        ro.setRegistrar(foundEmployee);
+        em.merge(ro);
+
+        return Response.status(204).build();
+    }
+
     @PUT
     @Path("/project")
     @Authorized(UserGroup.MANAGEMENT_EMPLOYEE_ONLY)

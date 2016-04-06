@@ -23,6 +23,8 @@ import com.realdolmen.timeregistration.model.RegisteredOccupation;
 import com.realdolmen.timeregistration.service.ResultCallback;
 import com.realdolmen.timeregistration.service.repository.RegisteredOccupationRepository;
 import com.realdolmen.timeregistration.service.repository.Repositories;
+import com.realdolmen.timeregistration.util.DateUtil;
+import com.realdolmen.timeregistration.util.RegisteredOccupationCardClickListener;
 import com.realdolmen.timeregistration.util.adapters.dayregistration.AdapterState;
 import com.realdolmen.timeregistration.util.adapters.dayregistration.RegisteredOccupationRecyclerAdapter;
 import com.realdolmen.timeregistration.util.adapters.dayregistration.RegisteredOccupationViewHolder;
@@ -58,6 +60,8 @@ public class DayRegistrationFragment extends Fragment {
 	private DateTime selectedDate;
 
 	private RegisteredOccupationRecyclerAdapter adapter;
+
+	private boolean deletable = false;
 
 	public AdapterState getState() {
 		return state;
@@ -95,13 +99,20 @@ public class DayRegistrationFragment extends Fragment {
 			throw new IllegalStateException("DayRegistrationFragment requires a date argument.");
 		}
 		state = new AdapterState.NewlyEmptyState();
+		DateUtil.enforceUTC(selectedDate);
 		parent.setCurrentDate(selectedDate);
-		adapter = new RegisteredOccupationRecyclerAdapter(selectedDate);
+		adapter = new RegisteredOccupationRecyclerAdapter(selectedDate, new RegisteredOccupationCardClickListener() {
+			@Override
+			public void onClick(RegisteredOccupation ro) {
+				onEditClick(ro);
+			}
+		});
 		recyclerView.setAdapter(adapter);
 		state.doNotify(this, adapter);
 		Log.i(TAG, "(onViewCreated) Adding new adapter and state is " + state.getClass().getSimpleName());
 		refreshData();
 		recyclerView.setLayoutManager(new LinearLayoutManager(getContext(), LinearLayoutManager.VERTICAL, false));
+
 		ItemTouchHelper.SimpleCallback simpleItemTouchCallback = new ItemTouchHelper.SimpleCallback(0, ItemTouchHelper.RIGHT) {
 			@Override
 			public boolean onMove(RecyclerView recyclerView, RecyclerView.ViewHolder viewHolder, RecyclerView.ViewHolder target) {
@@ -130,7 +141,7 @@ public class DayRegistrationFragment extends Fragment {
 										repo.remove(getContext(), vh.getData()).done(new DoneCallback<Integer>() {
 											@Override
 											public void onDone(Integer result) {
-												if (result == 200) {
+												if (result == 204) {
 													recyclerView.getAdapter().notifyItemRemoved(viewHolder.getAdapterPosition());
 													checkState();
 												}
@@ -154,23 +165,44 @@ public class DayRegistrationFragment extends Fragment {
 					}
 				}).show();
 			}
-		};
 
+			@Override
+			public boolean isItemViewSwipeEnabled() {
+				return deletable;
+			}
+		};
 		ItemTouchHelper itemTouchHelper = new ItemTouchHelper(simpleItemTouchCallback);
 		itemTouchHelper.attachToRecyclerView(recyclerView);
+	}
+
+	public void setDeletable(boolean flag) {
+		deletable = flag;
 	}
 
 	public void refreshData() {
 		parent.getDataForDate(selectedDate, new ResultCallback<List<RegisteredOccupation>>() {
 			@Override
 			public void onResult(@NonNull Result result, @Nullable List<RegisteredOccupation> data, @Nullable VolleyError error) {
-				System.out.println(data.size());
 				if (result == Result.SUCCESS) {
-					recyclerView.setAdapter(new RegisteredOccupationRecyclerAdapter(selectedDate));
+					RegisteredOccupationRecyclerAdapter rora = new RegisteredOccupationRecyclerAdapter(selectedDate, new RegisteredOccupationCardClickListener() {
+						@Override
+						public void onClick(RegisteredOccupation ro) {
+							onEditClick(ro);
+						}
+					});
+
+					recyclerView.setAdapter(rora);
+					rora.refreshViews();
+				} else {
+					Log.e(TAG, "Unable to get data for date: ", error);
 				}
 				checkState();
 			}
 		});
+	}
+
+	private void onEditClick(RegisteredOccupation ro) {
+		parent.openEditOccupation(ro);
 	}
 
 	@Override

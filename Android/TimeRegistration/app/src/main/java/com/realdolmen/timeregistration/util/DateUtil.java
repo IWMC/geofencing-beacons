@@ -109,11 +109,16 @@ public class DateUtil {
 	}
 
 	public static DateTime toLocal(@UTC DateTime date) {
-		enforceUTC(date);
+		if(date.getZone() == DateTimeZone.getDefault()) {
+			return date;
+		}
 		return date.toDateTime(DateTimeZone.getDefault());
 	}
 
 	public static DateTime toUTC(DateTime date) {
+		if(date.getZone() == DateTimeZone.UTC) {
+			return date;
+		}
 		return date.toDateTime(DateTimeZone.UTC);
 	}
 
