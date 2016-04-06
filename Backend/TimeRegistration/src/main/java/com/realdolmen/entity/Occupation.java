@@ -18,7 +18,8 @@ import java.io.Serializable;
 @Inheritance(strategy = InheritanceType.JOINED)
 @NamedQueries({
         @NamedQuery(name = "Occupation.findAvailableByEmployee", query = "SELECT o FROM Occupation o ORDER BY o.name"),
-        @NamedQuery(name = "Occupation.findAll", query = "SELECT o FROM Occupation o")
+        @NamedQuery(name = "Occupation.findAll", query = "SELECT o FROM Occupation o"),
+        @NamedQuery(name = "Occupation.removeById", query = "DELETE FROM Occupation o WHERE o.id = :id")
 })
 @Indexed
 public class Occupation implements Serializable {

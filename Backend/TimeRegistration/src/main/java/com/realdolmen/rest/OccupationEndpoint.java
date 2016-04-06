@@ -188,6 +188,28 @@ public class OccupationEndpoint {
         return Response.notModified().build();
     }
 
+    @DELETE
+    @Path("{id:[0-9]+}")
+    @Authorized(UserGroup.MANAGEMENT_EMPLOYEE_ONLY)
+    @Transactional
+    public Response removeOccupation(@PathParam("id") Long id) {
+        if (id == null || id.equals(0L)) {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
+
+        Occupation occupation = em.find(Occupation.class, id);
+        if (occupation == null) {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
+
+        if (occupation instanceof Project) {
+            ((Project) occupation).getEmployees().forEach(e -> e.getMemberProjects().remove(occupation));
+        }
+
+        em.remove(occupation);
+        return Response.noContent().build();
+    }
+
     @PUT
     @Path("registration/{date}/confirm")
     @Transactional

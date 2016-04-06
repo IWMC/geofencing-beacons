@@ -4,11 +4,12 @@ import com.realdolmen.entity.Occupation;
 import com.realdolmen.jsf.DetailController;
 import com.realdolmen.jsf.Pages;
 import com.realdolmen.rest.OccupationEndpoint;
-import org.omnifaces.cdi.ViewScoped;
 
+import javax.faces.view.ViewScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.ws.rs.core.Response;
+import java.io.IOException;
 
 /**
  * A controller for <code>/occupations/occupation-details.xhtml</code>.
@@ -32,5 +33,10 @@ public class OccupationDetailController extends DetailController<Occupation> {
 
     public OccupationEndpoint getOccupationEndpoint() {
         return occupationEndpoint;
+    }
+
+    public void removeOccupation() throws IOException {
+        getOccupationEndpoint().removeOccupation(getEntity().getId());
+        redirect(Pages.searchOccupation());
     }
 }

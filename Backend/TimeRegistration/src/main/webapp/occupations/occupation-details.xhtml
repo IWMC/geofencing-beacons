@@ -38,8 +38,8 @@
                            href="#remove-warning"><h:outputText value="#{msg['remove']}"/></a>
                         <div id="remove-warning" class="modal">
                             <div class="modal-content">
-                                <h4><h:outputText value="#{msg['employee.remove_warning_title']}"/></h4>
-                                <p><h:outputText value="#{msg['employee.remove_warning_description']}"/></p>
+                                <h4><h:outputText value="#{msg['occupation.remove_warning.title']}"/></h4>
+                                <p><h:outputText value="#{msg['occupation.remove_warning.description']}"/></p>
                             </div>
                             <div class="modal-footer">
                                 <h:form>
@@ -50,7 +50,7 @@
                                     <h:commandLink
                                             styleClass="red-text modal-action modal-close waves-effect waves-red btn-flat"
                                             value="#{msg['yes']}"
-                                            action="#{employeeDetails.removeUser()}"/>
+                                            action="#{occupationDetails.removeOccupation}"/>
                                 </h:form>
                             </div>
                         </div>

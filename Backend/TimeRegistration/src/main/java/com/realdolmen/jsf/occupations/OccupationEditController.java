@@ -1,8 +1,8 @@
 package com.realdolmen.jsf.occupations;
 
 import com.realdolmen.jsf.Pages;
-import org.omnifaces.cdi.ViewScoped;
 
+import javax.faces.view.ViewScoped;
 import javax.inject.Named;
 import javax.ws.rs.core.Response;
 import java.io.IOException;

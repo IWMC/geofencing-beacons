@@ -159,6 +159,11 @@ public class ProjectDetailController extends DetailController<Project> implement
         searchLocation = new Location(location.getLat(), location.getLng());
     }
 
+    public void removeProject() throws IOException {
+        getOccupationEndpoint().removeOccupation(getEntity().getId());
+        redirect(Pages.searchOccupation());
+    }
+
     @Override
     public void setEntity(Project entity) {
         if (entity != null) {
