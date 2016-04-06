@@ -115,7 +115,7 @@ public class EmployeeAddControllerTest {
         controller.setEmployee(validEmployee);
         controller.saveUser();
 
-        verify(externalContext, atLeastOnce()).redirect(Pages.searchEmployee().redirect());
+        verify(externalContext, atLeastOnce()).redirect(Pages.searchEmployee().asRedirect());
     }
 
     @Test

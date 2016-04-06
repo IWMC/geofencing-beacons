@@ -65,7 +65,7 @@ public class EmployeeSelectControllerTest {
         ExternalContext externalContext = mock(ExternalContext.class);
         when(facesContext.getExternalContext()).thenReturn(externalContext);
         controller.onOccupationId();
-        verify(externalContext, atLeastOnce()).redirect(Pages.searchOccupation().noRedirect());
+        verify(externalContext, atLeastOnce()).redirect(Pages.searchOccupation().asLocationRedirect());
     }
 
     @Test
@@ -86,7 +86,7 @@ public class EmployeeSelectControllerTest {
         when(occupationEndpoint.findById(project.getId())).thenReturn(Response.status(Response.Status.NOT_FOUND).build());
         controller.setOccupationId(String.valueOf(project.getId()));
         controller.onOccupationId();
-        verify(externalContext, atLeastOnce()).redirect(Pages.searchOccupation().noRedirect());
+        verify(externalContext, atLeastOnce()).redirect(Pages.searchOccupation().asLocationRedirect());
     }
 
     @Test
@@ -135,13 +135,13 @@ public class EmployeeSelectControllerTest {
     }
 
     @Test
-    public void testAddEmployeeToProjectRedirectsToProjectDetails() throws Exception {
+    public void testAddEmployeeToProjectRedirectsToProjectEdit() throws Exception {
         Employee employee = new Employee();
         employee.setId(10l);
         controller.setProject(project);
         controller.setOccupationId(String.valueOf(project.getId()));
         String response = controller.addEmployeeToProject(employee);
         assertEquals("response should be the correct redirection string",
-                Pages.detailsProject().param("id", String.valueOf(project.getId())).redirect(), response);
+                Pages.editProject().param("id", String.valueOf(project.getId())).asRedirect(), response);
     }
 }

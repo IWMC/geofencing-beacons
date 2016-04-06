@@ -43,7 +43,7 @@ public class LoginController implements Serializable {
         } finally {
             if (response != null && response.getStatus() == 200) {
                 session.setEmployee((Employee) response.getEntity());
-                return Pages.index().redirect();
+                return Pages.index().asRedirect();
             } else {
                 String messageText = "Verkeerde gebruikersnaam of wachtwoord";
                 FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_ERROR, messageText, messageText);

@@ -75,7 +75,7 @@ public class ProjectAddControllerTest {
         when(endpoint.addProject(any())).thenReturn(Response.created(
                 UriBuilder.fromMethod(OccupationEndpoint.class, "findById").build(project.getId())).build());
         controller.saveProject();
-        verify(externalContext, atLeastOnce()).redirect(Pages.searchOccupation().redirect());
+        verify(externalContext, atLeastOnce()).redirect(Pages.searchOccupation().asRedirect());
     }
 
     @Test

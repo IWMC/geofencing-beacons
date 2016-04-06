@@ -84,7 +84,7 @@ public class EmployeeDetailsControllerTest {
         when(facesContext.getExternalContext()).thenReturn(externalContext);
         utx.begin();
         controller.onPreRender();
-        verify(externalContext, atLeastOnce()).redirect(Pages.searchEmployee().noRedirect());
+        verify(externalContext, atLeastOnce()).redirect(Pages.searchEmployee().asLocationRedirect());
         utx.commit();
     }
 
@@ -103,7 +103,7 @@ public class EmployeeDetailsControllerTest {
         notInjectedController.setUserId(employee.getId().toString());
         String result = notInjectedController.removeUser();
         verify(endpoint, times(1)).deleteById(employee.getId());
-        Assert.assertEquals("controller should redirect to search employees page", Pages.searchEmployee().redirect(), result);
+        Assert.assertEquals("controller should redirect to search employees page", Pages.searchEmployee().asRedirect(), result);
     }
 
     @Test
@@ -111,6 +111,6 @@ public class EmployeeDetailsControllerTest {
         notInjectedController.setUserId(null);
         String result = notInjectedController.removeUser();
         verify(endpoint, never()).deleteById(anyLong());
-        Assert.assertEquals("controller should redirect to search employees page", Pages.searchEmployee().redirect(), result);
+        Assert.assertEquals("controller should redirect to search employees page", Pages.searchEmployee().asRedirect(), result);
     }
 }

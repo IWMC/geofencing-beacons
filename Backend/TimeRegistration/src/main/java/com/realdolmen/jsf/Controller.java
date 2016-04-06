@@ -6,6 +6,7 @@ import org.primefaces.material.application.ToastService;
 
 import javax.faces.context.FacesContext;
 import javax.inject.Inject;
+import java.io.IOException;
 import java.io.Serializable;
 
 /**
@@ -22,7 +23,7 @@ public class Controller implements Serializable {
     private transient Language language;
 
     public FacesContext getFacesContext() {
-        if (facesContext == null) {
+        if (facesContext == null || facesContext.isReleased()) {
             facesContext = FacesContext.getCurrentInstance();
         }
 
@@ -49,5 +50,13 @@ public class Controller implements Serializable {
 
     public Language getLanguage() {
         return language;
+    }
+
+    public void setLanguage(Language language) {
+        this.language = language;
+    }
+
+    public void redirect(Pages.Page page) throws IOException {
+        getFacesContext().getExternalContext().redirect(page.asLocationRedirect());
     }
 }

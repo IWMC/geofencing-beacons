@@ -75,9 +75,9 @@ public class EmployeeEditController implements Serializable {
                 }
             }
 
-            getFacesContext().getExternalContext().redirect(Pages.searchEmployee().noRedirect());
+            getFacesContext().getExternalContext().redirect(Pages.searchEmployee().asLocationRedirect());
         } catch (NumberFormatException nfex) {
-            getFacesContext().getExternalContext().redirect(Pages.searchEmployee().noRedirect());
+            getFacesContext().getExternalContext().redirect(Pages.searchEmployee().asLocationRedirect());
         }
     }
 
@@ -119,7 +119,7 @@ public class EmployeeEditController implements Serializable {
             }
         }
 
-        return Pages.searchEmployee().redirect();
+        return Pages.searchEmployee().asRedirect();
     }
 
     public void saveUser() throws Exception {
@@ -133,7 +133,7 @@ public class EmployeeEditController implements Serializable {
         }
 
         if (response.getStatus() == Response.Status.NO_CONTENT.getStatusCode()) {
-            getFacesContext().getExternalContext().redirect(Pages.searchEmployee().redirect());
+            getFacesContext().getExternalContext().redirect(Pages.searchEmployee().asRedirect());
         }
     }
 

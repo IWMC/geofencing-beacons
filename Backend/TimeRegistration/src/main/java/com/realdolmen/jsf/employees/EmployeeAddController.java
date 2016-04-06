@@ -83,7 +83,7 @@ public class EmployeeAddController implements Serializable {
         }
 
         if (response.getStatus() == Response.Status.CREATED.getStatusCode()) {
-            getFacesContext().getExternalContext().redirect(Pages.searchEmployee().redirect());
+            getFacesContext().getExternalContext().redirect(Pages.searchEmployee().asRedirect());
         }
     }
 

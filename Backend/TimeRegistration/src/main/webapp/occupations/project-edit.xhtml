@@ -1,0 +1,187 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+        "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:of="http://omnifaces.org/functions" xmlns:mp="http://primefaces.org/ui/material"
+      xmlns:c="http://java.sun.com/jsp/jstl/core"
+      xmlns:p="http://primefaces.org/ui" xmlns:a="http://xmlns.jcp.org/jsf/passthrough"
+      xmlns:o="http://omnifaces.org/ui">
+<f:view>
+    <f:metadata>
+        <f:viewParam name="id" value="#{projectDetails.id}"/>
+        <f:event type="preRenderView" listener="#{projectDetails.onPreRender}"/>
+    </f:metadata>
+    <ui:composition template="../page-template.xhtml">
+        <ui:define name="toolbar-after-logo">
+            <h5 class="col s12 hide-on-med-and-down" id="subtitle">
+                <h:outputText value="#{msg['project.edit.title']}"/>
+            </h5>
+        </ui:define>
+        <ui:define name="additional-toolbar-full">
+            <div class="row">
+                <h5 class="col s12 hide-on-large-only"><h:outputText value="#{msg['project.edit.title']}"/></h5>
+            </div>
+        </ui:define>
+        <ui:define name="body">
+            <script src="http://maps.google.com/maps/api/js?sensor=true|false" type="text/javascript"></script>
+            <div class="container large-container">
+                <div class="row">
+                    <div class="card col l7 s12">
+                        <o:form id="main-content-form">
+                            <div class="card-content">
+                                <div class="row">
+                                    <div class="input-field col s9 inline">
+                                        <h:inputText id="name" styleClass="thin edit-big"
+                                                     value="#{projectDetails.entity.name}"/>
+                                        <h:outputLabel for="name" value="${msg['occupation.name']}"/>
+                                    </div>
+                                    <div class="col s3 input-field">
+                                        <h:inputText id="projectNr" styleClass="inline thin edit-big"
+                                                     value="#{projectDetails.entity.projectNr}"/>
+                                        <label for="projectNr">#{msg['occupation.projectNr.shortened']}</label>
+                                    </div>
+                                    <div class="input-field col s12 m6">
+                                        <label class="label-datepicker">#{msg['project.start_date']}</label>
+                                        <p:calendar id="startDate" pattern="dd/MM/yyyy"
+                                                    value="#{projectDetails.entity.startDate}"
+                                                    placeholder="#{msg['project.start_date']}"/>
+                                    </div>
+                                    <div class="input-field col s12 m6">
+                                        <p:calendar id="endDate" pattern="dd/MM/yyyy"
+                                                    value="#{projectDetails.entity.endDate}"
+                                                    placeholder="#{msg['project.end_date']}"/>
+                                    </div>
+                                    <br/>
+                                    <div class="input-field col s12">
+                                        <h:inputTextarea id="description" styleClass="materialize-textarea"
+                                                         value="#{projectDetails.entity.description}"/>
+                                        <label for="description">#{msg['occupation.description']}</label>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="card-action">
+                                <h:commandLink action="#{projectDetails.saveProject}"
+                                               styleClass="waves-effect waves-orange card-action-flat"
+                                               value="#{msg['save']}">
+                                    <f:ajax execute="@form"/>
+                                </h:commandLink>
+                                <a class="red-text text-lighten-1 right modal-trigger waves-effect waves-red card-action-flat"
+                                   href="#remove-warning"><h:outputText value="#{msg['remove']}"/></a>
+                                <div id="remove-warning" class="modal">
+                                    <div class="modal-content">
+                                        <h4><h:outputText value="#{msg['employee.remove_warning_title']}"/></h4>
+                                        <p><h:outputText value="#{msg['employee.remove_warning_description']}"/></p>
+                                    </div>
+                                    <div class="modal-footer">
+                                        <a href="#"
+                                           class="green-text modal-action modal-close waves-effect waves-green btn-flat">
+                                            <h:outputText value="#{msg['no']}"/>
+                                        </a>
+                                        <h:commandLink
+                                                styleClass="red-text modal-action modal-close waves-effect waves-red btn-flat"
+                                                value="#{msg['yes']}"
+                                                action="#{employeeDetails.removeUser()}"/>
+                                    </div>
+                                </div>
+                            </div>
+                        </o:form>
+                    </div>
+                    <div class="col l5 s12 row">
+                        <div class="card s12" id="sub-project">
+                            <h:panelGroup id="subprojects">
+                                <div class="collection with-header">
+                                    <div class="collection-header">
+                                        <div class="row no-margin">
+                                            <h5 class="col s8">
+                                                #{projectDetails.entity.subProjects.size() > 0 ? msg['project.details.subprojects'] : msg['project.details.no_subprojects']}
+                                            </h5>
+                                            <div class="col s4">
+                                                <h:link outcome="#{pages.selectSubProject().param('id', projectDetails.id).asRedirect()}"
+                                                        style="margin: 10px 0px;"
+                                                        class="right btn-floating">
+                                                    <i class="material-icons left">add</i>
+                                                </h:link>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <ui:repeat value="#{util.setToList(projectDetails.entity.subProjects)}"
+                                               var="subproject">
+                                        <div class="collection-item">
+                                            <h:form>
+                                                <h:link outcome="#{pages.detailsProject().param('id', subproject.id).asLinkOutcome()}">
+                                                    #{subproject.name}
+                                                </h:link>
+                                                <h:commandLink style="top: -2px; right: 16px;"
+                                                               class="right btn-small btn-floating red"
+                                                               action="#{projectDetails.unlinkSubproject(subproject)}">
+                                                    <f:ajax render=":subprojects" execute="@form"/>
+                                                    <i class="material-icons">remove</i>
+                                                </h:commandLink>
+                                            </h:form>
+                                        </div>
+                                    </ui:repeat>
+                                </div>
+                            </h:panelGroup>
+                        </div>
+                        <div class="card s12" id="project-employees">
+                            <h:panelGroup id="projectEmployees">
+                                <div class="collection with-header">
+                                    <div class="collection-header">
+                                        <div class="row no-margin">
+                                            <h5 class="col s8">
+                                                #{projectDetails.entity.employees.size() > 0 ? msg['project.details.employees'] : msg['project.details.no_employees']}
+                                            </h5>
+                                            <div class="col s4">
+                                                <h:link outcome="#{pages.selectEmployee().param('id', projectDetails.id).asRedirect()}"
+                                                        style="margin: 10px 0px;"
+                                                        class="right btn-floating">
+                                                    <i class="material-icons left">add</i>
+                                                </h:link>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <ui:repeat value="#{util.setToList(projectDetails.entity.employees)}"
+                                               var="employee">
+                                        <div class="collection-item">
+                                            <h:form>
+                                                <h:link outcome="#{pages.detailsEmployee().param('id', employee.id).asLinkOutcome()}">
+                                                    #{employee.firstName} #{employee.lastName}
+                                                </h:link>
+                                                <h:commandLink style="top: -2px; right: 16px;"
+                                                               class="right btn-small btn-floating red"
+                                                               action="#{projectDetails.unlinkEmployee(employee)}">
+                                                    <f:ajax render=":projectEmployees" execute="@form"/>
+                                                    <i class="material-icons">remove</i>
+                                                </h:commandLink>
+                                            </h:form>
+                                        </div>
+                                    </ui:repeat>
+                                </div>
+                            </h:panelGroup>
+                        </div>
+                    </div>
+                </div>
+                <div class="row map-row">
+                    <h:inputText id="pac-input" styleClass="col s6 m3 s2" a:placeholder="#{msg['search']}"/>
+                    <div class="card col s12 no-padding map">
+                        <p:gmap type="MAP" center="#{projectDetails.locationOrDefault}"
+                                model="#{projectDetails.mapModel}" zoom="15" widgetVar="geoMap">
+                            <p:ajax event="pointSelect" listener="#{projectDetails.addMarker}" update="@this"/>
+                            <p:ajax event="overlaySelect" listener="#{projectDetails.removeMarker}" update="@this"/>
+                            <p:ajax event="geocode" listener="#{projectDetails.geocodeLookup}" update="@this"/>
+                        </p:gmap>
+                    </div>
+                </div>
+            </div>
+            <script type="text/javascript">
+                $ = jQuery;
+                $(document).ready(function () {
+                });
+            </script>
+        </ui:define>
+    </ui:composition>
+</f:view>
+</html>

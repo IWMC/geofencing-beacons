@@ -61,7 +61,7 @@ public class SubprojectSelectControllerTest {
         ExternalContext externalContext = mock(ExternalContext.class);
         when(facesContext.getExternalContext()).thenReturn(externalContext);
         controller.onPreRender();
-        verify(externalContext, atLeastOnce()).redirect(Pages.searchOccupation().noRedirect());
+        verify(externalContext, atLeastOnce()).redirect(Pages.searchOccupation().asLocationRedirect());
     }
 
     @Test
@@ -82,7 +82,7 @@ public class SubprojectSelectControllerTest {
         when(occupationEndpoint.findById(project.getId())).thenReturn(Response.status(Response.Status.NOT_FOUND).build());
         controller.setOccupationId(String.valueOf(project.getId()));
         controller.onPreRender();
-        verify(externalContext, atLeastOnce()).redirect(Pages.searchOccupation().noRedirect());
+        verify(externalContext, atLeastOnce()).redirect(Pages.searchOccupation().asLocationRedirect());
     }
 
     @Test
@@ -137,7 +137,7 @@ public class SubprojectSelectControllerTest {
     }
 
     @Test
-    public void testAddProjectToProjectRedirectsToProjectDetails() throws Exception {
+    public void testAddProjectToProjectRedirectsToProjectEdit() throws Exception {
         Project project1 = new Project();
         project1.setId(11l);
         controller.setProject(project);
@@ -145,7 +145,7 @@ public class SubprojectSelectControllerTest {
         String response = controller.addAsSubProject(project1);
 
         assertEquals("response should be the correct redirection string",
-                Pages.detailsProject().param("id", String.valueOf(project.getId())).redirect(), response);
+                Pages.editProject().param("id", String.valueOf(project.getId())).asRedirect(), response);
     }
 
 }

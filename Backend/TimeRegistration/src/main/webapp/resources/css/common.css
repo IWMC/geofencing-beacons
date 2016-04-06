@@ -168,6 +168,31 @@ nav + .container {
     font-size: 45px !important;
 }
 
+.btn-small, .btn-small > i {
+    width: 26px !important;
+    height: 26px !important;
+}
+
+.btn-small > i {
+    line-height: 27px !important;
+}
+
+/*************** Maps ***************/
+#pac-input {
+    background-color: white;
+    position: relative;
+    left: 130px;
+    z-index: 1;
+    height: 35px;
+    border-bottom: none;
+    border-radius: 1px;
+    box-shadow: rgba(0, 0, 0, 0.3) 0px 1px 4px -1px;
+}
+
+#pac-input + * {
+    top: -66px;
+}
+
 @media only screen and (max-width: 600px) {
     .s0 {
        width: 0px;

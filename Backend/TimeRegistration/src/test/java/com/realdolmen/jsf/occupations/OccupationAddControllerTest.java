@@ -73,7 +73,7 @@ public class OccupationAddControllerTest {
         when(endpoint.addOccupation(any())).thenReturn(Response.created(
                 UriBuilder.fromMethod(OccupationEndpoint.class, "findById").build(occupation.getId())).build());
         controller.saveOccupation();
-        verify(externalContext, atLeastOnce()).redirect(Pages.searchOccupation().redirect());
+        verify(externalContext, atLeastOnce()).redirect(Pages.searchOccupation().asRedirect());
     }
 
     @Test
