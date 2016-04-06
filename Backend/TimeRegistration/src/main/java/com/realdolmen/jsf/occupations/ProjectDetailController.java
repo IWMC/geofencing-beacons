@@ -57,7 +57,6 @@ public class ProjectDetailController extends DetailController<Project> implement
                     .forEach(mapModel::addOverlay);
         }
 
-        Project.initialize(project);
         return project;
     }
 
@@ -125,6 +124,10 @@ public class ProjectDetailController extends DetailController<Project> implement
     @Authorized(UserGroup.PROJECT_MANAGER_ONLY)
     @Transactional
     public void unlinkSubproject(Project subproject) {
+        if (!getEntity().getSubProjects().contains(subproject)) {
+            return;
+        }
+
         getEntity().getSubProjects().remove(subproject);
         setEntity(em.merge(getEntity()));
     }
@@ -138,6 +141,10 @@ public class ProjectDetailController extends DetailController<Project> implement
     @Transactional
     public void unlinkEmployee(Employee employee) {
         employee = em.merge(employee);
+        if (!getEntity().getEmployees().contains(employee)) {
+            return;
+        }
+
         getEntity().getEmployees().remove(employee);
         employee.getMemberProjects().remove(getEntity());
         setEntity(em.merge(getEntity()));
@@ -154,7 +161,18 @@ public class ProjectDetailController extends DetailController<Project> implement
 
     @Override
     public void setEntity(Project entity) {
-        Project.initialize(entity);
+        if (entity != null) {
+            Project.initialize(entity);
+        }
+
         super.setEntity(entity);
+    }
+
+    public Location getSearchLocation() {
+        return searchLocation;
+    }
+
+    public void setSearchLocation(Location searchLocation) {
+        this.searchLocation = searchLocation;
     }
 }

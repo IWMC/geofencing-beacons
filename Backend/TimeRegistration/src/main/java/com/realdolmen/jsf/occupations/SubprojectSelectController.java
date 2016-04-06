@@ -46,7 +46,7 @@ public class SubprojectSelectController extends OccupationSearchController imple
                 Response response = getOccupationEndpoint().findById(id);
 
                 if (response.getEntity() != null && !(response.getEntity() instanceof Project)) {
-                    getFacesContext().getExternalContext().redirect(Pages.detailsOccupation().param("id", occupationId).redirect());
+                    getFacesContext().getExternalContext().redirect(Pages.detailsOccupation().param("id", occupationId).asRedirect());
                 }
 
                 project = response.getStatus() == 200 ? (Project) response.getEntity() : null;
@@ -56,10 +56,10 @@ public class SubprojectSelectController extends OccupationSearchController imple
             }
 
             (facesContext == null ? FacesContext.getCurrentInstance() : facesContext)
-                    .getExternalContext().redirect(Pages.searchOccupation().noRedirect());
+                    .getExternalContext().redirect(Pages.searchOccupation().asLocationRedirect());
         } catch (NumberFormatException nfex) {
             try {
-                getFacesContext().getExternalContext().redirect(Pages.searchOccupation().noRedirect());
+                getFacesContext().getExternalContext().redirect(Pages.searchOccupation().asLocationRedirect());
             } catch (IOException e) {
                 Logger.getLogger(OccupationDetailController.class).error("couldn't redirect with FacesContext", e);
             }
@@ -94,7 +94,7 @@ public class SubprojectSelectController extends OccupationSearchController imple
     public String addAsSubProject(Project selectedProject) {
         project.getSubProjects().add(selectedProject);
         getEntityManager().merge(project);
-        return Pages.editProject().param("id", occupationId).redirect();
+        return Pages.editProject().param("id", occupationId).asRedirect();
     }
 
     public FacesContext getFacesContext() {

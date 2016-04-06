@@ -93,7 +93,7 @@ public class EmployeeEditControllerTest {
         ExternalContext externalContext = mock(ExternalContext.class);
         when(facesContext.getExternalContext()).thenReturn(externalContext);
         controller.saveUser();
-        verify(externalContext, atLeastOnce()).redirect(Pages.searchEmployee().redirect());
+        verify(externalContext, atLeastOnce()).redirect(Pages.searchEmployee().asRedirect());
         verify(endpoint, times(1)).update(employee.getId(), employee);
     }
 
@@ -103,7 +103,7 @@ public class EmployeeEditControllerTest {
         when(facesContext.getExternalContext()).thenReturn(externalContext);
         utx.begin();
         controller.onPreRender();
-        verify(externalContext, atLeastOnce()).redirect(Pages.searchEmployee().noRedirect());
+        verify(externalContext, atLeastOnce()).redirect(Pages.searchEmployee().asLocationRedirect());
         utx.commit();
     }
 
@@ -124,7 +124,7 @@ public class EmployeeEditControllerTest {
         controller.setEmployee(employee);
         String result = controller.removeUser();
         verify(endpoint, times(1)).deleteById(employee.getId());
-        Assert.assertEquals("controller should redirect to search employees page", Pages.searchEmployee().redirect(), result);
+        Assert.assertEquals("controller should redirect to search employees page", Pages.searchEmployee().asRedirect(), result);
     }
 
     @Test
@@ -132,6 +132,6 @@ public class EmployeeEditControllerTest {
         controller.setUserId(null);
         String result = controller.removeUser();
         verify(endpoint, never()).deleteById(anyLong());
-        Assert.assertEquals("controller should redirect to search employees page", Pages.searchEmployee().redirect(), result);
+        Assert.assertEquals("controller should redirect to search employees page", Pages.searchEmployee().asRedirect(), result);
     }
 }

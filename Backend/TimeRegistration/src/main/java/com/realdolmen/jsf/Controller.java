@@ -52,7 +52,11 @@ public class Controller implements Serializable {
         return language;
     }
 
+    public void setLanguage(Language language) {
+        this.language = language;
+    }
+
     public void redirect(Pages.Page page) throws IOException {
-        getFacesContext().getExternalContext().redirect(page.noRedirect());
+        getFacesContext().getExternalContext().redirect(page.asLocationRedirect());
     }
 }

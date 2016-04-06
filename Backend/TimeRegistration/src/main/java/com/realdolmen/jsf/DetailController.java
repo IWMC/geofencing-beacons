@@ -8,7 +8,7 @@ import java.io.Serializable;
 /**
  * A common class used by every controller that uses query parameters to retrieve an entity.
  */
-public abstract class DetailController<E> extends Controller implements Serializable {
+public abstract class DetailController<E extends Serializable> extends Controller implements Serializable {
 
     @ManagedProperty(value = "#{param.id}")
     private String id;
@@ -29,7 +29,7 @@ public abstract class DetailController<E> extends Controller implements Serializ
     public void redirectToErrorPage() throws IOException {
         // Is it due to redirection to another page?
         if (!getFacesContext().getExternalContext().isResponseCommitted()) {
-            getFacesContext().getExternalContext().redirect(errorPage.noRedirect());
+            getFacesContext().getExternalContext().redirect(errorPage.asLocationRedirect());
         }
     }
 

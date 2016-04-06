@@ -9,7 +9,6 @@ import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.util.HashMap;
-import java.util.Map;
 
 /**
  * Utility class containing constants to all JSF-pages.
@@ -63,24 +62,26 @@ public class Pages {
     public static class Page implements Serializable {
 
         private String baseUrl;
-        private Map<String, String> params = new HashMap<>();
+
+        // Not Map to keep Page serializable, only change by another serializable class!
+        private HashMap<String, String> params = new HashMap<>();
         private static final String URL_ENCODING = "UTF-8";
 
         private Page(String baseUrl) {
             this.baseUrl = baseUrl;
         }
 
-        public Page param(String key, String value) {
-            params.put(key, value);
+        public Page param(String key, Object value) {
+            params.put(key, value.toString());
             return this;
         }
 
-        public String jsf() {
+        public String asLinkOutcome() {
             baseUrl = baseUrl.substring(0, baseUrl.lastIndexOf("."));
-            return noRedirect();
+            return asLocationRedirect();
         }
 
-        public String noRedirect() {
+        public String asLocationRedirect() {
             StringBuilder builder = new StringBuilder(baseUrl);
             if (!params.isEmpty()) {
                 builder.append("?");
@@ -97,8 +98,8 @@ public class Pages {
             return builder.toString();
         }
 
-        public String redirect() {
-            StringBuilder builder = new StringBuilder(noRedirect());
+        public String asRedirect() {
+            StringBuilder builder = new StringBuilder(asLocationRedirect());
             builder.append(params.isEmpty() ? "?" : "&").append("faces-redirect=true");
             return builder.toString();
         }

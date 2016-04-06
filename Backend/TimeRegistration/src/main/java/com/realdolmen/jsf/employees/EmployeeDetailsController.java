@@ -51,11 +51,11 @@ public class EmployeeDetailsController {
             }
 
             (facesContext == null ? FacesContext.getCurrentInstance() : facesContext)
-                    .getExternalContext().redirect(Pages.searchEmployee().noRedirect());
+                    .getExternalContext().redirect(Pages.searchEmployee().asLocationRedirect());
         } catch (NumberFormatException nfex) {
             try {
                 (facesContext == null ? FacesContext.getCurrentInstance() : facesContext)
-                        .getExternalContext().redirect(Pages.searchEmployee().noRedirect());
+                        .getExternalContext().redirect(Pages.searchEmployee().asLocationRedirect());
             } catch (IOException e) {
                 Logger.getLogger(EmployeeDetailsController.class).error("couldn't redirect with FacesContext", e);
             }
@@ -96,6 +96,6 @@ public class EmployeeDetailsController {
             }
         }
 
-        return Pages.searchEmployee().redirect();
+        return Pages.searchEmployee().asRedirect();
     }
 }

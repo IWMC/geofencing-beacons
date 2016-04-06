@@ -39,7 +39,7 @@ public class ProjectAddController {
     public void saveProject() throws IOException {
         Response response = endpoint.addProject(project);
         if (response.getStatus() == Response.Status.CREATED.getStatusCode()) {
-            getFacesContext().getExternalContext().redirect(Pages.searchOccupation().redirect());
+            getFacesContext().getExternalContext().redirect(Pages.searchOccupation().asRedirect());
         } else if (response.getStatus() == Response.Status.CONFLICT.getStatusCode()) {
             getToastService().newToast(language.getString(Language.Text.OCCUPATION_ADD_NAME_TAKEN));
         } else if (response.getStatus() == Response.Status.BAD_REQUEST.getStatusCode()) {

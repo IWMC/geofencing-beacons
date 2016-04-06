@@ -36,7 +36,7 @@
         <ui:define name="body">
             <div class="container">
                 <div class="fixed-action-btn">
-                    <h:link outcome="#{pages.addEmployee().jsf()}" styleClass="btn-floating btn-large red">
+                    <h:link outcome="#{pages.addEmployee().asLinkOutcome()}" styleClass="btn-floating btn-large red">
                         <i class="large material-icons">add</i>
                     </h:link>
                 </div>
@@ -55,7 +55,7 @@
                                         <div class="card-action">
                                             <p:link styleClass="realdolmen-blue-text waves-effect waves-realdolmen-blue card-action-flat"
                                                     value="#{msg['employee.search.open_details']}"
-                                                    outcome="#{pages.detailsEmployee().param('id', employee.id).redirect()}"/>
+                                                    outcome="#{pages.detailsEmployee().param('id', employee.id).asRedirect()}"/>
                                         </div>
                                     </div>
                                 </h:form>

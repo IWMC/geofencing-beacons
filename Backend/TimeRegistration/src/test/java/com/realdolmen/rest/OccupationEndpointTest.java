@@ -1,7 +1,7 @@
 package com.realdolmen.rest;
 
-import com.realdolmen.WarFactory;
 import com.realdolmen.entity.*;
+import com.realdolmen.entity.validation.Existing;
 import com.realdolmen.jsf.Session;
 import com.realdolmen.service.SecurityManager;
 import com.realdolmen.validation.ValidationResult;
@@ -9,24 +9,20 @@ import com.realdolmen.validation.Validator;
 import org.hamcrest.BaseMatcher;
 import org.hamcrest.Description;
 import org.hibernate.exception.ConstraintViolationException;
-import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Matchers;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
-import javax.inject.Inject;
 import javax.json.Json;
 import javax.json.JsonObjectBuilder;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceException;
 import javax.persistence.TypedQuery;
-import javax.transaction.*;
+import javax.transaction.RollbackException;
+import javax.transaction.UserTransaction;
 import javax.ws.rs.core.Response;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -37,7 +33,6 @@ import java.util.function.Supplier;
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.*;
 
-@RunWith(Arquillian.class)
 public class OccupationEndpointTest {
 
     @Mock
@@ -46,11 +41,7 @@ public class OccupationEndpointTest {
     @Mock
     private SecurityManager sm;
 
-    @Inject
-    private Session session;
-
-    @Inject
-    private UserTransaction userTransaction;
+    private Session session = new Session();
 
     @Mock
     private Validator<Occupation> occupationValidator;
@@ -63,10 +54,15 @@ public class OccupationEndpointTest {
 
     private RollbackException existingOccupationException;
 
-    @Deployment
-    public static WebArchive createDeployment() {
-        return WarFactory.createDeployment();
-    }
+    private Supplier rollbackExceptionSupplier = () -> {
+        try {
+            utx.commit();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return null;
+    };;
 
     private List<RegisteredOccupation> occupations;
 
@@ -86,6 +82,7 @@ public class OccupationEndpointTest {
         ro1.setOccupation(oc1);
         RegisteredOccupation ro2 = new RegisteredOccupation();
         ro2.setOccupation(oc2);
+        occupationUpdate.setId(10L);
 
         occupations = new ArrayList<>(Arrays.asList(ro1, ro2));
         existingOccupationException = new RollbackException();
@@ -295,16 +292,7 @@ public class OccupationEndpointTest {
     @Test
     public void testSaveOccupationReturns400OnExistingInvalidOccupation() throws Exception {
         Occupation occupation = new Occupation("", "Occupation description");
-        Supplier supplier = () -> {
-            try {
-                utx.commit();
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-            return null;
-        };
-
-        when(supplier.get()).thenThrow(existingOccupationException);
+        when(rollbackExceptionSupplier.get()).thenThrow(existingOccupationException);
         when(occupationValidator.validate(eq(occupation), anyVararg())).thenReturn(new ValidationResult(false));
         Response response = endpoint.addOccupation(occupation);
         assertEquals("response should have 400 status code", Response.Status.BAD_REQUEST.getStatusCode(), response.getStatus());
@@ -314,18 +302,55 @@ public class OccupationEndpointTest {
     @Test
     public void testSaveOccupationReturns400OnExistingValidOccupation() throws Exception {
         Occupation occupation = new Occupation("Occupation name", "Occupation description");
-        Supplier supplier = () -> {
-            try {
-                utx.commit();
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-            return null;
-        };
-
-        when(supplier.get()).thenThrow(existingOccupationException);
+        when(rollbackExceptionSupplier.get()).thenThrow(existingOccupationException);
         when(occupationValidator.validate(eq(occupation), anyVararg())).thenReturn(new ValidationResult(true));
         Response response = endpoint.addOccupation(occupation);
         assertEquals("response should have 409 status code", Response.Status.CONFLICT.getStatusCode(), response.getStatus());
+    }
+
+    private Occupation occupationUpdate = new Occupation("occupation name", "occupation description");
+
+    @Test
+    public void testUpdateUpdatesOnSuccessfulValidationResult() throws Exception {
+        when(occupationValidator.validate(occupationUpdate, Existing.class)).thenReturn(new ValidationResult(true));
+        endpoint.update(occupationUpdate.getId(), occupationUpdate);
+        verify(em, atLeastOnce()).merge(occupationUpdate);
+    }
+
+    @Test
+    public void testUpdateReturnsNoContentResponseOnSuccess() throws Exception {
+        when(occupationValidator.validate(occupationUpdate, Existing.class)).thenReturn(new ValidationResult(true));
+        Response response = endpoint.update(occupationUpdate.getId(), occupationUpdate);
+        assertEquals("response should have NO_CONTENT status code", Response.Status.NO_CONTENT.getStatusCode(), response.getStatus());
+    }
+
+    @Test
+    public void testUpdateReturnsBadRequestResponseOnFailure() throws Exception {
+        ValidationResult result = new ValidationResult(false, Arrays.asList("invalidation", "tokens"));
+        when(occupationValidator.validate(occupationUpdate, Existing.class)).thenReturn(result);
+        Response response = endpoint.update(occupationUpdate.getId(), occupationUpdate);
+        assertEquals("response should have BAD_REQUEST status code", Response.Status.BAD_REQUEST.getStatusCode(), response.getStatus());
+        assertEquals("response should contain the validation result", result, response.getEntity());
+    }
+
+    @Test
+    public void testUpdateReturnsConflictResponseOnUniqueConstraintViolation() throws Exception {
+        when(occupationValidator.validate(occupationUpdate, Existing.class)).thenReturn(new ValidationResult(true));
+        when(rollbackExceptionSupplier.get()).thenThrow(existingOccupationException);
+        Response response = endpoint.update(occupationUpdate.getId(), occupationUpdate);
+        assertEquals("response should have CONFLICT status code", Response.Status.CONFLICT.getStatusCode(), response.getStatus());
+    }
+
+    @Test
+    public void testUpdateReturnsConflictResponseOnDifferentIds() throws Exception {
+        Response response = endpoint.update(occupationUpdate.getId() + 1, occupationUpdate);
+        assertEquals("response should have CONFLICT status code", Response.Status.CONFLICT.getStatusCode(), response.getStatus());
+    }
+
+    @Test
+    public void testUpdateReturnsNotFoundResponseOnInvalidId() throws Exception {
+        occupationUpdate.setId(0);
+        Response response = endpoint.update(occupationUpdate.getId(), occupationUpdate);
+        assertEquals("response should have NOT_FOUND status code", Response.Status.NOT_FOUND.getStatusCode(), response.getStatus());
     }
 }

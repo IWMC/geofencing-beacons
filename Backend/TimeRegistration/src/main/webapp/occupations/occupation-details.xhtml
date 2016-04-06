@@ -32,7 +32,7 @@
                         <p>#{occupationDetails.entity.description}</p>
                     </div>
                     <div class="card-action">
-                        <h:link outcome="#{pages.editOccupation().param('id', occupationDetails.id).jsf()}"
+                        <h:link outcome="#{pages.editOccupation().param('id', occupationDetails.id).asLinkOutcome()}"
                                 styleClass="waves-effect waves-orange card-action-flat" value="#{msg['edit']}"/>
                         <a class="red-text text-lighten-1 right modal-trigger waves-effect waves-red card-action-flat"
                            href="#remove-warning"><h:outputText value="#{msg['remove']}"/></a>

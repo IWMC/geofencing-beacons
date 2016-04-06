@@ -99,7 +99,7 @@
                                                 #{projectDetails.entity.subProjects.size() > 0 ? msg['project.details.subprojects'] : msg['project.details.no_subprojects']}
                                             </h5>
                                             <div class="col s4">
-                                                <h:link outcome="#{pages.selectSubProject().param('id', projectDetails.id).redirect()}"
+                                                <h:link outcome="#{pages.selectSubProject().param('id', projectDetails.id).asRedirect()}"
                                                         style="margin: 10px 0px;"
                                                         class="right btn-floating">
                                                     <i class="material-icons left">add</i>
@@ -111,7 +111,7 @@
                                                var="subproject">
                                         <div class="collection-item">
                                             <h:form>
-                                                <h:link outcome="#{pages.detailsProject().param('id', subproject.id).jsf()}">
+                                                <h:link outcome="#{pages.detailsProject().param('id', subproject.id).asLinkOutcome()}">
                                                     #{subproject.name}
                                                 </h:link>
                                                 <h:commandLink style="top: -2px; right: 16px;"
@@ -135,7 +135,7 @@
                                                 #{projectDetails.entity.employees.size() > 0 ? msg['project.details.employees'] : msg['project.details.no_employees']}
                                             </h5>
                                             <div class="col s4">
-                                                <h:link outcome="#{pages.selectEmployee().param('id', projectDetails.id).redirect()}"
+                                                <h:link outcome="#{pages.selectEmployee().param('id', projectDetails.id).asRedirect()}"
                                                         style="margin: 10px 0px;"
                                                         class="right btn-floating">
                                                     <i class="material-icons left">add</i>
@@ -147,7 +147,7 @@
                                                var="employee">
                                         <div class="collection-item">
                                             <h:form>
-                                                <h:link outcome="#{pages.detailsEmployee().param('id', employee.id).jsf()}">
+                                                <h:link outcome="#{pages.detailsEmployee().param('id', employee.id).asLinkOutcome()}">
                                                     #{employee.firstName} #{employee.lastName}
                                                 </h:link>
                                                 <h:commandLink style="top: -2px; right: 16px;"

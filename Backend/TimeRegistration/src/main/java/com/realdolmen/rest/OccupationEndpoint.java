@@ -306,7 +306,7 @@ public class OccupationEndpoint {
     @Path("/{id:[0-9][0-9]*}")
     @Consumes(MediaType.APPLICATION_JSON)
     public Response update(@QueryParam("id") Long id, Occupation occupation) {
-        if (id == null || id.equals(0)) {
+        if (id == null || id.equals(0L)) {
             return Response.status(Response.Status.NOT_FOUND).build();
         }
 

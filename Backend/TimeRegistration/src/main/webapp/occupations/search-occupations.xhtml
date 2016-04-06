@@ -42,13 +42,13 @@
                     <ul>
                         <li class="tooltipped" data-position="left" data-delay="0"
                             data-tooltip="#{msg['occupation.add']}">
-                            <h:link outcome="#{pages.addOccupation().jsf()}" styleClass="btn-floating green">
+                            <h:link outcome="#{pages.addOccupation().asLinkOutcome()}" styleClass="btn-floating green">
                                 <i class="large material-icons">assignment</i>
                             </h:link>
                         </li>
                         <li class="tooltipped" data-position="left" data-delay="0"
                             data-tooltip="#{msg['project.add']}">
-                            <h:link outcome="#{pages.addProject().jsf()}" styleClass="btn-floating blue">
+                            <h:link outcome="#{pages.addProject().asLinkOutcome()}" styleClass="btn-floating blue">
                                 <i class="large material-icons">format_list_numbered</i>
                             </h:link>
                         </li>
@@ -70,7 +70,7 @@
                                         <div class="card-action">
                                             <p:link styleClass="realdolmen-blue-text waves-effect waves-realdolmen-blue card-action-flat"
                                                     value="#{msg['employee.search.open_details']}"
-                                                    outcome="#{pages.occupationDetailsFrom(occupation).param('id', occupation.id).redirect()}"/>
+                                                    outcome="#{pages.occupationDetailsFrom(occupation).param('id', occupation.id).asRedirect()}"/>
                                         </div>
                                     </div>
                                 </h:form>

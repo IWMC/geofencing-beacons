@@ -8,6 +8,7 @@ import org.hibernate.search.annotations.Indexed;
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
+import java.io.Serializable;
 
 /**
  * Entity to be used in the ORM to store data about an occupation. An occupation
@@ -20,7 +21,7 @@ import javax.validation.constraints.Size;
         @NamedQuery(name = "Occupation.findAll", query = "SELECT o FROM Occupation o")
 })
 @Indexed
-public class Occupation {
+public class Occupation implements Serializable {
 
     /**
      * Initializes all lazy properties and collections of the entity recursively. Expects to be invoked while still running

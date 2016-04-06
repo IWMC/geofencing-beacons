@@ -43,7 +43,7 @@
                             </div>
                         </div>
                         <div class="card-action">
-                            <h:link outcome="#{pages.editProject().param('id', projectDetails.id).jsf()}"
+                            <h:link outcome="#{pages.editProject().param('id', projectDetails.id).asLinkOutcome()}"
                                     styleClass="waves-effect waves-orange card-action-flat" value="#{msg['edit']}"/>
                             <a class="red-text text-lighten-1 right modal-trigger waves-effect waves-red card-action-flat"
                                href="#remove-warning"><h:outputText value="#{msg['remove']}"/></a>
@@ -80,7 +80,7 @@
                                     </div>
                                     <ui:repeat value="#{of:setToList(projectDetails.entity.subProjects)}"
                                                var="subproject">
-                                        <h:link outcome="#{pages.detailsProject().param('id', subproject.id).jsf()}"
+                                        <h:link outcome="#{pages.detailsProject().param('id', subproject.id).asLinkOutcome()}"
                                                 class="collection-item">#{subproject.name}</h:link>
                                     </ui:repeat>
                                 </div>
@@ -97,7 +97,7 @@
                                         </div>
                                     </div>
                                     <ui:repeat value="#{of:setToList(projectDetails.entity.employees)}" var="employee">
-                                        <h:link outcome="#{pages.detailsEmployee().param('id', employee.id).jsf()}"
+                                        <h:link outcome="#{pages.detailsEmployee().param('id', employee.id).asLinkOutcome()}"
                                                 class="collection-item">#{employee.firstName} #{employee.lastName}</h:link>
                                     </ui:repeat>
                                 </div>

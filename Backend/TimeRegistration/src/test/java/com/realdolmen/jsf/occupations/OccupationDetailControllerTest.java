@@ -1,15 +1,10 @@
 package com.realdolmen.jsf.occupations;
 
-import com.realdolmen.WarFactory;
 import com.realdolmen.entity.Occupation;
 import com.realdolmen.rest.OccupationEndpoint;
-import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
@@ -17,8 +12,13 @@ import org.mockito.MockitoAnnotations;
 
 import javax.faces.context.FacesContext;
 import javax.ws.rs.core.Response;
+import java.io.NotSerializableException;
+import java.io.ObjectOutputStream;
+import java.io.OutputStream;
 
-@RunWith(Arquillian.class)
+import static org.junit.Assert.fail;
+import static org.mockito.Mockito.mock;
+
 public class OccupationDetailControllerTest {
 
     @Mock
@@ -31,11 +31,6 @@ public class OccupationDetailControllerTest {
 
     @InjectMocks
     private OccupationDetailController controller = new OccupationDetailController();
-
-    @Deployment
-    public static WebArchive createDeployment() {
-        return WarFactory.createDeployment();
-    }
 
     @Before
     public void setUp() throws Exception {
@@ -56,5 +51,16 @@ public class OccupationDetailControllerTest {
         Mockito.when(endpoint.findById(occupation.getId())).thenReturn(Response.ok(occupation).build());
         Occupation occupation = controller.loadEntity(this.occupation.getId());
         Assert.assertEquals("response should return the correct entity", this.occupation, occupation);
+    }
+
+    @Test
+    public void testDetailControllerIsSerializable() throws Exception {
+        ObjectOutputStream out = new ObjectOutputStream(mock(OutputStream.class));
+
+        try {
+            out.writeObject(new OccupationDetailController());
+        } catch (NotSerializableException nsex) {
+            fail("OccupationDetailController is not serializable");
+        }
     }
 }

@@ -43,7 +43,7 @@ public class EmployeeSelectController extends EmployeeSearchController {
                 Response response = occupationEndpoint.findById(id);
 
                 if (response.getEntity() != null && !(response.getEntity() instanceof Project)) {
-                    getFacesContext().getExternalContext().redirect(Pages.detailsOccupation().param("id", occupationId).redirect());
+                    getFacesContext().getExternalContext().redirect(Pages.detailsOccupation().param("id", occupationId).asRedirect());
                 }
 
                 project = response.getStatus() == 200 ? (Project) response.getEntity() : null;
@@ -53,11 +53,11 @@ public class EmployeeSelectController extends EmployeeSearchController {
             }
 
             (facesContext == null ? FacesContext.getCurrentInstance() : facesContext)
-                    .getExternalContext().redirect(Pages.searchOccupation().noRedirect());
+                    .getExternalContext().redirect(Pages.searchOccupation().asLocationRedirect());
         } catch (NumberFormatException nfex) {
             try {
                 (facesContext == null ? FacesContext.getCurrentInstance() : facesContext)
-                        .getExternalContext().redirect(Pages.searchOccupation().noRedirect());
+                        .getExternalContext().redirect(Pages.searchOccupation().asLocationRedirect());
             } catch (IOException e) {
                 Logger.getLogger(OccupationDetailController.class).error("couldn't redirect with FacesContext", e);
             }
@@ -90,7 +90,7 @@ public class EmployeeSelectController extends EmployeeSearchController {
         employee.getMemberProjects().add(project);
         getEntityManager().merge(project);
         getEntityManager().merge(employee);
-        return Pages.editProject().param("id", occupationId).redirect();
+        return Pages.editProject().param("id", occupationId).asRedirect();
     }
 
     public String getOccupationId() {

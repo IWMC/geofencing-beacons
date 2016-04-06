@@ -38,7 +38,7 @@ public class AuthorizationFilter implements Filter {
 
         if (includedUrls.stream().anyMatch(httpRequest.getRequestURI()::matches) && employee == null) {
             HttpServletResponse servletResponse = (HttpServletResponse) response;
-            servletResponse.sendRedirect(Pages.login().noRedirect());
+            servletResponse.sendRedirect(Pages.login().asLocationRedirect());
         } else {
             chain.doFilter(request, response);
         }
