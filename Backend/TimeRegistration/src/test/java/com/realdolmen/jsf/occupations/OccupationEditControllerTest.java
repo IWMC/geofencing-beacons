@@ -9,6 +9,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 
 import javax.ws.rs.core.Response;
@@ -59,5 +60,23 @@ public class OccupationEditControllerTest extends ControllerTest {
         when(language.getString("occupation.name_taken")).thenReturn(message);
         controller.saveOccupation();
         verify(getToastService(), atLeastOnce()).newToast(eq(message), anyInt());
+    }
+
+    @Test
+    public void testRemoveOccupationDelegatesToEndpoint() throws Exception {
+        Occupation occupation = new Occupation();
+        occupation.setId(505L);
+        controller.setEntity(occupation);
+        controller.removeOccupation();
+        Mockito.verify(endpoint).removeOccupation(occupation.getId());
+    }
+
+    @Test
+    public void testRemoveOccupationRedirectsToOccupationSearch() throws Exception {
+        Occupation occupation = new Occupation();
+        occupation.setId(505L);
+        controller.setEntity(occupation);
+        controller.removeOccupation();
+        Mockito.verify(getExternalContext()).redirect(Pages.searchOccupation().asLocationRedirect());
     }
 }

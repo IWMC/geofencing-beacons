@@ -353,4 +353,43 @@ public class OccupationEndpointTest {
         Response response = endpoint.update(occupationUpdate.getId(), occupationUpdate);
         assertEquals("response should have NOT_FOUND status code", Response.Status.NOT_FOUND.getStatusCode(), response.getStatus());
     }
+
+    @Test
+    public void testRemoveOccupationRemovesOccupationOnValidIdAndExistingOccupation() throws Exception {
+        when(em.find(Occupation.class, occupationUpdate.getId())).thenReturn(occupationUpdate);
+        endpoint.removeOccupation(occupationUpdate.getId());
+        verify(em).remove(occupationUpdate);
+    }
+
+    @Test
+    public void testRemoveOccupationReturnsNoContentOnValidIdAndExistingOccupation() throws Exception {
+        when(em.find(Occupation.class, occupationUpdate.getId())).thenReturn(occupationUpdate);
+        Response response = endpoint.removeOccupation(occupationUpdate.getId());
+        assertEquals("response should be NO_CONTENT", Response.Status.NO_CONTENT.getStatusCode(), response.getStatus());
+    }
+
+    @Test
+    public void testRemoveOccupationReturnsNotFoundOnInvalidId() throws Exception {
+        Response response = endpoint.removeOccupation(0L);
+        assertEquals("response should be NOT_FOUND", Response.Status.NOT_FOUND.getStatusCode(), response.getStatus());
+    }
+
+    @Test
+    public void testRemoveOccupationReturnsNotFoundOnNonExistingOccupation() throws Exception {
+        Response response = endpoint.removeOccupation(occupationUpdate.getId());
+        assertEquals("response should be NOT_FOUND", Response.Status.NOT_FOUND.getStatusCode(), response.getStatus());
+    }
+
+    @Test
+    public void testRemoveOccupationRemovesEmployeeLinkWithProject() throws Exception {
+        Employee employee = new Employee();
+        employee.setId(11L);
+        Project project = new Project();
+        project.setId(12L);
+        project.getEmployees().add(employee);
+        employee.getMemberProjects().add(project);
+        when(em.find(Occupation.class, project.getId())).thenReturn(project);
+        endpoint.removeOccupation(project.getId());
+        assertEquals("employee member project list should be empty", 0, employee.getMemberProjects().size());
+    }
 }

@@ -1,6 +1,8 @@
 package com.realdolmen.jsf.occupations;
 
 import com.realdolmen.entity.Occupation;
+import com.realdolmen.jsf.ControllerTest;
+import com.realdolmen.jsf.Pages;
 import com.realdolmen.rest.OccupationEndpoint;
 import org.junit.Assert;
 import org.junit.Before;
@@ -10,7 +12,6 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 
-import javax.faces.context.FacesContext;
 import javax.ws.rs.core.Response;
 import java.io.NotSerializableException;
 import java.io.ObjectOutputStream;
@@ -19,10 +20,7 @@ import java.io.OutputStream;
 import static org.junit.Assert.fail;
 import static org.mockito.Mockito.mock;
 
-public class OccupationDetailControllerTest {
-
-    @Mock
-    private FacesContext facesContext;
+public class OccupationDetailControllerTest extends ControllerTest {
 
     private Occupation occupation = new Occupation("Occupation name", "Occupation description");
 
@@ -35,8 +33,8 @@ public class OccupationDetailControllerTest {
     @Before
     public void setUp() throws Exception {
         MockitoAnnotations.initMocks(this);
+        initForController(controller);
         occupation.setId(15l);
-        controller.setFacesContext(facesContext);
     }
 
     @Test
@@ -62,5 +60,23 @@ public class OccupationDetailControllerTest {
         } catch (NotSerializableException nsex) {
             fail("OccupationDetailController is not serializable");
         }
+    }
+
+    @Test
+    public void testRemoveOccupationDelegatesToEndpoint() throws Exception {
+        Occupation occupation = new Occupation();
+        occupation.setId(505L);
+        controller.setEntity(occupation);
+        controller.removeOccupation();
+        Mockito.verify(endpoint).removeOccupation(occupation.getId());
+    }
+
+    @Test
+    public void testRemoveOccupationRedirectsToOccupationSearch() throws Exception {
+        Occupation occupation = new Occupation();
+        occupation.setId(505L);
+        controller.setEntity(occupation);
+        controller.removeOccupation();
+        Mockito.verify(getExternalContext()).redirect(Pages.searchOccupation().asLocationRedirect());
     }
 }

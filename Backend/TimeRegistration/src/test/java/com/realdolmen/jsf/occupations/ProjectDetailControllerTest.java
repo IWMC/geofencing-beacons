@@ -11,6 +11,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 import org.primefaces.event.map.GeocodeEvent;
 import org.primefaces.event.map.OverlaySelectEvent;
@@ -232,6 +233,24 @@ public class ProjectDetailControllerTest extends ControllerTest {
         controller.saveProject();
         verify(getExternalContext(), never()).redirect(Pages.occupationDetailsFrom(project).asLocationRedirect());
         verify(getToastService(), times(1)).newToast(eq(uuid));
+    }
+
+    @Test
+    public void testRemoveOccupationDelegatesToEndpoint() throws Exception {
+        Project project = new Project();
+        project.setId(505L);
+        controller.setEntity(project);
+        controller.removeProject();
+        Mockito.verify(endpoint).removeOccupation(project.getId());
+    }
+
+    @Test
+    public void testRemoveOccupationRedirectsToOccupationSearch() throws Exception {
+        Project project = new Project();
+        project.setId(505L);
+        controller.setEntity(project);
+        controller.removeProject();
+        Mockito.verify(getExternalContext()).redirect(Pages.searchOccupation().asLocationRedirect());
     }
 
     public Language getLanguage() {
