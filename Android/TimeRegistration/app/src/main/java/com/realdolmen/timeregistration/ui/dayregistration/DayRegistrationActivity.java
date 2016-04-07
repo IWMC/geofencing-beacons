@@ -1,7 +1,6 @@
 package com.realdolmen.timeregistration.ui.dayregistration;
 
 import android.content.Intent;
-import android.location.Location;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.annotation.NonNull;
@@ -28,7 +27,6 @@ import com.realdolmen.timeregistration.model.Occupation;
 import com.realdolmen.timeregistration.model.Project;
 import com.realdolmen.timeregistration.model.RegisteredOccupation;
 import com.realdolmen.timeregistration.service.ResultCallback;
-import com.realdolmen.timeregistration.service.location.LocationManager;
 import com.realdolmen.timeregistration.service.location.geofence.GeoService;
 import com.realdolmen.timeregistration.service.location.geofence.GeofenceRequester;
 import com.realdolmen.timeregistration.service.repository.LoadCallback;
@@ -443,9 +441,7 @@ public class DayRegistrationActivity extends AppCompatActivity {
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
 		if (item.getItemId() == R.id.menu_refresh) {
-			//refreshCurrent();
-			Location loc = LocationManager.get(this).lastKnownLocation();
-			System.out.println("Retrieving location: " + loc);
+			refreshCurrent();
 			return true;
 		}
 		return false;

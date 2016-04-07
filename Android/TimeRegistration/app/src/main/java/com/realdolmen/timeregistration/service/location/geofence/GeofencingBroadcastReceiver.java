@@ -48,26 +48,55 @@ public class GeofencingBroadcastReceiver extends BroadcastReceiver {
 	private void handleEvent(GeofencingEvent event) {
 		Log.d(LOG_TAG, "Geofence " + event.getGeofenceTransition() + " event received: " + Arrays.toString(event.getTriggeringGeofences().toArray()));
 		if (event.getGeofenceTransition() == GeofencingRequest.INITIAL_TRIGGER_ENTER) {
-			doNotification(event.getTriggeringGeofences());
+			doNotificationEnter(event.getTriggeringGeofences());
 		} else if (event.getGeofenceTransition() == GeofencingRequest.INITIAL_TRIGGER_EXIT) {
-			showNotification("You have left " + event.getTriggeringGeofences().get(0).getRequestId());
+			doNotificationLeave(event.getTriggeringGeofences());
 		}
 	}
 
-	private void doNotification(final List<Geofence> geofences) {
-		Repositories.loadOccupationRepository(context).done(new DoneCallback<OccupationRepository>() {
-			@Override
-			public void onDone(OccupationRepository result) {
-				showNotification(context.getString(R.string.notification_single_result, result.getByGeofence(geofences.get(0))));
-			}
-		});
+	private void doNotificationEnter(final List<Geofence> geofences) {
+		if (geofences.size() == 1) {
+			Repositories.loadOccupationRepository(context).done(new DoneCallback<OccupationRepository>() {
+				@Override
+				public void onDone(OccupationRepository result) {
+					showNotification(context.getString(R.string.notification_enter_single_result, result.getByGeofence(geofences.get(0))));
+				}
+			});
+		} else if (geofences.size() > 1) {
+			Repositories.loadOccupationRepository(context).done(new DoneCallback<OccupationRepository>() {
+				@Override
+				public void onDone(OccupationRepository result) {
+					showNotification(context.getString(R.string.notification_enter_multiple_results));
+				}
+			});
+		}
+	}
+
+	private void doNotificationLeave(final List<Geofence> geofences) {
+		if (geofences.size() == 1) {
+			Repositories.loadOccupationRepository(context).done(new DoneCallback<OccupationRepository>() {
+				@Override
+				public void onDone(OccupationRepository result) {
+					showNotification(context.getString(R.string.notification_leave_single_result, result.getByGeofence(geofences.get(0))));
+				}
+			});
+		} else if (geofences.size() > 1) {
+			Repositories.loadOccupationRepository(context).done(new DoneCallback<OccupationRepository>() {
+				@Override
+				public void onDone(OccupationRepository result) {
+					showNotification(context.getString(R.string.notification_leave_multiple_results));
+				}
+			});
+		}
 	}
 
 	private void showNotification(String s) {
 		NotificationCompat.Builder builder = new NotificationCompat.Builder(context)
 				.setSmallIcon(R.drawable.logo_square)
 				.setContentTitle(context.getString(R.string.notification_title))
-				.setContentText(s);
+				.setContentText(s)
+				.setLights(0xFFed2b29, 1000, 1000)
+				.setSubText(context.getString(R.string.notification_title));
 
 		NotificationManager manager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
 		manager.notify(1, builder.build());

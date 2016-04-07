@@ -1,6 +1,8 @@
 package com.realdolmen.timeregistration.service.location.geofence;
 
 
+import android.location.Location;
+
 import com.google.android.gms.location.Geofence;
 import com.google.android.gms.location.GeofencingRequest;
 
@@ -12,20 +14,20 @@ public class GeofenceUtils {
 	public static final String RECEIVE_GEOFENCE_REQUEST = "com.aol.android.geofence.ACTION_RECEIVE_GEOFENCE";
 	public static final String LOCATION_SERVICES_CATEGORY = "com.realdolmen.location.CATEGORY";
 
-	public static final String GEOFENCE_STORE_SHARED_PREFERENCES = "RealDolmenGeofencesStore";
-
-	public static final int POLL_INTERVAL = DEV_MODE ? 5000 : 15 * 60 * 1000;
-
-	public interface StoreKeys {
-		int KEY_PROJECT_ID = 1;
-		int KEY_LATITUDE = 2;
-		int KEY_LONGITUDE = 3;
-
-	}
+	public static final int POLL_INTERVAL = DEV_MODE ? 5000 : 10 * 60 * 1000;
 
 	static GeofencingRequest createGeofencingRequest(List<Geofence> geofences) {
 		return new GeofencingRequest.Builder()
 				.setInitialTrigger(GeofencingRequest.INITIAL_TRIGGER_ENTER)
 				.addGeofences(geofences).build();
+	}
+
+	public static Geofence createGeofence(long id, Location location, float radius) {
+		return new Geofence.Builder()
+				.setCircularRegion(location.getLatitude(), location.getLongitude(), radius)
+				.setRequestId(id + "/" + location.toString())
+				.setTransitionTypes(Geofence.GEOFENCE_TRANSITION_ENTER | Geofence.GEOFENCE_TRANSITION_EXIT)
+				.setExpirationDuration(Geofence.NEVER_EXPIRE)
+				.build();
 	}
 }

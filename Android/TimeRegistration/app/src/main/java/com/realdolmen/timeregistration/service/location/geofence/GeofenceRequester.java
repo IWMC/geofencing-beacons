@@ -70,7 +70,7 @@ public class GeofenceRequester implements ConnectionCallbacks, OnConnectionFaile
 
 	public GeofenceRequester(Context context, boolean pollMode) {
 		this.pollMode = pollMode;
-		if(context instanceof Activity) {
+		if (context instanceof Activity) {
 			contextActivity = (Activity) context;
 		}
 		this.context = context;
@@ -123,13 +123,16 @@ public class GeofenceRequester implements ConnectionCallbacks, OnConnectionFaile
 			Log.e(LOG_TAG, "Required permissions not found when pushing geofences!");
 			return;
 		}
-		if (!geofences.isEmpty())
+
+		if (!geofences.isEmpty()) {
+			getGeofencingApi().removeGeofences(getGoogleApiClient(), createRequestPendingIntent()).setResultCallback(this);
 			getGeofencingApi().addGeofences(getGoogleApiClient(), createGeofencingRequest(geofences), createRequestPendingIntent()).setResultCallback(this);
+		}
 	}
 
 	@Override
 	public void onConnected(Bundle bundle) {
-		Log.d(LOG_TAG, "connected in " + (pollMode ? "poll mode": "regular mode"));
+		Log.d(LOG_TAG, "connected in " + (pollMode ? "poll mode" : "regular mode"));
 		connected = true;
 		if (!pollMode) {
 			pushGeofences();

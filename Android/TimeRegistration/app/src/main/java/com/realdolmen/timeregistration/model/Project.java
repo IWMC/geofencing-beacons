@@ -26,7 +26,7 @@ public class Project extends Occupation implements Serializable {
 
 	private Set<Project> subProjects = new HashSet<>();
 
-	private Map<Location, Geofence> geofenceMap = new HashMap<>();
+	private transient Map<Location, Geofence> geofenceMap = new HashMap<>();
 
 	public Project(String name, String description, int projectNr, DateTime startDate, DateTime endDate) {
 		super(name, description);

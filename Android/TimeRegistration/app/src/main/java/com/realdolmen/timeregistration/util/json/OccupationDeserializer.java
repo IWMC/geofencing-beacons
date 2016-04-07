@@ -11,7 +11,7 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParseException;
 import com.realdolmen.timeregistration.model.Occupation;
 import com.realdolmen.timeregistration.model.Project;
-import com.realdolmen.timeregistration.service.location.LocationManager;
+import com.realdolmen.timeregistration.service.location.geofence.GeofenceUtils;
 import com.realdolmen.timeregistration.util.Constants;
 
 import org.joda.time.DateTime;
@@ -23,7 +23,6 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
-import java.util.UUID;
 
 public class OccupationDeserializer implements JsonDeserializer<Occupation> {
 	@Override
@@ -71,7 +70,7 @@ public class OccupationDeserializer implements JsonDeserializer<Occupation> {
 		p.setId(id);
 		Map<Location, Geofence> map = new HashMap<>();
 		for (Location location : locations) {
-			map.put(location, LocationManager.createGeofence(id, location));
+			map.put(location, GeofenceUtils.createGeofence(id, location, 1000));
 		}
 		p.setGeofenceMap(map);
 
