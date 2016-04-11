@@ -1,5 +1,6 @@
 package com.realdolmen.timeregistration.service.location.geofence;
 
+import android.app.Notification;
 import android.app.NotificationManager;
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -15,6 +16,8 @@ import com.realdolmen.timeregistration.service.repository.OccupationRepository;
 import com.realdolmen.timeregistration.service.repository.Repositories;
 
 import org.jdeferred.DoneCallback;
+import org.jdeferred.Promise;
+import org.jetbrains.annotations.TestOnly;
 
 import java.util.Arrays;
 import java.util.List;
@@ -25,6 +28,12 @@ public class GeofencingBroadcastReceiver extends BroadcastReceiver {
 
 	private Context context;
 	private Intent broadcastIntent = new Intent();
+	private boolean testMode;
+
+	@TestOnly
+	public void enableTestMode() {
+		testMode = true;
+	}
 
 
 	@Override
@@ -45,7 +54,7 @@ public class GeofencingBroadcastReceiver extends BroadcastReceiver {
 		Log.e(LOG_TAG, "Geofence error: " + event.getErrorCode());
 	}
 
-	private void handleEvent(GeofencingEvent event) {
+	public void handleEvent(GeofencingEvent event) {
 		Log.d(LOG_TAG, "Geofence " + event.getGeofenceTransition() + " event received: " + Arrays.toString(event.getTriggeringGeofences().toArray()));
 		if (event.getGeofenceTransition() == GeofencingRequest.INITIAL_TRIGGER_ENTER) {
 			doNotificationEnter(event.getTriggeringGeofences());
@@ -54,51 +63,61 @@ public class GeofencingBroadcastReceiver extends BroadcastReceiver {
 		}
 	}
 
-	private void doNotificationEnter(final List<Geofence> geofences) {
+	public Promise doNotificationEnter(final List<Geofence> geofences) {
 		if (geofences.size() == 1) {
-			Repositories.loadOccupationRepository(context).done(new DoneCallback<OccupationRepository>() {
+			return Repositories.loadOccupationRepository(context).done(new DoneCallback<OccupationRepository>() {
 				@Override
 				public void onDone(OccupationRepository result) {
 					showNotification(context.getString(R.string.notification_enter_single_result, result.getByGeofence(geofences.get(0))));
 				}
 			});
 		} else if (geofences.size() > 1) {
-			Repositories.loadOccupationRepository(context).done(new DoneCallback<OccupationRepository>() {
+			return Repositories.loadOccupationRepository(context).done(new DoneCallback<OccupationRepository>() {
 				@Override
 				public void onDone(OccupationRepository result) {
-					showNotification(context.getString(R.string.notification_enter_multiple_results));
+					String output = context.getString(R.string.notification_enter_multiple_results);
+					showNotification(output);
 				}
 			});
 		}
+
+		return null;
 	}
 
-	private void doNotificationLeave(final List<Geofence> geofences) {
+	public Promise doNotificationLeave(final List<Geofence> geofences) {
 		if (geofences.size() == 1) {
-			Repositories.loadOccupationRepository(context).done(new DoneCallback<OccupationRepository>() {
+			return Repositories.loadOccupationRepository(context).done(new DoneCallback<OccupationRepository>() {
 				@Override
 				public void onDone(OccupationRepository result) {
 					showNotification(context.getString(R.string.notification_leave_single_result, result.getByGeofence(geofences.get(0))));
 				}
 			});
 		} else if (geofences.size() > 1) {
-			Repositories.loadOccupationRepository(context).done(new DoneCallback<OccupationRepository>() {
+			return Repositories.loadOccupationRepository(context).done(new DoneCallback<OccupationRepository>() {
 				@Override
 				public void onDone(OccupationRepository result) {
 					showNotification(context.getString(R.string.notification_leave_multiple_results));
 				}
 			});
 		}
+
+		return null;
 	}
 
-	private void showNotification(String s) {
-		NotificationCompat.Builder builder = new NotificationCompat.Builder(context)
-				.setSmallIcon(R.drawable.logo_square)
-				.setContentTitle(context.getString(R.string.notification_title))
-				.setContentText(s)
-				.setLights(0xFFed2b29, 1000, 1000)
-				.setSubText(context.getString(R.string.notification_title));
+	public void showNotification(String s) {
+		if (!testMode) {
+			NotificationCompat.Builder builder = new NotificationCompat.Builder(context)
+					.setSmallIcon(R.drawable.logo_square)
+					.setContentTitle(context.getString(R.string.notification_title))
+					.setContentText(s)
+					.setLights(0xFFed2b29, 1000, 1000)
+					.setSubText(context.getString(R.string.notification_title));
+			NotificationManager manager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
+			manager.notify(1, builder.build());
+		} else {
+			NotificationManager manager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
+			manager.notify(1, new Notification());
+		}
 
-		NotificationManager manager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
-		manager.notify(1, builder.build());
 	}
 }

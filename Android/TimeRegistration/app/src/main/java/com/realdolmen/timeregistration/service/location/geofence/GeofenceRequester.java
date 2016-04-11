@@ -174,7 +174,7 @@ public class GeofenceRequester implements ConnectionCallbacks, OnConnectionFaile
 	}
 
 	@Override
-	public void onConnectionFailed(ConnectionResult connectionResult) {
+	public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
 		if (connectionResult.hasResolution() && contextActivity != null) {
 			try {
 				connectionResult.startResolutionForResult(contextActivity, CONNECTION_FAILED_RESOLUTION_REQUEST);
@@ -199,6 +199,6 @@ public class GeofenceRequester implements ConnectionCallbacks, OnConnectionFaile
 
 	@Override
 	public void onLocationChanged(Location location) {
-		Log.d(LOG_TAG, "Polling for location: " + location);
+		//Log.d(LOG_TAG, "Polling for location: " + location);
 	}
 }
