@@ -5,7 +5,9 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
 import com.android.volley.VolleyError;
+import com.google.android.gms.location.Geofence;
 import com.realdolmen.timeregistration.model.Occupation;
+import com.realdolmen.timeregistration.model.Project;
 import com.realdolmen.timeregistration.service.ResultCallback;
 
 import org.jdeferred.Deferred;
@@ -14,6 +16,7 @@ import org.jdeferred.FailCallback;
 import org.jdeferred.Promise;
 import org.jdeferred.impl.DeferredObject;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class OccupationRepository extends DataRepository<Occupation, Occupation, Occupation> {
@@ -41,6 +44,16 @@ public class OccupationRepository extends DataRepository<Occupation, Occupation,
 				}
 			}
 		});
+	}
+
+	public List<Project> getAllProjects() {
+		List<Project> out = new ArrayList<>();
+		for (Occupation occupation : data) {
+			if (occupation instanceof Project) {
+				out.add((Project) occupation);
+			}
+		}
+		return out;
 	}
 
 	/**
@@ -96,5 +109,13 @@ public class OccupationRepository extends DataRepository<Occupation, Occupation,
 			}
 		});
 		return def.promise();
+	}
+
+	public Project getByGeofence(Geofence geofence) {
+		for (Project p : getAllProjects()) {
+			if (p.getGeofences().contains(geofence))
+				return p;
+		}
+		return null;
 	}
 }

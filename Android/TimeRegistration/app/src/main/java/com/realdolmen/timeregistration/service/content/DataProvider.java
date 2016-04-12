@@ -12,7 +12,7 @@ import static com.realdolmen.timeregistration.service.content.DataProvider.Codes
 /**
  * Provider for the application's backend data. The following Uri patterns are defined:
  * <ul>
- * <li><b></b>occupations/registered/#</b> where # is a timestamp.</li>
+ * <li><b>occupations/registered/#</b> where # is a timestamp.</li>
  * </ul>
  */
 public class DataProvider extends ContentProvider {

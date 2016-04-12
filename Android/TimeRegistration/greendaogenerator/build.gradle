@@ -1,0 +1,10 @@
+apply plugin: 'application'
+apply plugin: 'java'
+
+mainClassName = "com.realdolmen.timeregistration.persistence.GreenDaoGenerator"
+
+dependencies {
+    compile fileTree(include: ['*.jar'], dir: 'libs')
+    compile 'de.greenrobot:greendao-generator:2.1.0'
+    compile 'freemarker:freemarker:2.3.9'
+}

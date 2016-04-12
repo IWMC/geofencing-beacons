@@ -19,7 +19,13 @@ public class DateDeserializer implements JsonDeserializer<DateTime> {
 
 	@Override
 	public DateTime deserialize(JsonElement element, Type arg1, JsonDeserializationContext arg2) throws JsonParseException {
-		long date = element.getAsLong();
-		return new DateTime(date, DateTimeZone.UTC);
+		try {
+			long date = element.getAsLong();
+			return new DateTime(date, DateTimeZone.UTC);
+		} catch (Exception e) {
+			//not a long, so string format
+		}
+		String date = element.getAsString();
+		return DateTime.parse(date).toDateTime(DateTimeZone.UTC);
 	}
 }

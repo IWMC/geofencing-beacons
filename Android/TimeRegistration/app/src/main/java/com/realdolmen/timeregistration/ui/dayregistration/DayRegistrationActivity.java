@@ -1,6 +1,9 @@
 package com.realdolmen.timeregistration.ui.dayregistration;
 
+import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.annotation.NonNull;
@@ -21,11 +24,16 @@ import android.widget.Toast;
 import com.android.volley.VolleyError;
 import com.github.clans.fab.FloatingActionButton;
 import com.github.clans.fab.FloatingActionMenu;
+import com.google.android.gms.location.Geofence;
 import com.realdolmen.timeregistration.R;
 import com.realdolmen.timeregistration.model.Occupation;
+import com.realdolmen.timeregistration.model.Project;
 import com.realdolmen.timeregistration.model.RegisteredOccupation;
 import com.realdolmen.timeregistration.service.ResultCallback;
+import com.realdolmen.timeregistration.service.location.geofence.GeoService;
+import com.realdolmen.timeregistration.service.location.geofence.GeofenceRequester;
 import com.realdolmen.timeregistration.service.repository.LoadCallback;
+import com.realdolmen.timeregistration.service.repository.OccupationRepository;
 import com.realdolmen.timeregistration.service.repository.RegisteredOccupationRepository;
 import com.realdolmen.timeregistration.service.repository.Repositories;
 import com.realdolmen.timeregistration.util.DateUtil;
@@ -48,9 +56,13 @@ import butterknife.Bind;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
 
+import static com.realdolmen.timeregistration.service.location.geofence.GeofenceUtils.*;
+
 public class DayRegistrationActivity extends AppCompatActivity {
 
 	private static final String LOG_TAG = DayRegistrationActivity.class.getSimpleName();
+
+	//region UI fields
 
 	@Bind(R.id.day_registration_toolbar)
 	Toolbar bar;
@@ -66,6 +78,7 @@ public class DayRegistrationActivity extends AppCompatActivity {
 
 	@Bind(R.id.day_registration_fab_menu)
 	FloatingActionMenu fabMenu;
+	//endregion
 
 	private boolean doubleBack;
 
@@ -74,6 +87,18 @@ public class DayRegistrationActivity extends AppCompatActivity {
 	private List<DateTime> dates = new ArrayList<>();
 
 	public static final String SELECTED_DAY = "SELECTED_DAY";
+
+	private GeofenceRequester geofenceRequester;
+
+	private BroadcastReceiver geofenceReceiver = new BroadcastReceiver() {
+		@Override
+		public void onReceive(Context context, Intent intent) {
+			switch(intent.getAction()) {
+				case Events.GOOGLE_API_CONNECTION_FAILED:
+					Toast.makeText(DayRegistrationActivity.this, "Unable to connect to the Google API", Toast.LENGTH_LONG).show();
+			}
+		}
+	};
 
 	//region Initialization methods
 
@@ -86,6 +111,36 @@ public class DayRegistrationActivity extends AppCompatActivity {
 		initViewPager();
 		refreshTabIcons();
 		selectToday();
+		initLocationServices();
+	}
+
+	@Override
+	protected void onResume() {
+		IntentFilter intentFilter = new IntentFilter();
+		intentFilter.addAction(Events.GOOGLE_API_CONNECTION_FAILED);
+		registerReceiver(geofenceReceiver, intentFilter);
+		super.onResume();
+	}
+
+	@Override
+	protected void onPause() {
+		unregisterReceiver(geofenceReceiver);
+		super.onPause();
+	}
+
+	private void initLocationServices() {
+		startService(new Intent(this, GeoService.class));
+		geofenceRequester = new GeofenceRequester(this);
+		Repositories.loadOccupationRepository(this).done(new DoneCallback<OccupationRepository>() {
+			@Override
+			public void onDone(OccupationRepository result) {
+				List<Geofence> geofences = new ArrayList<>();
+				for (Project project : Repositories.occupationRepository().getAllProjects()) {
+					geofences.addAll(project.getGeofences());
+				}
+				geofenceRequester.addGeofences(geofences);
+			}
+		});
 	}
 
 	private void initSupportActionBar() {
@@ -229,7 +284,7 @@ public class DayRegistrationActivity extends AppCompatActivity {
 	private void selectToday() {
 		viewPager.setCurrentItem(tabLayout.getTabCount() - 1);
 	}
-	//endregion
+
 
 	@OnClick(R.id.day_registration_confirm_fab)
 	public void doConfirm() {
@@ -262,6 +317,7 @@ public class DayRegistrationActivity extends AppCompatActivity {
 		final DateTime date = dates.get(position);
 		refreshTabIcons();
 		refreshFabs(date);
+		//region loadRegisteredOccupationRepo
 		Repositories.loadRegisteredOccupationRepository(this).done(new DoneCallback<RegisteredOccupationRepository>() {
 			@Override
 			public void onDone(RegisteredOccupationRepository result) {
@@ -288,6 +344,9 @@ public class DayRegistrationActivity extends AppCompatActivity {
 				});
 			}
 		});
+		//endregion
+
+		Repositories.occupationRepository().reload(this);
 	}
 
 	@Override
@@ -405,6 +464,8 @@ public class DayRegistrationActivity extends AppCompatActivity {
 			}
 		});
 	}
+
+	//endregion
 
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
