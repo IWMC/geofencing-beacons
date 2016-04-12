@@ -11,6 +11,7 @@ import javax.persistence.*;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Pattern;
 import javax.validation.constraints.Size;
+import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlRootElement;
 import java.io.Serializable;
 import java.util.HashSet;
@@ -46,7 +47,7 @@ import java.util.Set;
 @Named
 @Inheritance(strategy = InheritanceType.JOINED)
 public class Employee implements Serializable {
-
+    
     /**
      * Initializes all lazy properties and collections of the entity recursively. Expects to be invoked while still running
      * in a session.
@@ -56,14 +57,20 @@ public class Employee implements Serializable {
     public static void initialize(Employee employee) {
         Hibernate.initialize(employee.getMemberProjects());
         employee.getMemberProjects().forEach(Project::initialize);
+        employee.getRegisteredOccupations().forEach(RegisteredOccupation::initialize);
+        if (employee instanceof ProjectManager) {
+            ((ProjectManager) employee).getManagedProjects().forEach(Project::initialize);
+        }
     }
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
+    @XmlAttribute
     private long id;
 
     @Version
     @Column(name = "version")
+    @XmlAttribute
     private int version;
 
     @Column(length = 50)

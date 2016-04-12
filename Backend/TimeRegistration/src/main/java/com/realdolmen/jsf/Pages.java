@@ -25,31 +25,33 @@ public class Pages {
         return new Page("/login.xhtml");
     }
 
-    public static Page searchEmployee() { return new Page("/employees/search-employees.xhtml"); }
+    public static Page searchEmployee()		{ return new Page("/employees/search-employees.xhtml"); }
 
-    public static Page selectEmployee() { return new Page("/employees/employee-select.xhtml"); }
+    public static Page selectEmployee()		{ return new Page("/employees/employee-select.xhtml"); }
 
-    public static Page detailsEmployee() { return new Page("/employees/employee-details.xhtml"); }
+    public static Page detailsEmployee()	{ return new Page("/employees/employee-details.xhtml"); }
 
-    public static Page editEmployee() { return new Page("/employees/employee-edit.xhtml"); }
+    public static Page editEmployee()		{ return new Page("/employees/employee-edit.xhtml"); }
 
-    public static Page addEmployee() { return new Page("/employees/employee-add.xhtml"); }
+    public static Page addEmployee()		{ return new Page("/employees/employee-add.xhtml"); }
 
-    public static Page searchOccupation() { return new Page("/occupations/search-occupations.xhtml"); }
+    public static Page searchOccupation()	{ return new Page("/occupations/search-occupations.xhtml"); }
 
-    public static Page addOccupation() { return new Page("/occupations/occupation-add.xhtml"); }
+    public static Page addOccupation()		{ return new Page("/occupations/occupation-add.xhtml"); }
 
-    public static Page detailsOccupation() { return new Page("/occupations/occupation-details.xhtml"); }
+    public static Page detailsOccupation()	{ return new Page("/occupations/occupation-details.xhtml"); }
 
-    public static Page editOccupation() { return new Page("/occupations/occupation-edit.xhtml"); }
+    public static Page editOccupation()		{ return new Page("/occupations/occupation-edit.xhtml"); }
 
-    public static Page addProject() { return new Page("/occupations/project-add.xhtml"); }
+    public static Page addProject()		    { return new Page("/occupations/project-add.xhtml"); }
 
-    public static Page detailsProject() { return new Page("/occupations/project-details.xhtml"); }
+    public static Page detailsProject()		{ return new Page("/occupations/project-details.xhtml"); }
 
-    public static Page selectSubProject() { return new Page("/occupations/subproject-select.xhtml"); }
+    public static Page selectSubProject()	{ return new Page("/occupations/subproject-select.xhtml"); }
 
-    public static Page editProject() { return new Page("/occupations/project-edit.xhtml"); }
+    public static Page editProject()		{ return new Page("/occupations/project-edit.xhtml"); }
+
+    public static Page reports()		    { return new Page("/reports.xhtml"); }
 
     public static Page occupationDetailsFrom(Occupation occupation) {
         if (occupation instanceof Project) {

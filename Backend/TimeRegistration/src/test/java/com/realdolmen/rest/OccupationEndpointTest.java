@@ -62,7 +62,7 @@ public class OccupationEndpointTest {
         }
 
         return null;
-    };;
+    };
 
     private List<RegisteredOccupation> occupations;
 

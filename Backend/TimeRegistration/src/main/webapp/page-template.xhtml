@@ -16,6 +16,14 @@
                                                value="#{msg['page.navigation.employees']}"/></li>
                             <li><h:commandLink action="#{pages.searchOccupation().asLinkOutcome()}"
                                                value="#{msg['page.navigation.occupations']}"/></li>
+                            <li>
+                                <h:commandLink action="#{pages.reports.asLinkOutcome()}"
+                                               value="#{msg['page.navigation.reports']}" />
+                            </li>
+                            <li>
+                                <h:commandLink action="#{loginController.logout()}"
+                                               value="#{msg['page.navigation.logout']}"/>
+                            </li>
                         </ul>
                     </h:form>
 
@@ -23,22 +31,35 @@
                         <div class="nav-wrapper realdolmen-red">
                             <div class="left brand-logo">
                                 <a href="/index.xhtml">
-                                <span class="left valign-wrapper" id="toolbar-logo-wrapper">
-                                    <h:graphicImage styleClass="valign" library="img" name="logo-white.svg"/>
-                                </span>
+                                    <span class="left valign-wrapper" id="toolbar-logo-wrapper">
+                                        <span class="hide-on-small-and-down">
+                                            <h:graphicImage styleClass="valign" library="img" name="logo-white.svg"/>
+                                        </span>
+                                        <span class="hide-on-med-and-up">
+                                            <h:graphicImage styleClass="valign" library="img" name="logo-white-rd.svg"/>
+                                        </span>
+                                    </span>
                                 </a>
                                 <ui:insert name="toolbar-after-logo"/>
                             </div>
 
                             <h:form>
                                 <ul class="right" id="nav-mobile">
-                                    <li class="hide-on-med-and-down" style="margin-top: -2px;">
+                                    <li class="hide-on-med-and-down">
                                         <h:commandLink action="#{pages.searchEmployee().asLinkOutcome()}"
                                                        value="#{msg['page.navigation.employees']}"/>
                                     </li>
-                                    <li class="hide-on-med-and-down" style="margin-top: -2px;">
+                                    <li class="hide-on-med-and-down">
                                         <h:commandLink action="#{pages.searchOccupation().asLinkOutcome()}"
                                                        value="#{msg['page.navigation.occupations']}"/>
+                                    </li>
+                                    <li class="hide-on-med-and-down">
+                                        <h:commandLink action="#{pages.reports.asLinkOutcome()}"
+                                                       value="#{msg['page.navigation.reports']}" />
+                                    </li>
+                                    <li class="hide-on-med-and-down">
+                                        <h:commandLink action="#{loginController.logout()}"
+                                                       value="#{msg['page.navigation.logout']}"/>
                                     </li>
                                     <li>
                                         <a class="dropdown-button hide-on-large-only" href="#!"

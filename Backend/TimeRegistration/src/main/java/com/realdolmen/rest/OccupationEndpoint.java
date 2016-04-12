@@ -204,6 +204,7 @@ public class OccupationEndpoint {
 
         if (occupation instanceof Project) {
             ((Project) occupation).getEmployees().forEach(e -> e.getMemberProjects().remove(occupation));
+            ((Project) occupation).getEmployees().clear();
         }
 
         em.remove(occupation);

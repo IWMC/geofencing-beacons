@@ -45,7 +45,7 @@ public class LoginController implements Serializable {
                 session.setEmployee((Employee) response.getEntity());
                 return Pages.index().asRedirect();
             } else {
-                String messageText = "Verkeerde gebruikersnaam of wachtwoord";
+                String messageText = "Verkeerd gebruikersnaam of wachtwoord";
                 FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_ERROR, messageText, messageText);
                 context.addMessage(null, message);
                 return "";
@@ -67,5 +67,10 @@ public class LoginController implements Serializable {
 
     public void setPassword(String password) {
         this.password = password;
+    }
+
+    public String logout() {
+        session.setEmployee(null);
+        return Pages.login().asLinkOutcome();
     }
 }
