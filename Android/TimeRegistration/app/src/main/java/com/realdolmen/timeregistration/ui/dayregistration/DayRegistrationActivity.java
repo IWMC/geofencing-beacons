@@ -1,6 +1,9 @@
 package com.realdolmen.timeregistration.ui.dayregistration;
 
+import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.annotation.NonNull;
@@ -53,6 +56,8 @@ import butterknife.Bind;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
 
+import static com.realdolmen.timeregistration.service.location.geofence.GeofenceUtils.*;
+
 public class DayRegistrationActivity extends AppCompatActivity {
 
 	private static final String LOG_TAG = DayRegistrationActivity.class.getSimpleName();
@@ -85,6 +90,16 @@ public class DayRegistrationActivity extends AppCompatActivity {
 
 	private GeofenceRequester geofenceRequester;
 
+	private BroadcastReceiver geofenceReceiver = new BroadcastReceiver() {
+		@Override
+		public void onReceive(Context context, Intent intent) {
+			switch(intent.getAction()) {
+				case Events.GOOGLE_API_CONNECTION_FAILED:
+					Toast.makeText(DayRegistrationActivity.this, "Unable to connect to the Google API", Toast.LENGTH_LONG).show();
+			}
+		}
+	};
+
 	//region Initialization methods
 
 	@Override
@@ -97,6 +112,20 @@ public class DayRegistrationActivity extends AppCompatActivity {
 		refreshTabIcons();
 		selectToday();
 		initLocationServices();
+	}
+
+	@Override
+	protected void onResume() {
+		IntentFilter intentFilter = new IntentFilter();
+		intentFilter.addAction(Events.GOOGLE_API_CONNECTION_FAILED);
+		registerReceiver(geofenceReceiver, intentFilter);
+		super.onResume();
+	}
+
+	@Override
+	protected void onPause() {
+		unregisterReceiver(geofenceReceiver);
+		super.onPause();
 	}
 
 	private void initLocationServices() {
