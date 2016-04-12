@@ -15,7 +15,6 @@ import android.util.Log;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
-import com.google.android.gms.common.api.PendingResult;
 import com.google.android.gms.common.api.ResultCallback;
 import com.google.android.gms.common.api.Status;
 import com.google.android.gms.location.FusedLocationProviderApi;
@@ -33,6 +32,9 @@ import java.util.List;
 import static com.google.android.gms.common.api.GoogleApiClient.ConnectionCallbacks;
 import static com.google.android.gms.common.api.GoogleApiClient.OnConnectionFailedListener;
 import static com.realdolmen.timeregistration.service.location.geofence.GeofenceUtils.CONNECTION_FAILED_RESOLUTION_REQUEST;
+import static com.realdolmen.timeregistration.service.location.geofence.GeofenceUtils.Events.GEOFENCING_FENCES_ADD_FAIL;
+import static com.realdolmen.timeregistration.service.location.geofence.GeofenceUtils.Events.GEOFENCING_FENCES_ADD_SUCCESS;
+import static com.realdolmen.timeregistration.service.location.geofence.GeofenceUtils.Events.GOOGLE_API_CONNECTION_FAILED;
 import static com.realdolmen.timeregistration.service.location.geofence.GeofenceUtils.POLL_INTERVAL;
 import static com.realdolmen.timeregistration.service.location.geofence.GeofenceUtils.RECEIVE_GEOFENCE_REQUEST;
 import static com.realdolmen.timeregistration.service.location.geofence.GeofenceUtils.createGeofencingRequest;
@@ -142,7 +144,7 @@ public class GeofenceRequester implements ConnectionCallbacks, OnConnectionFaile
 	}
 
 	public GeofencingApi getGeofencingApi() {
-		if(geofencingApi != null)
+		if (geofencingApi != null)
 			return geofencingApi;
 		return geofencingApi = LocationServices.GeofencingApi;
 	}
@@ -162,7 +164,7 @@ public class GeofenceRequester implements ConnectionCallbacks, OnConnectionFaile
 	}
 
 	public void addGeofences(@NonNull List<Geofence> geofences) {
-		if(geofences == null) {
+		if (geofences == null) {
 			throw new IllegalArgumentException("geofences list cannot be null!");
 		}
 		this.geofences = geofences;
@@ -206,7 +208,7 @@ public class GeofenceRequester implements ConnectionCallbacks, OnConnectionFaile
 	}
 
 	public FusedLocationProviderApi getFusedLocationApi() {
-		if(fusedLocationProviderApi != null)
+		if (fusedLocationProviderApi != null)
 			return fusedLocationProviderApi;
 		return fusedLocationProviderApi = LocationServices.FusedLocationApi;
 	}
@@ -248,7 +250,7 @@ public class GeofenceRequester implements ConnectionCallbacks, OnConnectionFaile
 				Log.e(LOG_TAG, "Connection and resolution failed!", e);
 			}
 		} else {
-			//TODO: Broadcast connection failed event so the activity can show feedback
+			broadcast(GOOGLE_API_CONNECTION_FAILED);
 			Log.e(LOG_TAG, "Broadcast connection failed: " + connectionResult.getErrorMessage());
 		}
 	}
@@ -257,10 +259,17 @@ public class GeofenceRequester implements ConnectionCallbacks, OnConnectionFaile
 	public void onResult(Status status) {
 		Log.d(LOG_TAG, "Geofence add result: " + status);
 		if (status.isSuccess()) {
-			//TODO: Broadcast success event of adding geofences
+			broadcast(GEOFENCING_FENCES_ADD_SUCCESS);
 		} else {
-			//TODO: Broadcast fail event of adding geofences
+			broadcast(GEOFENCING_FENCES_ADD_FAIL);
 		}
+	}
+
+	private void broadcast(String event) {
+		if (context != null)
+			context.sendBroadcast(new Intent(event));
+		else if (contextActivity != null)
+			contextActivity.sendBroadcast(new Intent(event));
 	}
 
 	@Override

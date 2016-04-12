@@ -15,6 +15,12 @@ public class GeofenceUtils {
 	public static final String RECEIVE_GEOFENCE_REQUEST = "com.aol.android.geofence.ACTION_RECEIVE_GEOFENCE";
 	public static final String LOCATION_SERVICES_CATEGORY = "com.realdolmen.location.CATEGORY";
 
+	public interface Events {
+		String GOOGLE_API_CONNECTION_FAILED = "com.realdolmen.timeregistration.geofencing.GAPI_CONN_FAILED";
+		String GEOFENCING_FENCES_ADD_SUCCESS = "com.realdolmen.timeregistration.geofencing.FENCES_ADD_SUCCESS";
+		String GEOFENCING_FENCES_ADD_FAIL = "com.realdolmen.timeregistration.geofencing.FENCES_ADD_FAIL";
+	}
+
 	public static final int POLL_INTERVAL = DEV_MODE ? 5000 : 10 * 60 * 1000;
 
 	static GeofencingRequest createGeofencingRequest(@NonNull List<Geofence> geofences) {
