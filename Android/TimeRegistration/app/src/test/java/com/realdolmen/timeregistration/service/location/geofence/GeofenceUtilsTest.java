@@ -1,5 +1,7 @@
 package com.realdolmen.timeregistration.service.location.geofence;
 
+import android.location.Location;
+
 import com.google.android.gms.location.Geofence;
 import com.google.android.gms.location.GeofencingRequest;
 
@@ -37,5 +39,13 @@ public class GeofenceUtilsTest {
 		GeofenceUtils.createGeofence(1, null, 1000);
 	}
 
+	@Test(expected = IllegalArgumentException.class)
+	public void testCreateGeofenceWithNegativeRadiusThrowsIllegalArgumentException() throws Exception {
+		GeofenceUtils.createGeofence(1, new Location(""), -1);
+	}
 
+	@Test(expected = IllegalArgumentException.class)
+	public void testCreateGeofenceWithZeroRadiusThrowsIllegalArgumentException() throws Exception {
+		GeofenceUtils.createGeofence(1, new Location(""), 0);
+	}
 }

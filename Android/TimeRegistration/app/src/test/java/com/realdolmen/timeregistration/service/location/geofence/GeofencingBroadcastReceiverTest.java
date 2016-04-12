@@ -1,6 +1,5 @@
 package com.realdolmen.timeregistration.service.location.geofence;
 
-import android.annotation.SuppressLint;
 import android.app.Notification;
 import android.app.NotificationManager;
 import android.content.Context;
@@ -33,7 +32,7 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-public class GeofencingBroadcastReceiverTest {
+public class GeofencingBroadcastReceiverTest extends GeofenceTest {
 
 	@Mock
 	private Context context;
@@ -69,15 +68,6 @@ public class GeofencingBroadcastReceiverTest {
 		receiver.enableTestMode();
 		when(occupationRepository.isLoaded()).thenReturn(true);
 		when(occupationRepository.getByGeofence((Geofence) any())).thenReturn(new Project("", "", 0, null, null));
-	}
-
-	private Geofence newGeofence(String id) {
-		return new Geofence.Builder()
-				.setRequestId(id)
-				.setExpirationDuration(Geofence.NEVER_EXPIRE)
-				.setTransitionTypes(Geofence.GEOFENCE_TRANSITION_ENTER)
-				.setCircularRegion(1, 2, 1000)
-				.build();
 	}
 
 	@Test
@@ -121,7 +111,6 @@ public class GeofencingBroadcastReceiverTest {
 		verify(receiver).showNotification(null); //TODO: This should be "single_result" but verify cannot handle this for some reason.
 	}
 
-	@SuppressLint("StringFormatInvalid")
 	@Test
 	public void testDoNotificationLeaveWithMultipleResultsShowsCorrectNotification() throws Exception {
 		when(context.getString(eq(R.string.notification_enter_single_result), anyVararg())).thenReturn("single_result");

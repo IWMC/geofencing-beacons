@@ -15,6 +15,7 @@ import android.util.Log;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.common.api.PendingResult;
 import com.google.android.gms.common.api.ResultCallback;
 import com.google.android.gms.common.api.Status;
 import com.google.android.gms.location.FusedLocationProviderApi;
@@ -23,6 +24,8 @@ import com.google.android.gms.location.GeofencingApi;
 import com.google.android.gms.location.LocationListener;
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationServices;
+
+import org.jetbrains.annotations.TestOnly;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -47,19 +50,28 @@ public class GeofenceRequester implements ConnectionCallbacks, OnConnectionFaile
 	private boolean connected;
 
 	private GoogleApiClient mApiClient;
+	private GeofencingApi geofencingApi;
+	private FusedLocationProviderApi fusedLocationProviderApi;
 
 	private boolean pollMode;
 
 	private List<Geofence> geofences = new ArrayList<>();
 
+	Testing testing = new Testing();
+
 	public void disconnect() {
+		if (!connected) {
+			return;
+		}
+
+		connected = false;
+
 		List<String> geofenceIds = new ArrayList<>();
 		for (Geofence geofence : geofences) {
 			geofenceIds.add(geofence.getRequestId());
 		}
 		getGeofencingApi().removeGeofences(getGoogleApiClient(), geofenceIds);
 		getFusedLocationApi().removeLocationUpdates(getGoogleApiClient(), this);
-		connected = false;
 		getGoogleApiClient().disconnect();
 	}
 
@@ -67,6 +79,48 @@ public class GeofenceRequester implements ConnectionCallbacks, OnConnectionFaile
 		this(contextActivity, false);
 	}
 
+	class Testing {
+
+		@TestOnly
+		void setConnected(boolean flag) {
+			connected = flag;
+		}
+
+		@TestOnly
+		void setGeofences(List<Geofence> fences) {
+			geofences = fences;
+		}
+
+		@TestOnly
+		void setGoogleApiClient(GoogleApiClient client) {
+			mApiClient = client;
+		}
+
+		@TestOnly
+		void setGeofencingApi(GeofencingApi api) {
+			geofencingApi = api;
+		}
+
+		@TestOnly
+		void setFusedLocationApi(FusedLocationProviderApi api) {
+			fusedLocationProviderApi = api;
+		}
+
+		@TestOnly
+		void setPendingIntent(PendingIntent intent) {
+			mPendingIntent = intent;
+		}
+
+		@TestOnly
+		void setMode(boolean pollMode) {
+			GeofenceRequester.this.pollMode = pollMode;
+		}
+
+		@TestOnly
+		void setActivityContext(Activity ac) {
+			contextActivity = ac;
+		}
+	}
 
 	public GeofenceRequester(Context context, boolean pollMode) {
 		this.pollMode = pollMode;
@@ -88,7 +142,9 @@ public class GeofenceRequester implements ConnectionCallbacks, OnConnectionFaile
 	}
 
 	public GeofencingApi getGeofencingApi() {
-		return LocationServices.GeofencingApi;
+		if(geofencingApi != null)
+			return geofencingApi;
+		return geofencingApi = LocationServices.GeofencingApi;
 	}
 
 	private PendingIntent createRequestPendingIntent() {
@@ -101,14 +157,22 @@ public class GeofenceRequester implements ConnectionCallbacks, OnConnectionFaile
 	}
 
 	public void connect() {
+		if (connected) return;
 		getGoogleApiClient().connect();
 	}
 
 	public void addGeofences(@NonNull List<Geofence> geofences) {
+		if(geofences == null) {
+			throw new IllegalArgumentException("geofences list cannot be null!");
+		}
 		this.geofences = geofences;
 		if (!connected) {
 			connect();
 		}
+	}
+
+	public boolean isConnected() {
+		return connected;
 	}
 
 	private void pushGeofences() {
@@ -142,7 +206,9 @@ public class GeofenceRequester implements ConnectionCallbacks, OnConnectionFaile
 	}
 
 	public FusedLocationProviderApi getFusedLocationApi() {
-		return LocationServices.FusedLocationApi;
+		if(fusedLocationProviderApi != null)
+			return fusedLocationProviderApi;
+		return fusedLocationProviderApi = LocationServices.FusedLocationApi;
 	}
 
 	private void initPoll() {

@@ -40,6 +40,8 @@ public class GeofenceUtils {
 	public static Geofence createGeofence(long id, @NonNull Location location, float radius) {
 		if (location == null)
 			throw new IllegalArgumentException("Location cannot be null");
+		if(radius < 1)
+			throw new IllegalArgumentException("Radius must be greater than zero!");
 		return new Geofence.Builder()
 				.setCircularRegion(location.getLatitude(), location.getLongitude(), radius)
 				.setRequestId(id + "/" + location.toString())
