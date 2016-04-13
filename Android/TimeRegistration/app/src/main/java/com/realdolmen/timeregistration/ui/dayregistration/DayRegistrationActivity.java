@@ -446,6 +446,10 @@ public class DayRegistrationActivity extends AppCompatActivity {
 	}
 
 	public void confirm(@NonNull final DateTime date, @Nullable final ResultCallback callback) {
+		if(Repositories.registeredOccupationRepository().hasOngoingOccupations(date)) {
+			Snackbar.make(findViewById(R.id.day_registration_root_view), R.string.day_registration_confirm_ongoing_occupations, Snackbar.LENGTH_LONG).show();
+			return;
+		}
 		confirmFab.setIndeterminate(true);
 		confirmFab.setEnabled(false);
 		Repositories.loadRegisteredOccupationRepository(this).done(new DoneCallback<RegisteredOccupationRepository>() {

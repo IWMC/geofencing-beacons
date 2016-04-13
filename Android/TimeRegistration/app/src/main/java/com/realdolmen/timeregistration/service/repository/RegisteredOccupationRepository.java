@@ -199,9 +199,17 @@ public class RegisteredOccupationRepository extends DataRepository<RegisteredOcc
 		return def.promise();
 	}
 
+	public boolean hasOngoingOccupations(DateTime date) {
+		for (RegisteredOccupation ro : getAll(date)) {
+			if (ro.getRegisteredEnd() == null) return true;
+		}
+
+		return false;
+	}
+
 	public RegisteredOccupation getById(long id) {
-		for(RegisteredOccupation o : data) {
-			if(o.getId() == id) return o;
+		for (RegisteredOccupation o : data) {
+			if (o.getId() == id) return o;
 		}
 		return null;
 	}

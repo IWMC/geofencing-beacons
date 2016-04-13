@@ -38,4 +38,5 @@
     <string name="add_single_result_positive_button">Toevoegen</string>
     <string name="add_single_result_title">%s toevoegen?</string>
     <string name="add_suggested_single_result"><![CDATA[\'Toevoegen\' zal <b>%1$s</b> toevoegen aan de bezigheden van vandaag op <b>%2$s</b>.]]></string>
+    <string name="day_registration_confirm_ongoing_occupations">U heeft nog lopende bezigheden!</string>
 </resources>
