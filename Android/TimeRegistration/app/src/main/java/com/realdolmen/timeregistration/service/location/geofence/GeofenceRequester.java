@@ -23,6 +23,7 @@ import com.google.android.gms.location.GeofencingApi;
 import com.google.android.gms.location.LocationListener;
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationServices;
+import com.realdolmen.timeregistration.Constants;
 
 import org.jetbrains.annotations.TestOnly;
 
@@ -31,12 +32,6 @@ import java.util.List;
 
 import static com.google.android.gms.common.api.GoogleApiClient.ConnectionCallbacks;
 import static com.google.android.gms.common.api.GoogleApiClient.OnConnectionFailedListener;
-import static com.realdolmen.timeregistration.service.location.geofence.GeofenceUtils.CONNECTION_FAILED_RESOLUTION_REQUEST;
-import static com.realdolmen.timeregistration.service.location.geofence.GeofenceUtils.Events.GEOFENCING_FENCES_ADD_FAIL;
-import static com.realdolmen.timeregistration.service.location.geofence.GeofenceUtils.Events.GEOFENCING_FENCES_ADD_SUCCESS;
-import static com.realdolmen.timeregistration.service.location.geofence.GeofenceUtils.Events.GOOGLE_API_CONNECTION_FAILED;
-import static com.realdolmen.timeregistration.service.location.geofence.GeofenceUtils.POLL_INTERVAL;
-import static com.realdolmen.timeregistration.service.location.geofence.GeofenceUtils.RECEIVE_GEOFENCE_REQUEST;
 import static com.realdolmen.timeregistration.service.location.geofence.GeofenceUtils.createGeofencingRequest;
 
 public class GeofenceRequester implements ConnectionCallbacks, OnConnectionFailedListener, ResultCallback<Status>, LocationListener {
@@ -154,7 +149,7 @@ public class GeofenceRequester implements ConnectionCallbacks, OnConnectionFaile
 			return mPendingIntent;
 		}
 
-		Intent intent = new Intent(RECEIVE_GEOFENCE_REQUEST);
+		Intent intent = new Intent(Constants.geofencing.requests.RECEIVE_GEOFENCE_REQUEST);
 		return mPendingIntent = PendingIntent.getBroadcast(context, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
 	}
 
@@ -231,8 +226,8 @@ public class GeofenceRequester implements ConnectionCallbacks, OnConnectionFaile
 	private LocationRequest createLocationRequest() {
 		return LocationRequest.create()
 				.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY)
-				.setInterval(POLL_INTERVAL)
-				.setFastestInterval(POLL_INTERVAL);
+				.setInterval(Constants.geofencing.POLL_INTERVAL)
+				.setFastestInterval(Constants.geofencing.POLL_INTERVAL);
 	}
 
 	@Override
@@ -245,12 +240,12 @@ public class GeofenceRequester implements ConnectionCallbacks, OnConnectionFaile
 	public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
 		if (connectionResult.hasResolution() && contextActivity != null) {
 			try {
-				connectionResult.startResolutionForResult(contextActivity, CONNECTION_FAILED_RESOLUTION_REQUEST);
+				connectionResult.startResolutionForResult(contextActivity, Constants.geofencing.requests.CONNECTION_FAILED_RESOLUTION_REQUEST);
 			} catch (IntentSender.SendIntentException e) {
 				Log.e(LOG_TAG, "Connection and resolution failed!", e);
 			}
 		} else {
-			broadcast(GOOGLE_API_CONNECTION_FAILED);
+			broadcast(Constants.geofencing.events.GOOGLE_API_CONNECTION_FAILED);
 			Log.e(LOG_TAG, "Broadcast connection failed: " + connectionResult.getErrorMessage());
 		}
 	}
@@ -259,9 +254,9 @@ public class GeofenceRequester implements ConnectionCallbacks, OnConnectionFaile
 	public void onResult(Status status) {
 		Log.d(LOG_TAG, "Geofence add result: " + status);
 		if (status.isSuccess()) {
-			broadcast(GEOFENCING_FENCES_ADD_SUCCESS);
+			broadcast(Constants.geofencing.events.GEOFENCING_FENCES_ADD_SUCCESS);
 		} else {
-			broadcast(GEOFENCING_FENCES_ADD_FAIL);
+			broadcast(Constants.geofencing.events.GEOFENCING_FENCES_ADD_FAIL);
 		}
 	}
 

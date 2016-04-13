@@ -20,6 +20,7 @@ import android.widget.TableRow;
 import android.widget.TextView;
 import android.widget.TimePicker;
 
+import com.realdolmen.timeregistration.Constants;
 import com.realdolmen.timeregistration.R;
 import com.realdolmen.timeregistration.model.Occupation;
 import com.realdolmen.timeregistration.model.RegisteredOccupation;
@@ -35,6 +36,11 @@ import butterknife.Bind;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
 
+import static com.realdolmen.timeregistration.Constants.actionExtras.addOccupation.BASE_DATE;
+import static com.realdolmen.timeregistration.Constants.actionExtras.addOccupation.EDITING_OCCUPATION;
+import static com.realdolmen.timeregistration.Constants.actionExtras.addOccupation.END_DATE;
+import static com.realdolmen.timeregistration.Constants.actionExtras.addOccupation.SELECTED_OCCUPATION;
+import static com.realdolmen.timeregistration.Constants.actionExtras.addOccupation.START_DATE;
 import static com.realdolmen.timeregistration.util.DateUtil.enforceUTC;
 import static com.realdolmen.timeregistration.util.DateUtil.toLocal;
 import static com.realdolmen.timeregistration.util.DateUtil.toUTC;
@@ -62,12 +68,7 @@ public class AddOccupationActivity extends AppCompatActivity {
 
 	private OccupationRecyclerAdapter adapter;
 
-	public static final String START_DATE = "SD", END_DATE = "ED", BASE_DATE = "BD", SELECTED_OCCUPATION = "SO", EDITING_OCCUPATION = "EO";
-
 	private static final String EDIT_MODE = "EDIT_MODE";
-	public static final int ADD_RESULT_CODE = 1, EDIT_RESULT_CODE = 2;
-
-	public static final String ACTION_ADD = "com.realdolmen.occupation.add", ACTION_EDIT = "com.realdolmen.occupation.edit";
 
 	@UTC
 	private DateTime startDate, endDate, baseDate;
@@ -91,7 +92,7 @@ public class AddOccupationActivity extends AppCompatActivity {
 		enforceUTC(bd);
 		baseDate = bd;
 
-		if (getIntent().getAction().equals(ACTION_EDIT)) {
+		if (getIntent().getAction().equals(Constants.actions.addOccupation.ACTION_EDIT)) {
 			if (!getIntent().hasExtra(EDITING_OCCUPATION)) {
 				throw new IllegalArgumentException("When in edit mode, a RegisteredOccupation (EDITING_OCCUPATION) is required as extra!");
 			}

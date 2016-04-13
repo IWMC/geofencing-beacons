@@ -12,6 +12,7 @@ import android.util.Log;
 import com.google.android.gms.location.Geofence;
 import com.google.android.gms.location.GeofencingEvent;
 import com.google.android.gms.location.GeofencingRequest;
+import com.realdolmen.timeregistration.Constants;
 import com.realdolmen.timeregistration.R;
 import com.realdolmen.timeregistration.model.Occupation;
 import com.realdolmen.timeregistration.service.repository.OccupationRepository;
@@ -42,7 +43,7 @@ public class GeofencingBroadcastReceiver extends BroadcastReceiver {
 	@Override
 	public void onReceive(Context context, Intent intent) {
 		this.context = context;
-		broadcastIntent.addCategory(GeofenceUtils.LOCATION_SERVICES_CATEGORY);
+		broadcastIntent.addCategory(Constants.geofencing.LOCATION_SERVICES_CATEGORY);
 
 		GeofencingEvent geofencingEvent = GeofencingEvent.fromIntent(intent);
 
@@ -74,8 +75,8 @@ public class GeofencingBroadcastReceiver extends BroadcastReceiver {
 					Occupation o = result.getByGeofence(geofences.get(0));
 
 					Intent intent = new Intent(context, DayRegistrationActivity.class);
-					intent.setAction(DayRegistrationActivity.Constants.Actions.FromNotifications.ADD_SINGLE_RESULT);
-					intent.putExtra(DayRegistrationActivity.Constants.ActionExtras.FromNotifications.AddSingleResult.OCCUPATION_ID, o.getId());
+					intent.setAction(Constants.actions.fromNotifications.ADD_SINGLE_RESULT);
+					intent.putExtra(Constants.actionExtras.fromNotifications.addSingleResult.OCCUPATION_ID, o.getId());
 					intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
 
 
@@ -103,8 +104,8 @@ public class GeofencingBroadcastReceiver extends BroadcastReceiver {
 				public void onDone(OccupationRepository result) {
 					Occupation o = result.getByGeofence(geofences.get(0));
 					Intent intent = new Intent();
-					intent.setAction(DayRegistrationActivity.Constants.Actions.FromNotifications.ADD_SINGLE_RESULT);
-					intent.putExtra(DayRegistrationActivity.Constants.ActionExtras.FromNotifications.AddSingleResult.OCCUPATION_ID, o.getId());
+					intent.setAction(Constants.actions.fromNotifications.ADD_SINGLE_RESULT);
+					intent.putExtra(Constants.actionExtras.fromNotifications.addSingleResult.OCCUPATION_ID, o.getId());
 					PendingIntent pendingIntent = PendingIntent.getActivity(context, 0, intent, 0);
 					showNotification(context.getString(R.string.notification_leave_single_result, o), null);
 				}

@@ -91,7 +91,8 @@ public class GeofencingBroadcastReceiverTest extends GeofenceTest {
 		when(context.getString(eq(R.string.notification_enter_single_result), anyVararg())).thenReturn("single_result");
 		when(context.getString(eq(R.string.notification_enter_multiple_results))).thenReturn("multiple_results");
 		receiver.doNotificationEnter(geofenceList);
-		verify(receiver).showNotification("single_result");
+		verify(receiver).showNotification("single_result", null);
+		//TODO: Fix to new showNotification with intent
 	}
 
 	@Test
@@ -100,7 +101,8 @@ public class GeofencingBroadcastReceiverTest extends GeofenceTest {
 		when(context.getString(eq(R.string.notification_enter_multiple_results))).thenReturn("multiple_results");
 		geofenceList.add(newGeofence("2"));
 		receiver.doNotificationEnter(geofenceList);
-		verify(receiver).showNotification("multiple_results");
+		verify(receiver).showNotification("multiple_results", null);
+		//TODO: Fix to new showNotification with intent
 	}
 
 	@Test
@@ -108,7 +110,8 @@ public class GeofencingBroadcastReceiverTest extends GeofenceTest {
 		when(context.getString(eq(R.string.notification_enter_single_result), anyVararg())).thenReturn("single_result");
 		when(context.getString(eq(R.string.notification_enter_multiple_results))).thenReturn("multiple_results");
 		receiver.doNotificationLeave(geofenceList);
-		verify(receiver).showNotification(null); //TODO: This should be "single_result" but verify cannot handle this for some reason.
+		//TODO: Fix to new showNotification with intent
+		verify(receiver).showNotification(null, null); //TODO: This should be "single_result" but verify cannot handle this for some reason.
 	}
 
 	@Test
@@ -117,13 +120,14 @@ public class GeofencingBroadcastReceiverTest extends GeofenceTest {
 		when(context.getString(eq(R.string.notification_enter_multiple_results))).thenReturn("multiple_results");
 		geofenceList.add(newGeofence("2"));
 		receiver.doNotificationLeave(geofenceList);
-		verify(receiver).showNotification(null); //TODO: This should be "multiple_results" but verify cannot handle this for some reason.
+		verify(receiver).showNotification(null, null); //TODO: This should be "multiple_results" but verify cannot handle this for some reason.
 	}
 
 	@Test
 	public void testShowNotificationNotifiesWithSameIdEveryTime() throws Exception {
-		receiver.showNotification("");
-		receiver.showNotification("bla");
+		receiver.showNotification("", null);
+		receiver.showNotification("bla", null);
+		//TODO: Fix to new showNotification with intent
 		verify(notificationManager, times(2)).notify(eq(1), (Notification) any());
 	}
 }

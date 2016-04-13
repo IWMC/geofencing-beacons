@@ -7,7 +7,9 @@ import android.database.Cursor;
 import android.net.Uri;
 import android.support.annotation.Nullable;
 
-import static com.realdolmen.timeregistration.service.content.DataProvider.Codes.*;
+import static com.realdolmen.timeregistration.Constants.provider.Codes.AVAILABLE_OCCUPATIONS;
+import static com.realdolmen.timeregistration.Constants.provider.Codes.REGISTERED_OCCUPATIONS;
+import static com.realdolmen.timeregistration.Constants.provider.Codes.ROOT;
 
 /**
  * Provider for the application's backend data. The following Uri patterns are defined:
@@ -17,9 +19,7 @@ import static com.realdolmen.timeregistration.service.content.DataProvider.Codes
  */
 public class DataProvider extends ContentProvider {
 
-    public interface Codes {
-        int ROOT = 1, REGISTERED_OCCUPATIONS = 2, AVAILABLE_OCCUPATIONS = 3;
-    }
+
 
     private static final UriMatcher mUriMatcher = new UriMatcher(ROOT);
 
