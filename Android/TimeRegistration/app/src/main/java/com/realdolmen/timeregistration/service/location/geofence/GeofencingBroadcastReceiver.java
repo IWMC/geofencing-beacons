@@ -2,6 +2,7 @@ package com.realdolmen.timeregistration.service.location.geofence;
 
 import android.app.Notification;
 import android.app.NotificationManager;
+import android.app.PendingIntent;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -12,8 +13,10 @@ import com.google.android.gms.location.Geofence;
 import com.google.android.gms.location.GeofencingEvent;
 import com.google.android.gms.location.GeofencingRequest;
 import com.realdolmen.timeregistration.R;
+import com.realdolmen.timeregistration.model.Occupation;
 import com.realdolmen.timeregistration.service.repository.OccupationRepository;
 import com.realdolmen.timeregistration.service.repository.Repositories;
+import com.realdolmen.timeregistration.ui.dayregistration.DayRegistrationActivity;
 
 import org.jdeferred.DoneCallback;
 import org.jdeferred.Promise;
@@ -68,7 +71,16 @@ public class GeofencingBroadcastReceiver extends BroadcastReceiver {
 			return Repositories.loadOccupationRepository(context).done(new DoneCallback<OccupationRepository>() {
 				@Override
 				public void onDone(OccupationRepository result) {
-					showNotification(context.getString(R.string.notification_enter_single_result, result.getByGeofence(geofences.get(0))));
+					Occupation o = result.getByGeofence(geofences.get(0));
+
+					Intent intent = new Intent(context, DayRegistrationActivity.class);
+					intent.setAction(DayRegistrationActivity.Constants.Actions.FromNotifications.ADD_SINGLE_RESULT);
+					intent.putExtra(DayRegistrationActivity.Constants.ActionExtras.FromNotifications.AddSingleResult.OCCUPATION_ID, o.getId());
+					intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
+
+
+					PendingIntent pendingIntent = PendingIntent.getActivity(context, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
+					showNotification(context.getString(R.string.notification_enter_single_result, o), pendingIntent);
 				}
 			});
 		} else if (geofences.size() > 1) {
@@ -76,7 +88,7 @@ public class GeofencingBroadcastReceiver extends BroadcastReceiver {
 				@Override
 				public void onDone(OccupationRepository result) {
 					String output = context.getString(R.string.notification_enter_multiple_results);
-					showNotification(output);
+					showNotification(output, null);
 				}
 			});
 		}
@@ -89,14 +101,19 @@ public class GeofencingBroadcastReceiver extends BroadcastReceiver {
 			return Repositories.loadOccupationRepository(context).done(new DoneCallback<OccupationRepository>() {
 				@Override
 				public void onDone(OccupationRepository result) {
-					showNotification(context.getString(R.string.notification_leave_single_result, result.getByGeofence(geofences.get(0))));
+					Occupation o = result.getByGeofence(geofences.get(0));
+					Intent intent = new Intent();
+					intent.setAction(DayRegistrationActivity.Constants.Actions.FromNotifications.ADD_SINGLE_RESULT);
+					intent.putExtra(DayRegistrationActivity.Constants.ActionExtras.FromNotifications.AddSingleResult.OCCUPATION_ID, o.getId());
+					PendingIntent pendingIntent = PendingIntent.getActivity(context, 0, intent, 0);
+					showNotification(context.getString(R.string.notification_leave_single_result, o), null);
 				}
 			});
 		} else if (geofences.size() > 1) {
 			return Repositories.loadOccupationRepository(context).done(new DoneCallback<OccupationRepository>() {
 				@Override
 				public void onDone(OccupationRepository result) {
-					showNotification(context.getString(R.string.notification_leave_multiple_results));
+					showNotification(context.getString(R.string.notification_leave_multiple_results), null);
 				}
 			});
 		}
@@ -104,14 +121,17 @@ public class GeofencingBroadcastReceiver extends BroadcastReceiver {
 		return null;
 	}
 
-	public void showNotification(String s) {
+	public void showNotification(String s, PendingIntent intent) {
 		if (!testMode) {
 			NotificationCompat.Builder builder = new NotificationCompat.Builder(context)
 					.setSmallIcon(R.drawable.logo_square)
 					.setContentTitle(context.getString(R.string.notification_title))
 					.setContentText(s)
 					.setLights(0xFFed2b29, 1000, 1000)
-					.setSubText(context.getString(R.string.notification_title));
+					.setDefaults(Notification.DEFAULT_SOUND)
+					.setContentIntent(intent)
+					.setSubText(context.getString(R.string.notification_title))
+					.setContentInfo("New occupation suggestion");
 			NotificationManager manager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
 			manager.notify(1, builder.build());
 		} else {

@@ -2,6 +2,7 @@ package com.realdolmen.timeregistration.ui.dayregistration;
 
 import android.content.BroadcastReceiver;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.Bundle;
@@ -12,6 +13,7 @@ import android.support.design.widget.Snackbar;
 import android.support.design.widget.TabLayout;
 import android.support.v4.app.Fragment;
 import android.support.v4.view.ViewPager;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
@@ -56,12 +58,28 @@ import butterknife.Bind;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
 
-import static com.realdolmen.timeregistration.service.location.geofence.GeofenceUtils.*;
+import static com.realdolmen.timeregistration.service.location.geofence.GeofenceUtils.Events;
 
 public class DayRegistrationActivity extends AppCompatActivity {
 
 	private static final String LOG_TAG = DayRegistrationActivity.class.getSimpleName();
 
+
+	public interface Constants {
+		interface Actions {
+			interface FromNotifications {
+				String ADD_SINGLE_RESULT = "com.realdolmen.timeregistration.geofencing.ADD_SINGLE_RESULT";
+			}
+		}
+
+		interface ActionExtras {
+			interface FromNotifications {
+				interface AddSingleResult {
+					String OCCUPATION_ID = "com.realdolmen.timeregistration.geofencing.ADD_SINGLE_RESULT.OCCUPATION_ID";
+				}
+			}
+		}
+	}
 	//region UI fields
 
 	@Bind(R.id.day_registration_toolbar)
@@ -93,9 +111,13 @@ public class DayRegistrationActivity extends AppCompatActivity {
 	private BroadcastReceiver geofenceReceiver = new BroadcastReceiver() {
 		@Override
 		public void onReceive(Context context, Intent intent) {
-			switch(intent.getAction()) {
+			switch (intent.getAction()) {
 				case Events.GOOGLE_API_CONNECTION_FAILED:
 					Toast.makeText(DayRegistrationActivity.this, "Unable to connect to the Google API", Toast.LENGTH_LONG).show();
+					break;
+				case Events.GEOFENCING_FENCES_ADD_SUCCESS:
+					Toast.makeText(DayRegistrationActivity.this, "Fences added!", Toast.LENGTH_LONG).show();
+					break;
 			}
 		}
 	};
@@ -112,12 +134,57 @@ public class DayRegistrationActivity extends AppCompatActivity {
 		refreshTabIcons();
 		selectToday();
 		initLocationServices();
+
+		if (getIntent() != null && getIntent().getAction() != null) {
+			switch (getIntent().getAction()) {
+				case Constants.Actions.FromNotifications.ADD_SINGLE_RESULT:
+					final long occId = getIntent().getLongExtra(Constants.ActionExtras.FromNotifications.AddSingleResult.OCCUPATION_ID, 0);
+					if (occId == 0) {
+						Snackbar.make(findViewById(R.id.day_registration_root_view), "An error occured! Please manually add your occupation.", Snackbar.LENGTH_LONG).show();
+					} else {
+						Repositories.loadOccupationRepository(this).done(new DoneCallback<OccupationRepository>() {
+							@Override
+							public void onDone(OccupationRepository result) {
+								Occupation o = result.getById(occId);
+								if (o != null) {
+									showAddSingleResultConfirmationDialog(o);
+								} else {
+									Log.e(LOG_TAG, "An occupation with ID " + occId + " was not found!");
+								}
+							}
+						});
+					}
+					break;
+			}
+		}
+	}
+
+	private void showAddSingleResultConfirmationDialog(Occupation occupation) {
+		AlertDialog dialog = new AlertDialog.Builder(this)
+				.setMessage("Clicking 'Add' will add " + occupation.getName() + " to today's occupation list!")
+				.setPositiveButton("Add", new DialogInterface.OnClickListener() {
+					@Override
+					public void onClick(DialogInterface dialog, int which) {
+						dialog.dismiss();
+					}
+				})
+				.setNegativeButton("Don't Add", new DialogInterface.OnClickListener() {
+					@Override
+					public void onClick(DialogInterface dialog, int which) {
+						dialog.dismiss();
+					}
+				})
+				.setTitle("Add " + occupation.getName() + "?")
+				.create();
+
+		dialog.show();
 	}
 
 	@Override
 	protected void onResume() {
 		IntentFilter intentFilter = new IntentFilter();
 		intentFilter.addAction(Events.GOOGLE_API_CONNECTION_FAILED);
+		intentFilter.addAction(Events.GEOFENCING_FENCES_ADD_SUCCESS);
 		registerReceiver(geofenceReceiver, intentFilter);
 		super.onResume();
 	}

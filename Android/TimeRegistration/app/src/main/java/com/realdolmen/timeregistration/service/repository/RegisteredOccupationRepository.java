@@ -198,4 +198,11 @@ public class RegisteredOccupationRepository extends DataRepository<RegisteredOcc
 		});
 		return def.promise();
 	}
+
+	public RegisteredOccupation getById(long id) {
+		for(RegisteredOccupation o : data) {
+			if(o.getId() == id) return o;
+		}
+		return null;
+	}
 }

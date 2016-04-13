@@ -18,7 +18,7 @@
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
         </activity>
-        <activity android:name=".ui.dayregistration.DayRegistrationActivity"/>
+        <activity android:name=".ui.dayregistration.DayRegistrationActivity" android:launchMode="singleTask"/>
         <activity android:name=".ui.dayregistration.AddOccupationActivity" android:parentActivityName=".ui.dayregistration.DayRegistrationActivity">
         </activity>
 

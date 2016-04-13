@@ -111,6 +111,14 @@ public class OccupationRepository extends DataRepository<Occupation, Occupation,
 		return def.promise();
 	}
 
+	@Override
+	public Occupation getById(long id) {
+		for(Occupation o : data) {
+			if(o.getId() == id) return o;
+		}
+		return null;
+	}
+
 	public Project getByGeofence(Geofence geofence) {
 		for (Project p : getAllProjects()) {
 			if (p.getGeofences().contains(geofence))
