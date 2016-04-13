@@ -9,7 +9,7 @@ import com.google.gson.JsonDeserializer;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParseException;
-import com.realdolmen.timeregistration.Constants;
+import com.realdolmen.timeregistration.RC;
 import com.realdolmen.timeregistration.model.Occupation;
 import com.realdolmen.timeregistration.model.Project;
 import com.realdolmen.timeregistration.service.location.geofence.GeofenceUtils;
@@ -32,9 +32,9 @@ public class OccupationDeserializer implements JsonDeserializer<Occupation> {
 		if (json.has("DTYPE")) {
 			int DTYPE = json.get("DTYPE").getAsInt();
 			switch(DTYPE) {
-				case Constants.dtypes.PROJECT_DTYPE:
+				case RC.dtypes.PROJECT_DTYPE:
 					return createProject(json, context);
-				case Constants.dtypes.OCCUPATION_DTYPE:
+				case RC.dtypes.OCCUPATION_DTYPE:
 				default:
 					return createOccupation(json, context);
 			}

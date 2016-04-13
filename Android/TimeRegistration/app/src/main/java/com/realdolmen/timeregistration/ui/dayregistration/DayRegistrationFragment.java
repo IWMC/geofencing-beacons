@@ -18,6 +18,7 @@ import android.view.ViewGroup;
 import android.widget.LinearLayout;
 
 import com.android.volley.VolleyError;
+import com.realdolmen.timeregistration.RC;
 import com.realdolmen.timeregistration.R;
 import com.realdolmen.timeregistration.model.RegisteredOccupation;
 import com.realdolmen.timeregistration.service.ResultCallback;
@@ -54,8 +55,6 @@ public class DayRegistrationFragment extends Fragment {
 	private DayRegistrationActivity parent;
 
 	private AdapterState state;
-
-	public static final String DATE_PARAM = "DATE";
 
 	private DateTime selectedDate;
 
@@ -94,7 +93,7 @@ public class DayRegistrationFragment extends Fragment {
 	public void onViewCreated(final View view, Bundle savedInstanceState) {
 		super.onViewCreated(view, savedInstanceState);
 		if (getArguments() != null && !getArguments().isEmpty()) {
-			selectedDate = (DateTime) getArguments().getSerializable(DATE_PARAM);
+			selectedDate = (DateTime) getArguments().getSerializable(RC.arguments.registrationFragment.DATE_PARAM);
 		} else {
 			throw new IllegalStateException("DayRegistrationFragment requires a date argument.");
 		}

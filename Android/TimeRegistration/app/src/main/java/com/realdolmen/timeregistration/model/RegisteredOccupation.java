@@ -32,13 +32,17 @@ public class RegisteredOccupation implements Serializable {
 		return occupation;
 	}
 
-	public @UTC DateTime getRegisteredStart() {
+	public
+	@UTC
+	DateTime getRegisteredStart() {
 		DateUtil.enforceUTC(registeredStart);
 		return registeredStart;
 	}
 
-	public @UTC DateTime getRegisteredEnd() {
-		DateUtil.enforceUTC(registeredEnd);
+	@UTC
+	public DateTime getRegisteredEnd() {
+		if (registeredEnd != null)
+			DateUtil.enforceUTC(registeredEnd);
 		return registeredEnd;
 	}
 

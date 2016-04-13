@@ -16,6 +16,8 @@ import android.support.v4.view.ViewPager;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.text.Html;
+import android.text.format.DateFormat;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -27,8 +29,8 @@ import com.android.volley.VolleyError;
 import com.github.clans.fab.FloatingActionButton;
 import com.github.clans.fab.FloatingActionMenu;
 import com.google.android.gms.location.Geofence;
-import com.realdolmen.timeregistration.Constants;
 import com.realdolmen.timeregistration.R;
+import com.realdolmen.timeregistration.RC;
 import com.realdolmen.timeregistration.model.Occupation;
 import com.realdolmen.timeregistration.model.Project;
 import com.realdolmen.timeregistration.model.RegisteredOccupation;
@@ -51,6 +53,7 @@ import org.jdeferred.FailCallback;
 import org.jdeferred.Promise;
 import org.jdeferred.impl.DeferredObject;
 import org.joda.time.DateTime;
+import org.joda.time.DateTimeZone;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -59,15 +62,15 @@ import butterknife.Bind;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
 
-import static com.realdolmen.timeregistration.Constants.actionExtras.addOccupation.BASE_DATE;
-import static com.realdolmen.timeregistration.Constants.actionExtras.addOccupation.EDITING_OCCUPATION;
-import static com.realdolmen.timeregistration.Constants.actionExtras.addOccupation.END_DATE;
-import static com.realdolmen.timeregistration.Constants.actionExtras.addOccupation.SELECTED_OCCUPATION;
-import static com.realdolmen.timeregistration.Constants.actionExtras.addOccupation.START_DATE;
-import static com.realdolmen.timeregistration.Constants.actions.addOccupation.ACTION_ADD;
-import static com.realdolmen.timeregistration.Constants.actions.addOccupation.ACTION_EDIT;
-import static com.realdolmen.timeregistration.Constants.resultCodes.addOccupation.ADD_RESULT_CODE;
-import static com.realdolmen.timeregistration.Constants.resultCodes.addOccupation.EDIT_RESULT_CODE;
+import static com.realdolmen.timeregistration.RC.actionExtras.addOccupation.BASE_DATE;
+import static com.realdolmen.timeregistration.RC.actionExtras.addOccupation.EDITING_OCCUPATION;
+import static com.realdolmen.timeregistration.RC.actionExtras.addOccupation.END_DATE;
+import static com.realdolmen.timeregistration.RC.actionExtras.addOccupation.SELECTED_OCCUPATION;
+import static com.realdolmen.timeregistration.RC.actionExtras.addOccupation.START_DATE;
+import static com.realdolmen.timeregistration.RC.actions.addOccupation.ACTION_ADD;
+import static com.realdolmen.timeregistration.RC.actions.addOccupation.ACTION_EDIT;
+import static com.realdolmen.timeregistration.RC.resultCodes.addOccupation.ADD_RESULT_CODE;
+import static com.realdolmen.timeregistration.RC.resultCodes.addOccupation.EDIT_RESULT_CODE;
 
 
 public class DayRegistrationActivity extends AppCompatActivity {
@@ -107,11 +110,11 @@ public class DayRegistrationActivity extends AppCompatActivity {
 		@Override
 		public void onReceive(Context context, Intent intent) {
 			switch (intent.getAction()) {
-				case Constants.geofencing.events.GOOGLE_API_CONNECTION_FAILED:
+				case RC.geofencing.events.GOOGLE_API_CONNECTION_FAILED:
 					Toast.makeText(DayRegistrationActivity.this, "Unable to connect to the Google API", Toast.LENGTH_LONG).show();
 					break;
-				case Constants.geofencing.events.GEOFENCING_FENCES_ADD_FAIL:
-					Toast.makeText(DayRegistrationActivity.this, "Fences added!", Toast.LENGTH_LONG).show();
+				case RC.geofencing.events.FENCES_ADD_FAIL:
+					Toast.makeText(DayRegistrationActivity.this, "Fences were not correctly added!", Toast.LENGTH_LONG).show();
 					break;
 			}
 		}
@@ -136,11 +139,11 @@ public class DayRegistrationActivity extends AppCompatActivity {
 	}
 
 	@Override
-	protected void onNewIntent(Intent intent) {
+	protected void onNewIntent(final Intent intent) {
 		if (intent != null && intent.getAction() != null)
 			switch (intent.getAction()) {
-				case Constants.actions.fromNotifications.ADD_SINGLE_RESULT:
-					final long occId = intent.getLongExtra(Constants.actionExtras.fromNotifications.addSingleResult.OCCUPATION_ID, 0);
+				case RC.actions.fromNotifications.ADD_SINGLE_RESULT:
+					final long occId = intent.getLongExtra(RC.actionExtras.fromNotifications.addSingleResult.OCCUPATION_ID, 0);
 					if (occId == 0) {
 						Snackbar.make(findViewById(R.id.day_registration_root_view), "An error occured! Please manually add your occupation.", Snackbar.LENGTH_LONG).show();
 					} else {
@@ -148,8 +151,9 @@ public class DayRegistrationActivity extends AppCompatActivity {
 							@Override
 							public void onDone(OccupationRepository result) {
 								Occupation o = result.getById(occId);
-								if (o != null) {
-									showAddSingleResultConfirmationDialog(o);
+								DateTime time = (DateTime) intent.getSerializableExtra(RC.actionExtras.fromNotifications.addSingleResult.TIME_DETECTED);
+								if (o != null && time != null) {
+									showAddSingleResultConfirmationDialog(time, o);
 								} else {
 									Log.e(LOG_TAG, "An occupation with ID " + occId + " was not found!");
 								}
@@ -160,22 +164,23 @@ public class DayRegistrationActivity extends AppCompatActivity {
 			}
 	}
 
-	private void showAddSingleResultConfirmationDialog(Occupation occupation) {
+	private void showAddSingleResultConfirmationDialog(final DateTime registeredTime, final Occupation occupation) {
 		AlertDialog dialog = new AlertDialog.Builder(this)
-				.setMessage("Clicking 'Add' will add " + occupation.getName() + " to today's occupation list!")
-				.setPositiveButton("Add", new DialogInterface.OnClickListener() {
+				.setMessage(Html.fromHtml(getString(R.string.add_suggested_single_result, occupation.getName(), DateUtil.formatToHours(registeredTime, DateFormat.is24HourFormat(getApplicationContext())))))
+				.setPositiveButton(getString(R.string.add_single_result_positive_button), new DialogInterface.OnClickListener() {
+					@Override
+					public void onClick(DialogInterface dialog, int which) {
+						dialog.dismiss();
+						handleNewlyRegisteredOccupation(occupation, registeredTime.withZone(DateTimeZone.UTC), null);
+					}
+				})
+				.setNegativeButton(getString(R.string.add_single_result_negative_button), new DialogInterface.OnClickListener() {
 					@Override
 					public void onClick(DialogInterface dialog, int which) {
 						dialog.dismiss();
 					}
 				})
-				.setNegativeButton("Don't Add", new DialogInterface.OnClickListener() {
-					@Override
-					public void onClick(DialogInterface dialog, int which) {
-						dialog.dismiss();
-					}
-				})
-				.setTitle("Add " + occupation.getName() + "?")
+				.setTitle(getString(R.string.add_single_result_title, occupation.getName()))
 				.create();
 
 		dialog.show();
@@ -184,8 +189,8 @@ public class DayRegistrationActivity extends AppCompatActivity {
 	@Override
 	protected void onResume() {
 		IntentFilter intentFilter = new IntentFilter();
-		intentFilter.addAction(Constants.geofencing.events.GOOGLE_API_CONNECTION_FAILED);
-		intentFilter.addAction(Constants.geofencing.events.GEOFENCING_FENCES_ADD_SUCCESS);
+		intentFilter.addAction(RC.geofencing.events.GOOGLE_API_CONNECTION_FAILED);
+		intentFilter.addAction(RC.geofencing.events.FENCES_ADD_SUCCESS);
 		registerReceiver(geofenceReceiver, intentFilter);
 		super.onResume();
 	}
@@ -505,12 +510,14 @@ public class DayRegistrationActivity extends AppCompatActivity {
 		});
 	}
 
-	private void handleNewlyRegisteredOccupation(Occupation occ, @UTC DateTime start, @UTC DateTime end) {
+	private void handleNewlyRegisteredOccupation(@NonNull Occupation occ, @NonNull @UTC DateTime start, @Nullable @UTC DateTime end) {
 		DateUtil.enforceUTC(start, "Start date must be in UTC format!");
-		DateUtil.enforceUTC(end, "End date must be in UTC format!");
+		if (end != null)
+			DateUtil.enforceUTC(end, "End date must be in UTC format!");
 		final RegisteredOccupation ro = new RegisteredOccupation();
 		ro.setRegisteredStart(start);
-		ro.setRegisteredEnd(end);
+		if (end != null)
+			ro.setRegisteredEnd(end);
 		ro.setOccupation(occ);
 
 		Repositories.loadRegisteredOccupationRepository(this, new LoadCallback() {

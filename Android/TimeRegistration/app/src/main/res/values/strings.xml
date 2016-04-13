@@ -33,4 +33,8 @@
     <string name="notification_enter_multiple_results">Which project are you going to work on?</string>
     <string name="notification_leave_single_result">Are you done working on %s?</string>
     <string name="notification_leave_multiple_results">What project have you worked on?</string>
+    <string name="add_suggested_single_result"><![CDATA[Clicking \'Add\' will add <b>%1$s</b> to today\'s occupation list at <b>%2$s</b>.]]></string>
+    <string name="add_single_result_positive_button">Add</string>
+    <string name="add_single_result_negative_button">Don\'t Add</string>
+    <string name="add_single_result_title">Add %s?</string>
 </resources>

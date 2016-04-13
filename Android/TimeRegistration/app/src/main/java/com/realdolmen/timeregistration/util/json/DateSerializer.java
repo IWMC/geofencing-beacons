@@ -15,6 +15,8 @@ import java.lang.reflect.Type;
 public class DateSerializer implements JsonSerializer<DateTime> {
 	@Override
 	public JsonElement serialize(@UTC DateTime src, Type typeOfSrc, JsonSerializationContext context) {
+		if (src == null)
+			return null;
 		DateUtil.enforceUTC(src, "Date to serialize must be in UTC format!");
 		return new JsonPrimitive(ISODateTimeFormat.dateTime().print(src));
 	}

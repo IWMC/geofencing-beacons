@@ -1,6 +1,6 @@
 package com.realdolmen.timeregistration.model;
 
-import com.realdolmen.timeregistration.Constants;
+import com.realdolmen.timeregistration.RC;
 
 import java.io.Serializable;
 
@@ -33,7 +33,7 @@ public class Occupation implements Serializable {
 		this.description = description;
 	}
 
-	private transient final int DTYPE = Constants.dtypes.OCCUPATION_DTYPE;
+	private transient final int DTYPE = RC.dtypes.OCCUPATION_DTYPE;
 
 	public Occupation(String name) {
 		this.name = name;

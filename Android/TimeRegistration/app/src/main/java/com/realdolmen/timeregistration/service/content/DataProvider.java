@@ -7,9 +7,9 @@ import android.database.Cursor;
 import android.net.Uri;
 import android.support.annotation.Nullable;
 
-import static com.realdolmen.timeregistration.Constants.provider.Codes.AVAILABLE_OCCUPATIONS;
-import static com.realdolmen.timeregistration.Constants.provider.Codes.REGISTERED_OCCUPATIONS;
-import static com.realdolmen.timeregistration.Constants.provider.Codes.ROOT;
+import static com.realdolmen.timeregistration.RC.provider.Codes.AVAILABLE_OCCUPATIONS;
+import static com.realdolmen.timeregistration.RC.provider.Codes.REGISTERED_OCCUPATIONS;
+import static com.realdolmen.timeregistration.RC.provider.Codes.ROOT;
 
 /**
  * Provider for the application's backend data. The following Uri patterns are defined:

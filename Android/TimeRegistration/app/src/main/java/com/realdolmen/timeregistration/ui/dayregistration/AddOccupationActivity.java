@@ -20,7 +20,7 @@ import android.widget.TableRow;
 import android.widget.TextView;
 import android.widget.TimePicker;
 
-import com.realdolmen.timeregistration.Constants;
+import com.realdolmen.timeregistration.RC;
 import com.realdolmen.timeregistration.R;
 import com.realdolmen.timeregistration.model.Occupation;
 import com.realdolmen.timeregistration.model.RegisteredOccupation;
@@ -36,11 +36,11 @@ import butterknife.Bind;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
 
-import static com.realdolmen.timeregistration.Constants.actionExtras.addOccupation.BASE_DATE;
-import static com.realdolmen.timeregistration.Constants.actionExtras.addOccupation.EDITING_OCCUPATION;
-import static com.realdolmen.timeregistration.Constants.actionExtras.addOccupation.END_DATE;
-import static com.realdolmen.timeregistration.Constants.actionExtras.addOccupation.SELECTED_OCCUPATION;
-import static com.realdolmen.timeregistration.Constants.actionExtras.addOccupation.START_DATE;
+import static com.realdolmen.timeregistration.RC.actionExtras.addOccupation.BASE_DATE;
+import static com.realdolmen.timeregistration.RC.actionExtras.addOccupation.EDITING_OCCUPATION;
+import static com.realdolmen.timeregistration.RC.actionExtras.addOccupation.END_DATE;
+import static com.realdolmen.timeregistration.RC.actionExtras.addOccupation.SELECTED_OCCUPATION;
+import static com.realdolmen.timeregistration.RC.actionExtras.addOccupation.START_DATE;
 import static com.realdolmen.timeregistration.util.DateUtil.enforceUTC;
 import static com.realdolmen.timeregistration.util.DateUtil.toLocal;
 import static com.realdolmen.timeregistration.util.DateUtil.toUTC;
@@ -92,7 +92,7 @@ public class AddOccupationActivity extends AppCompatActivity {
 		enforceUTC(bd);
 		baseDate = bd;
 
-		if (getIntent().getAction().equals(Constants.actions.addOccupation.ACTION_EDIT)) {
+		if (getIntent().getAction().equals(RC.actions.addOccupation.ACTION_EDIT)) {
 			if (!getIntent().hasExtra(EDITING_OCCUPATION)) {
 				throw new IllegalArgumentException("When in edit mode, a RegisteredOccupation (EDITING_OCCUPATION) is required as extra!");
 			}
@@ -182,7 +182,11 @@ public class AddOccupationActivity extends AppCompatActivity {
 				startDate = toLocal(registeredOccupationToBeEdited.getRegisteredStart());
 
 			if (endDate == null)
-				endDate = toLocal(registeredOccupationToBeEdited.getRegisteredEnd());
+				if(registeredOccupationToBeEdited.getRegisteredEnd() == null) {
+					endDate = new DateTime();
+				} else {
+					endDate = toLocal(registeredOccupationToBeEdited.getRegisteredEnd());
+				}
 		}
 		System.out.println("Update buttons! START: " + startDate + " END: " + endDate);
 		startButton.setText(DateUtil.formatToHours(startDate, DateFormat.is24HourFormat(getApplicationContext())));

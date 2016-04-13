@@ -5,6 +5,7 @@ import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
 
+import com.realdolmen.timeregistration.RC;
 import com.realdolmen.timeregistration.ui.dayregistration.DayRegistrationActivity;
 import com.realdolmen.timeregistration.ui.dayregistration.DayRegistrationFragment;
 import com.realdolmen.timeregistration.util.DateUtil;
@@ -29,7 +30,7 @@ public class DayRegistrationFragmentPagerAdapter extends FragmentPagerAdapter {
 		final DayRegistrationFragment fragment = new DayRegistrationFragment();
 		Bundle args = new Bundle();
 		DateTime date = activity.getDates().get(position);
-		args.putSerializable(DayRegistrationFragment.DATE_PARAM, date);
+		args.putSerializable(RC.arguments.registrationFragment.DATE_PARAM, date);
 		activity.isDateConfirmed(date).done(new DoneCallback<Boolean>() {
 			@Override
 			public void onDone(Boolean result) {

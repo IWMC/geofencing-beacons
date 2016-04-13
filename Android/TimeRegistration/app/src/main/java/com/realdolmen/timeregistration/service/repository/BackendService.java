@@ -36,13 +36,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import static com.realdolmen.timeregistration.Constants.backend.urls.API_ADD_OCCUPATION_REGISTRATION;
-import static com.realdolmen.timeregistration.Constants.backend.urls.API_CONFIRM_OCCUPATIONS;
-import static com.realdolmen.timeregistration.Constants.backend.urls.API_GET_OCCUPATIONS;
-import static com.realdolmen.timeregistration.Constants.backend.urls.API_GET_REGISTERED_OCCUPATIONS;
-import static com.realdolmen.timeregistration.Constants.backend.urls.API_GET_REGISTERED_OCCUPATIONS_RANGE;
-import static com.realdolmen.timeregistration.Constants.backend.urls.API_LOGIN_URI;
-import static com.realdolmen.timeregistration.Constants.backend.urls.API_REMOVE_REGISTERED_OCCUPATION;
+import static com.realdolmen.timeregistration.RC.backend.urls.API_ADD_OCCUPATION_REGISTRATION;
+import static com.realdolmen.timeregistration.RC.backend.urls.API_CONFIRM_OCCUPATIONS;
+import static com.realdolmen.timeregistration.RC.backend.urls.API_GET_OCCUPATIONS;
+import static com.realdolmen.timeregistration.RC.backend.urls.API_GET_REGISTERED_OCCUPATIONS;
+import static com.realdolmen.timeregistration.RC.backend.urls.API_GET_REGISTERED_OCCUPATIONS_RANGE;
+import static com.realdolmen.timeregistration.RC.backend.urls.API_LOGIN_URI;
+import static com.realdolmen.timeregistration.RC.backend.urls.API_REMOVE_REGISTERED_OCCUPATION;
 
 /**
  * A backend interface to facilitate communication with the backend. It also manages caching using SQLite.

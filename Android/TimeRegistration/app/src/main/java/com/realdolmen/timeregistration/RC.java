@@ -1,9 +1,10 @@
 package com.realdolmen.timeregistration;
 
-public interface Constants {
+public interface RC {
 	interface actions {
 		interface fromNotifications {
 			String ADD_SINGLE_RESULT = "com.realdolmen.timeregistration.geofencing.ADD_SINGLE_RESULT";
+			String ADD_MULTI_RESULT = "com.realdolmen.timeregistration.geofencing.ADD_MULTI_RESULT";
 		}
 
 		interface addOccupation {
@@ -15,11 +16,22 @@ public interface Constants {
 		interface fromNotifications {
 			interface addSingleResult {
 				String OCCUPATION_ID = "com.realdolmen.timeregistration.geofencing.ADD_SINGLE_RESULT.OCCUPATION_ID";
+				String TIME_DETECTED = "com.realdolmen.timeregistration.geofencing.ADD_SINGLE_RESULT.TIME_DETECTED";
+			}
+
+			interface addMultiResult {
+				String GEOFENCE_EVENT = "com.realdolmen.timeregistration.geofencing.ADD_MULTI_RESULT.GEOFENCE_EVENT";
 			}
 		}
 
 		interface addOccupation {
 			String START_DATE = "SD", END_DATE = "ED", BASE_DATE = "BD", SELECTED_OCCUPATION = "SO", EDITING_OCCUPATION = "EO";
+		}
+	}
+
+	interface arguments {
+		interface registrationFragment {
+			String DATE_PARAM = "DATE";
 		}
 	}
 
@@ -32,8 +44,9 @@ public interface Constants {
 	interface geofencing {
 		interface events {
 			String GOOGLE_API_CONNECTION_FAILED = "com.realdolmen.timeregistration.geofencing.GAPI_CONN_FAILED";
-			String GEOFENCING_FENCES_ADD_SUCCESS = "com.realdolmen.timeregistration.geofencing.FENCES_ADD_SUCCESS";
-			String GEOFENCING_FENCES_ADD_FAIL = "com.realdolmen.timeregistration.geofencing.FENCES_ADD_FAIL";
+			String FENCES_ADD_SUCCESS = "com.realdolmen.timeregistration.geofencing.FENCES_ADD_SUCCESS";
+			String FENCES_ADD_FAIL = "com.realdolmen.timeregistration.geofencing.FENCES_ADD_FAIL";
+			String GEOFENCE_ERROR = "com.realdolmen.timeregistration.geofencing.FENCE_ERROR";
 		}
 
 		interface requests {
@@ -43,7 +56,7 @@ public interface Constants {
 
 		String LOCATION_SERVICES_CATEGORY = "com.realdolmen.location.CATEGORY";
 
-		int POLL_INTERVAL = DEV_MODE ? 5000 : 10 * 60 * 1000;
+		int POLL_INTERVAL = other.DEV_MODE ? 5000 : 10 * 60 * 1000;
 	}
 
 	interface provider {
@@ -72,5 +85,8 @@ public interface Constants {
 		int PROJECT_DTYPE = 2;
 	}
 
-	boolean DEV_MODE = true;
+	interface other {
+		boolean DEV_MODE = true;
+	}
+
 }
