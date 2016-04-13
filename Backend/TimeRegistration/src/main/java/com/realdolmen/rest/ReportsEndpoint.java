@@ -11,6 +11,10 @@ import com.realdolmen.service.SecurityManager;
 
 import javax.ejb.Stateless;
 import javax.inject.Inject;
+import javax.json.Json;
+import javax.json.JsonArrayBuilder;
+import javax.json.JsonObject;
+import javax.json.JsonObjectBuilder;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
@@ -31,6 +35,7 @@ import java.util.function.Function;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 /**
@@ -64,33 +69,40 @@ public class ReportsEndpoint {
     @GET
     @Path("employees")
     @Produces({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
+    @SuppressWarnings("unchecked")
     public Response filteredEmployeeList(@QueryParam("values") String projection,
                                          @QueryParam("where") String selection,
                                          @QueryParam("start") Integer startPosition,
                                          @QueryParam("max") Integer max) {
         CriteriaQuery query = em.getCriteriaBuilder().createQuery();
         Root<Employee> root = query.from(Employee.class);
+        List<String> fieldList = streamFromRegexGroups(projection, "[a-zA-Z]").collect(Collectors.toList());
 
         if (selection != null)
             query.where(predicateStreamToArray(createPredicatesByQuery(root, query, selection)));
 
-        query.select(root);
+        if (projection == null || projection.isEmpty()) {
+            query.select(root);
+        } else {
+            query.multiselect(fieldList.stream().map(root::get).collect(Collectors.toList()));
+        }
 
         Query employeeQuery = em.createQuery(query);
-        employeeQuery.getResultList().stream().filter(e -> e instanceof Employee)
-                .forEach(e -> Employee.initialize((Employee) e));
+        if (projection == null || projection.isEmpty()) {
+            employeeQuery.getResultList().stream().filter(e -> e instanceof Employee)
+                    .forEach(e -> Employee.initialize((Employee) e));
+            return Response.ok(employeeQuery.getResultList()).build();
+        } else {
+            JsonArrayBuilder arrayBuilder = Json.createArrayBuilder();
+            employeeQuery.getResultList().stream().map(e -> {
+                Object[] arr = (Object[]) e;
+                JsonObjectBuilder builder = Json.createObjectBuilder();
+                IntStream.range(0, arr.length).forEach(i -> builder.add(fieldList.get(i), arr[i].toString()));
+                return builder.build();
+            }).forEach(o -> arrayBuilder.add((JsonObject) o));
 
-        return Response.ok(employeeQuery.getResultList()).build();
-//
-//
-//        if (projection == null || projection.isEmpty()) {
-//            return Response.ok(listEmployeesInternal(startPosition, max)).build();
-//        }
-//
-//        JsonNode array = mapToJsonNode(listEmployeesInternal(startPosition, max));
-//        String[] selectionArray = projection.split(PROJECTION_DELIMITER);
-//        filterNodeBySelectionArgs(array, Arrays.asList(selectionArray));
-//        return Response.ok(array).build();
+            return Response.ok(arrayBuilder.build()).build();
+        }
     }
 
     // endregion
@@ -150,16 +162,20 @@ public class ReportsEndpoint {
         });
     }
 
-    private <E> Stream<Predicate> createPredicatesByQueryOperator(Root<E> root, CriteriaQuery query, String selection,
-                                                                  String operator,
-                                                                  Function<Pair<String, String>, Predicate> criteriaMap) {
+    private Stream<String> streamFromRegexGroups(String text, String regexp) {
         Stream.Builder<String> stream = Stream.builder();
-        Matcher matcher = Pattern.compile("[a-zA-Z]+" + operator + "\\w+").matcher(selection);
+        Matcher matcher = Pattern.compile("[a-zA-Z]+" + regexp + "\\w+").matcher(text);
         while (matcher.find()) {
             stream.add(matcher.group());
         }
 
-        return stream.build().map(kv -> {
+        return stream.build();
+    }
+
+    private <E> Stream<Predicate> createPredicatesByQueryOperator(Root<E> root, CriteriaQuery query, String selection,
+                                                                  String operator,
+                                                                  Function<Pair<String, String>, Predicate> criteriaMap) {
+        return streamFromRegexGroups(selection, operator).map(kv -> {
             String[] split = kv.split(operator);
             return new Pair<>(split[0].trim(), split[1].trim());
         }).map(criteriaMap::apply).filter(p -> p != null);
@@ -172,7 +188,7 @@ public class ReportsEndpoint {
             String second = selection.substring(selection.indexOf("|") + 1, selection.length());
             Predicate[] predicatesLeft = predicateStreamToArray(createPredicatesByQuery(root, query, first));
             Predicate[] predicatesRight = predicateStreamToArray(createPredicatesByQuery(root, query, second));
-            final Predicate[] alwaysFalse = new Predicate[] { em.getCriteriaBuilder().disjunction() };
+            final Predicate[] alwaysFalse = new Predicate[]{em.getCriteriaBuilder().disjunction()};
 
             return Stream.of(em.getCriteriaBuilder().or(
                     em.getCriteriaBuilder().and(predicatesLeft.length == 0 ? alwaysFalse : predicatesLeft),

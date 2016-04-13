@@ -47,7 +47,7 @@ import java.util.Set;
 @Named
 @Inheritance(strategy = InheritanceType.JOINED)
 public class Employee implements Serializable {
-    
+
     /**
      * Initializes all lazy properties and collections of the entity recursively. Expects to be invoked while still running
      * in a session.
