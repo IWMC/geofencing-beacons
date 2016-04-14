@@ -67,8 +67,10 @@ public class GeofenceRequester implements ConnectionCallbacks, OnConnectionFaile
 		for (Geofence geofence : geofences) {
 			geofenceIds.add(geofence.getRequestId());
 		}
-		getGeofencingApi().removeGeofences(getGoogleApiClient(), geofenceIds);
-		getFusedLocationApi().removeLocationUpdates(getGoogleApiClient(), this);
+		if (geofenceIds != null && !geofenceIds.isEmpty())
+			getGeofencingApi().removeGeofences(getGoogleApiClient(), geofenceIds);
+		if (pollMode)
+			getFusedLocationApi().removeLocationUpdates(getGoogleApiClient(), this);
 		getGoogleApiClient().disconnect();
 	}
 

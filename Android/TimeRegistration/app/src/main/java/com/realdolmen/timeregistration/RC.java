@@ -1,10 +1,14 @@
 package com.realdolmen.timeregistration;
 
+/**
+ * Generated
+ */
 public interface RC {
 	interface actions {
 		interface fromNotifications {
 			String ADD_SINGLE_RESULT = "com.realdolmen.timeregistration.geofencing.ADD_SINGLE_RESULT";
 			String ADD_MULTI_RESULT = "com.realdolmen.timeregistration.geofencing.ADD_MULTI_RESULT";
+			String REMOVE_SINGLE_RESULT = "com.realdolmen.timeregistration.geofencing.REMOVE_SINGLE_RESULT";
 		}
 
 		interface addOccupation {
@@ -21,6 +25,11 @@ public interface RC {
 
 			interface addMultiResult {
 				String GEOFENCE_EVENT = "com.realdolmen.timeregistration.geofencing.ADD_MULTI_RESULT.GEOFENCE_EVENT";
+			}
+
+			interface removeSingleResult {
+				String OCCUPATION_ID = "com.realdolmen.timeregistration.geofencing.REMOVE_SINGLE_RESULT.OCCUPATION_ID";
+				String TIME_DETECTED = "com.realdolmen.timeregistration.geofencing.REMOVE_SINGLE_RESULT.TIME_DETECTED";
 			}
 		}
 
@@ -67,7 +76,7 @@ public interface RC {
 
 	interface backend {
 
-		String HOST = "http://10.16.26.142";
+		String HOST = "http://10.16.25.141";
 
 		interface urls {
 			String API_LOGIN_URI = HOST + "/api/user/login",
@@ -87,6 +96,7 @@ public interface RC {
 
 	interface other {
 		boolean DEV_MODE = true;
+		boolean KEEP_NOTIFICATIONS = false;
 	}
 
 }

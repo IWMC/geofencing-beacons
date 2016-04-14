@@ -207,6 +207,16 @@ public class RegisteredOccupationRepository extends DataRepository<RegisteredOcc
 		return false;
 	}
 
+	public List<RegisteredOccupation> getOngoingProjects(DateTime date) {
+		List<RegisteredOccupation> ros = new ArrayList<>();
+		for (RegisteredOccupation ro : getAll(date)) {
+			if (ro.getRegisteredEnd() == null)
+				ros.add(ro);
+		}
+
+		return ros;
+	}
+
 	public RegisteredOccupation getById(long id) {
 		for (RegisteredOccupation o : data) {
 			if (o.getId() == id) return o;

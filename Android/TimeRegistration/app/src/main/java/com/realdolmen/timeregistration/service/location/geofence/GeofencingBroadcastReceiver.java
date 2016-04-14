@@ -66,7 +66,7 @@ public class GeofencingBroadcastReceiver extends BroadcastReceiver {
 		if (event.getGeofenceTransition() == GeofencingRequest.INITIAL_TRIGGER_ENTER) {
 			doNotificationEnter(event, intent, event.getTriggeringGeofences());
 		} else if (event.getGeofenceTransition() == GeofencingRequest.INITIAL_TRIGGER_EXIT) {
-			doNotificationLeave(event.getTriggeringGeofences());
+			doNotificationLeave(event, intent, event.getTriggeringGeofences());
 		}
 	}
 
@@ -109,7 +109,8 @@ public class GeofencingBroadcastReceiver extends BroadcastReceiver {
 					.setContentText(context.getString(R.string.notification_enter_single_result, o))
 					.setLights(0xFFed2b29, 1000, 1000)
 					.setDefaults(Notification.DEFAULT_SOUND)
-					.setContentIntent(pendingIntent);
+					.setContentIntent(pendingIntent)
+					.setAutoCancel(!RC.other.KEEP_NOTIFICATIONS);
 
 			if (o instanceof Project) {
 				builder.setContentInfo("#" + ((Project) o).getProjectNr());
@@ -137,7 +138,8 @@ public class GeofencingBroadcastReceiver extends BroadcastReceiver {
 					.setContentText(context.getString(R.string.notification_enter_multiple_results))
 					.setLights(0xFFed2b29, 1000, 1000)
 					.setDefaults(Notification.DEFAULT_SOUND)
-					.setContentIntent(pendingIntent);
+					.setContentIntent(pendingIntent)
+					.setAutoCancel(!RC.other.KEEP_NOTIFICATIONS);
 
 			NotificationManager manager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
 			manager.notify(1, builder.build());
@@ -149,17 +151,37 @@ public class GeofencingBroadcastReceiver extends BroadcastReceiver {
 
 
 
-	public Promise doNotificationLeave(final List<Geofence> geofences) {
+	public Promise doNotificationLeave(final GeofencingEvent geoEvent, final Intent event, final List<Geofence> geofences) {
 		if (geofences.size() == 1) {
 			return Repositories.loadOccupationRepository(context).done(new DoneCallback<OccupationRepository>() {
 				@Override
 				public void onDone(OccupationRepository result) {
 					Occupation o = result.getByGeofence(geofences.get(0));
-					Intent intent = new Intent();
-					intent.setAction(RC.actions.fromNotifications.ADD_SINGLE_RESULT);
-					intent.putExtra(RC.actionExtras.fromNotifications.addSingleResult.OCCUPATION_ID, o.getId());
-					PendingIntent pendingIntent = PendingIntent.getActivity(context, 0, intent, 0);
-					//TODO: showNotification(context.getString(R.string.notification_leave_single_result, o), null);
+					Intent intent = new Intent(context, DayRegistrationActivity.class);
+					intent.setAction(RC.actions.fromNotifications.REMOVE_SINGLE_RESULT);
+					intent.putExtra(RC.actionExtras.fromNotifications.removeSingleResult.OCCUPATION_ID, o.getId());
+					intent.putExtra(RC.actionExtras.fromNotifications.removeSingleResult.TIME_DETECTED, new DateTime(geoEvent.getTriggeringLocation().getTime()));
+
+					intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
+
+					PendingIntent pendingIntent = PendingIntent.getActivity(context, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
+
+					if (!testMode) {
+						NotificationCompat.Builder builder = new NotificationCompat.Builder(context)
+								.setSmallIcon(R.drawable.logo_square)
+								.setContentTitle(context.getString(R.string.notification_title))
+								.setContentText(context.getString(R.string.notification_leave_single_result, o))
+								.setLights(0xFFed2b29, 1000, 1000)
+								.setDefaults(Notification.DEFAULT_SOUND)
+								.setContentIntent(pendingIntent)
+								.setAutoCancel(!RC.other.KEEP_NOTIFICATIONS);
+
+						NotificationManager manager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
+						manager.notify(1, builder.build());
+					} else {
+						NotificationManager manager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
+						manager.notify(1, new Notification());
+					}
 				}
 			});
 		} else if (geofences.size() > 1) {

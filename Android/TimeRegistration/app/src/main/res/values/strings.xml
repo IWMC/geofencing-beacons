@@ -38,4 +38,8 @@
     <string name="add_single_result_negative_button">Don\'t Add</string>
     <string name="add_single_result_title">Add %s?</string>
     <string name="day_registration_confirm_ongoing_occupations">You still have ongoing occupations!</string>
+    <string name="dialog_positive_yes">Yes</string>
+    <string name="dialog_negative_no">No</string>
+    <string name="notification_remove_single_result_message"><![CDATA[It seems like you are leaving <b>%1$s</b>. Do you wish to finish your occupation on <b>%2$s</b>?]]></string>
+    <string name="notification_remove_single_result_title">Finish %s?</string>
 </resources>

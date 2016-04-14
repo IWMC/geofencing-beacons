@@ -29,6 +29,7 @@ import com.android.volley.VolleyError;
 import com.github.clans.fab.FloatingActionButton;
 import com.github.clans.fab.FloatingActionMenu;
 import com.google.android.gms.location.Geofence;
+import com.google.android.gms.location.GeofencingEvent;
 import com.realdolmen.timeregistration.R;
 import com.realdolmen.timeregistration.RC;
 import com.realdolmen.timeregistration.model.Occupation;
@@ -56,6 +57,7 @@ import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import butterknife.Bind;
@@ -140,28 +142,91 @@ public class DayRegistrationActivity extends AppCompatActivity {
 
 	@Override
 	protected void onNewIntent(final Intent intent) {
-		if (intent != null && intent.getAction() != null)
+		if (intent != null && intent.getAction() != null) {
+
 			switch (intent.getAction()) {
 				case RC.actions.fromNotifications.ADD_SINGLE_RESULT:
-					final long occId = intent.getLongExtra(RC.actionExtras.fromNotifications.addSingleResult.OCCUPATION_ID, 0);
-					if (occId == 0) {
+					final long occId1 = intent.getLongExtra(RC.actionExtras.fromNotifications.addSingleResult.OCCUPATION_ID, 0);
+					if (occId1 == 0) {
 						Snackbar.make(findViewById(R.id.day_registration_root_view), "An error occured! Please manually add your occupation.", Snackbar.LENGTH_LONG).show();
 					} else {
 						Repositories.loadOccupationRepository(this).done(new DoneCallback<OccupationRepository>() {
 							@Override
 							public void onDone(OccupationRepository result) {
-								Occupation o = result.getById(occId);
+								Occupation o = result.getById(occId1);
 								DateTime time = (DateTime) intent.getSerializableExtra(RC.actionExtras.fromNotifications.addSingleResult.TIME_DETECTED);
 								if (o != null && time != null) {
 									showAddSingleResultConfirmationDialog(time, o);
 								} else {
-									Log.e(LOG_TAG, "An occupation with ID " + occId + " was not found!");
+									Log.e(LOG_TAG, "An occupation with ID " + occId1 + " was not found!");
 								}
 							}
 						});
 					}
 					break;
+				case RC.actions.fromNotifications.ADD_MULTI_RESULT:
+					Intent eventIntent = (Intent) intent.getSerializableExtra(RC.actionExtras.fromNotifications.addMultiResult.GEOFENCE_EVENT);
+					GeofencingEvent event = GeofencingEvent.fromIntent(eventIntent);
+					System.out.println(Arrays.toString(event.getTriggeringGeofences().toArray()));
+					break;
+
+				case RC.actions.fromNotifications.REMOVE_SINGLE_RESULT:
+					final long occId2 = intent.getLongExtra(RC.actionExtras.fromNotifications.removeSingleResult.OCCUPATION_ID, 0);
+					if (occId2 == 0) {
+						Snackbar.make(findViewById(R.id.day_registration_root_view), "An error occured! Please manually complete your occupation.", Snackbar.LENGTH_LONG).show();
+					} else {
+						Repositories.loadOccupationRepository(this).done(new DoneCallback<OccupationRepository>() {
+							@Override
+							public void onDone(OccupationRepository result) {
+								Occupation o = result.getById(occId2);
+								DateTime time = (DateTime) intent.getSerializableExtra(RC.actionExtras.fromNotifications.removeSingleResult.TIME_DETECTED);
+								if (o != null && time != null) {
+									showRemoveSingleResultConfirmationDialog(time, o);
+								} else {
+									Log.e(LOG_TAG, "An occupation with ID " + occId2 + " was not found!");
+								}
+							}
+						});
+					}
 			}
+		}
+	}
+
+	private void showRemoveSingleResultConfirmationDialog(final DateTime registeredTime, final Occupation occupation) {
+		Repositories.loadRegisteredOccupationRepository(this).done(new DoneCallback<RegisteredOccupationRepository>() {
+			@Override
+			public void onDone(RegisteredOccupationRepository result) {
+				List<RegisteredOccupation> ongoingProjects = result.getOngoingProjects(registeredTime.withZone(DateTimeZone.UTC));
+				for (final RegisteredOccupation ongoingProject : ongoingProjects) {
+					if (ongoingProject.getOccupation().getId() == occupation.getId()) { //if the ongoing project is the geofencing project
+						AlertDialog dialog = new AlertDialog.Builder(DayRegistrationActivity.this)
+								.setMessage(Html.fromHtml(getString(R.string.notification_remove_single_result_message,
+																	occupation.getName(),
+																	DateUtil.formatToHours(registeredTime, DateFormat.is24HourFormat(getApplicationContext()))
+								)))
+								.setPositiveButton(getString(R.string.dialog_positive_yes), new DialogInterface.OnClickListener() {
+									@Override
+									public void onClick(DialogInterface dialog, int which) {
+										dialog.dismiss();
+										ongoingProject.setRegisteredEnd(registeredTime.withZone(DateTimeZone.UTC));
+										handleUpdatedRegisteredOccupation(ongoingProject);
+									}
+								})
+								.setNegativeButton(getString(R.string.dialog_negative_no), new DialogInterface.OnClickListener() {
+									@Override
+									public void onClick(DialogInterface dialog, int which) {
+										dialog.dismiss();
+									}
+								})
+								.setTitle(getString(R.string.notification_remove_single_result_title, occupation.getName()))
+								.create();
+
+						dialog.show();
+						break;
+					}
+				}
+			}
+		});
 	}
 
 	private void showAddSingleResultConfirmationDialog(final DateTime registeredTime, final Occupation occupation) {
@@ -204,16 +269,7 @@ public class DayRegistrationActivity extends AppCompatActivity {
 	private void initLocationServices() {
 		startService(new Intent(this, GeoService.class));
 		geofenceRequester = new GeofenceRequester(this);
-		Repositories.loadOccupationRepository(this).done(new DoneCallback<OccupationRepository>() {
-			@Override
-			public void onDone(OccupationRepository result) {
-				List<Geofence> geofences = new ArrayList<>();
-				for (Project project : Repositories.occupationRepository().getAllProjects()) {
-					geofences.addAll(project.getGeofences());
-				}
-				geofenceRequester.addGeofences(geofences);
-			}
-		});
+		refreshGeofences(false);
 	}
 
 	private void initSupportActionBar() {
@@ -386,11 +442,29 @@ public class DayRegistrationActivity extends AppCompatActivity {
 		});
 	}
 
+	public void refreshGeofences(final boolean refresh) {
+		Repositories.loadOccupationRepository(this).done(new DoneCallback<OccupationRepository>() {
+			@Override
+			public void onDone(OccupationRepository result) {
+				List<Geofence> geofences = new ArrayList<>();
+				for (Project project : Repositories.occupationRepository().getAllProjects()) {
+					geofences.addAll(project.getGeofences());
+				}
+				geofenceRequester.addGeofences(geofences);
+				if (refresh) {
+					geofenceRequester.disconnect();
+					geofenceRequester.connect();
+				}
+			}
+		});
+	}
+
 	public void refreshView(final int position) {
 		final DateTime date = dates.get(position);
 		refreshTabIcons();
 		refreshFabs(date);
 		//region loadRegisteredOccupationRepo
+
 		Repositories.loadRegisteredOccupationRepository(this).done(new DoneCallback<RegisteredOccupationRepository>() {
 			@Override
 			public void onDone(RegisteredOccupationRepository result) {
@@ -446,7 +520,7 @@ public class DayRegistrationActivity extends AppCompatActivity {
 	}
 
 	public void confirm(@NonNull final DateTime date, @Nullable final ResultCallback callback) {
-		if(Repositories.registeredOccupationRepository().hasOngoingOccupations(date)) {
+		if (Repositories.registeredOccupationRepository().hasOngoingOccupations(date)) {
 			Snackbar.make(findViewById(R.id.day_registration_root_view), R.string.day_registration_confirm_ongoing_occupations, Snackbar.LENGTH_LONG).show();
 			return;
 		}
@@ -550,6 +624,7 @@ public class DayRegistrationActivity extends AppCompatActivity {
 	public boolean onOptionsItemSelected(MenuItem item) {
 		if (item.getItemId() == R.id.menu_refresh) {
 			refreshCurrent();
+			refreshGeofences(true);
 			return true;
 		}
 		return false;
