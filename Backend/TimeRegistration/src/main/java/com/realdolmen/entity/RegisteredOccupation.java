@@ -34,7 +34,6 @@ public class RegisteredOccupation {
         Occupation.initialize(o.occupation);
     }
 
-    @JsonIgnore
     @ManyToOne
     private Employee registrar;
 

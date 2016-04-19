@@ -2,10 +2,7 @@ package com.realdolmen.rest;
 
 import com.realdolmen.annotations.Authorized;
 import com.realdolmen.annotations.UserGroup;
-import com.realdolmen.entity.Employee;
-import com.realdolmen.entity.Occupation;
-import com.realdolmen.entity.PersistenceUnit;
-import com.realdolmen.entity.Project;
+import com.realdolmen.entity.*;
 import com.realdolmen.service.ReportsQueryBuilder;
 import com.realdolmen.service.SecurityManager;
 
@@ -70,13 +67,6 @@ public class ReportsEndpoint {
 
     // region Single employee
 
-    @Authorized
-    public Employee employeeDetailsInternal() {
-        Employee employee = securityManager.findEmployee();
-        Employee.initialize(employee);
-        return employee;
-    }
-
     @GET
     @Path("employees/me")
     @Produces({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
@@ -128,5 +118,19 @@ public class ReportsEndpoint {
 
     // endregion
 
-
+    @GET
+    @Path("registered-occupations")
+    @Produces({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
+    public Response filteredRegisteredOccupationList(@QueryParam("values") String projection,
+                                           @QueryParam("where") String selection,
+                                           @QueryParam("group") String groups,
+                                           @QueryParam("start") Integer startPosition,
+                                           @QueryParam("max") Integer max) {
+        return Response.ok(builder
+                .with(RegisteredOccupation.class)
+                .select(projection)
+                .where(selection)
+                .groupBy(groups)
+                .build(startPosition, max)).build();
+    }
 }
