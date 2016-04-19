@@ -1,6 +1,8 @@
 package com.realdolmen.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.realdolmen.entity.validation.New;
 import org.hibernate.Hibernate;
 import org.hibernate.search.annotations.Field;
@@ -46,6 +48,7 @@ import java.util.Set;
 })
 @Named
 @Inheritance(strategy = InheritanceType.JOINED)
+@JsonSerialize(include = JsonSerialize.Inclusion.NON_NULL)
 public class Employee implements Serializable {
 
     /**
@@ -113,9 +116,11 @@ public class Employee implements Serializable {
     private String password;
 
     @ManyToMany
+    @JsonInclude(JsonInclude.Include.NON_DEFAULT)
     private Set<Project> memberProjects = new HashSet<>();
 
     @OneToMany(mappedBy = "registrar")
+    @JsonInclude(JsonInclude.Include.NON_DEFAULT)
     private Set<RegisteredOccupation> registeredOccupations = new HashSet<>();
 
     public Employee() {
@@ -254,6 +259,10 @@ public class Employee implements Serializable {
 
     public void setMemberProjects(Set<Project> memberProjects) {
         this.memberProjects = memberProjects;
+    }
+
+    public void setRegisteredOccupations(Set<RegisteredOccupation> registeredOccupations) {
+        this.registeredOccupations = registeredOccupations;
     }
 
     @Override

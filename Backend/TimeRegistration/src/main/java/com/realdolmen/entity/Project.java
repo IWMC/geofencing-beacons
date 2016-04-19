@@ -1,6 +1,7 @@
 package com.realdolmen.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import org.hibernate.Hibernate;
 import org.hibernate.search.annotations.DateBridge;
@@ -64,17 +65,21 @@ public class Project extends Occupation implements Serializable {
     @JsonProperty("DTYPE")
     private final int DTYPE = 2;
 
+    @Column(name = "subProjects")
     @OneToMany(cascade = {
             CascadeType.REMOVE
     })
+    @JsonInclude(JsonInclude.Include.NON_DEFAULT)
     // TODO: 21/03/2016 Field bridge to allow search on subprojects
     private Set<Project> subProjects = new HashSet<>();
 
     @ManyToMany(mappedBy = "memberProjects")
     @JsonIgnore
+    @JsonInclude(JsonInclude.Include.NON_DEFAULT)
     private Set<Employee> employees = new HashSet<>();
 
     @OneToMany
+    @JsonInclude(JsonInclude.Include.NON_DEFAULT)
     private Set<Location> locations = new HashSet<>();
 
     public Project() {
