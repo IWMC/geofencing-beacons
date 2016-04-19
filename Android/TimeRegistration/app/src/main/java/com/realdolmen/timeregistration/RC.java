@@ -1,8 +1,5 @@
 package com.realdolmen.timeregistration;
 
-/**
- * Generated
- */
 public interface RC {
 	interface actions {
 		interface fromNotifications {
@@ -76,7 +73,7 @@ public interface RC {
 
 	interface backend {
 
-		String HOST = "http://10.16.25.141";
+		String HOST = "http://10.16.27.2";
 
 		interface urls {
 			String API_LOGIN_URI = HOST + "/api/user/login",

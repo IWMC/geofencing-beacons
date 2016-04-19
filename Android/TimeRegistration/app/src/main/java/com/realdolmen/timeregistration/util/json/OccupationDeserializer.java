@@ -31,7 +31,7 @@ public class OccupationDeserializer implements JsonDeserializer<Occupation> {
 		JsonObject json = _json.getAsJsonObject();
 		if (json.has("DTYPE")) {
 			int DTYPE = json.get("DTYPE").getAsInt();
-			switch(DTYPE) {
+			switch (DTYPE) {
 				case RC.dtypes.PROJECT_DTYPE:
 					return createProject(json, context);
 				case RC.dtypes.OCCUPATION_DTYPE:
@@ -57,16 +57,18 @@ public class OccupationDeserializer implements JsonDeserializer<Occupation> {
 		int projectNr = json.get("projectNr").getAsInt();
 		Project[] subProjects = context.deserialize(json.get("subProjects"), Project[].class);
 		Set<Location> locations = new HashSet<>();
-		for (JsonElement jsonElement : json.get("locations").getAsJsonArray()) {
-			JsonObject loc = jsonElement.getAsJsonObject();
-			Location l = new Location("");
-			l.setLatitude(loc.get("lat").getAsDouble());
-			l.setLongitude(loc.get("long").getAsDouble());
-			locations.add(l);
-		}
+		if (json.has("locations"))
+			for (JsonElement jsonElement : json.get("locations").getAsJsonArray()) {
+				JsonObject loc = jsonElement.getAsJsonObject();
+				Location l = new Location("");
+				l.setLatitude(loc.get("lat").getAsDouble());
+				l.setLongitude(loc.get("long").getAsDouble());
+				locations.add(l);
+			}
 
 		Project p = new Project(name, description, projectNr, DateTime.parse(startDate).toDateTime(DateTimeZone.UTC), DateTime.parse(endDate).toDateTime(DateTimeZone.UTC));
-		p.setSubProjects(new HashSet<>(Arrays.asList(subProjects)));
+		if (subProjects != null)
+			p.setSubProjects(new HashSet<>(Arrays.asList(subProjects)));
 		p.setId(id);
 		Map<Location, Geofence> map = new HashMap<>();
 		for (Location location : locations) {
