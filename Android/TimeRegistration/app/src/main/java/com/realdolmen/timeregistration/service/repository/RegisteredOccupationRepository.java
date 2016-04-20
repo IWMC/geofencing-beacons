@@ -6,6 +6,7 @@ import android.support.annotation.Nullable;
 import android.util.Log;
 
 import com.android.volley.VolleyError;
+import com.realdolmen.timeregistration.model.Occupation;
 import com.realdolmen.timeregistration.model.RegisteredOccupation;
 import com.realdolmen.timeregistration.service.ResultCallback;
 import com.realdolmen.timeregistration.util.DateUtil;
@@ -17,6 +18,7 @@ import org.jdeferred.FailCallback;
 import org.jdeferred.Promise;
 import org.jdeferred.impl.DeferredObject;
 import org.joda.time.DateTime;
+import org.joda.time.DateTimeZone;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -207,7 +209,7 @@ public class RegisteredOccupationRepository extends DataRepository<RegisteredOcc
 		return false;
 	}
 
-	public List<RegisteredOccupation> getOngoingProjects(DateTime date) {
+	public List<RegisteredOccupation> getOngoingOccupations(DateTime date) {
 		List<RegisteredOccupation> ros = new ArrayList<>();
 		for (RegisteredOccupation ro : getAll(date)) {
 			if (ro.getRegisteredEnd() == null)
@@ -222,5 +224,27 @@ public class RegisteredOccupationRepository extends DataRepository<RegisteredOcc
 			if (o.getId() == id) return o;
 		}
 		return null;
+	}
+
+	public boolean isAlreadyOngoing(@NonNull Occupation occ, @UTC DateTime time) {
+		for (RegisteredOccupation ro : getOngoingOccupations(time.withZone(DateTimeZone.UTC))) {
+			if (ro.getOccupation().equals(occ)) return true;
+		}
+		return false;
+	}
+
+	public boolean isConfirmed(@UTC DateTime dateTime) {
+		DateUtil.enforceUTC(dateTime);
+		List<RegisteredOccupation> data = Repositories.registeredOccupationRepository().getAll(dateTime);
+		if (data == null || data.isEmpty()) {
+			return false;
+		}
+
+		boolean isConfirmed = true;
+		for (RegisteredOccupation occupation : data) {
+			if (!occupation.isConfirmed())
+				isConfirmed = false;
+		}
+		return isConfirmed;
 	}
 }

@@ -1,11 +1,12 @@
 package com.realdolmen.timeregistration;
 
 public interface RC {
-	interface actions {
-		interface fromNotifications {
+	interface action {
+		interface fromNotification {
 			String ADD_SINGLE_RESULT = "com.realdolmen.timeregistration.geofencing.ADD_SINGLE_RESULT";
 			String ADD_MULTI_RESULT = "com.realdolmen.timeregistration.geofencing.ADD_MULTI_RESULT";
 			String REMOVE_SINGLE_RESULT = "com.realdolmen.timeregistration.geofencing.REMOVE_SINGLE_RESULT";
+			String REMOVE_MULTI_RESULT = "com.realdolmen.timeregistration.geofencing.REMOVE_MULTI_RESULT";
 		}
 
 		interface addOccupation {
@@ -22,11 +23,16 @@ public interface RC {
 
 			interface addMultiResult {
 				String GEOFENCE_EVENT = "com.realdolmen.timeregistration.geofencing.ADD_MULTI_RESULT.GEOFENCE_EVENT";
+				String TIME_DETECTED = "com.realdolmen.timeregistration.geofencing.ADD_MULTI_RESULT.TIME_DETECTED";
 			}
 
 			interface removeSingleResult {
 				String OCCUPATION_ID = "com.realdolmen.timeregistration.geofencing.REMOVE_SINGLE_RESULT.OCCUPATION_ID";
 				String TIME_DETECTED = "com.realdolmen.timeregistration.geofencing.REMOVE_SINGLE_RESULT.TIME_DETECTED";
+			}
+
+			interface removeMultiResult {
+				String GEOFENCE_EVENT = "com.realdolmen.timeregistration.geofencing.REMOVE_MULTI_RESULT.GEOFENCE_EVENT";
 			}
 		}
 
@@ -73,7 +79,7 @@ public interface RC {
 
 	interface backend {
 
-		String HOST = "http://10.16.27.2";
+		String HOST = "http://10.16.25.186";
 
 		interface urls {
 			String API_LOGIN_URI = HOST + "/api/user/login",

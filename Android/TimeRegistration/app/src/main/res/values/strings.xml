@@ -40,6 +40,9 @@
     <string name="day_registration_confirm_ongoing_occupations">You still have ongoing occupations!</string>
     <string name="dialog_positive_yes">Yes</string>
     <string name="dialog_negative_no">No</string>
-    <string name="notification_remove_single_result_message"><![CDATA[It seems like you are leaving <b>%1$s</b>. Do you wish to finish your occupation on <b>%2$s</b>?]]></string>
-    <string name="notification_remove_single_result_title">Finish %s?</string>
+    <string name="notification_remove_single_result_message" translatable="false"><![CDATA[It seems like you are leaving <b>%1$s</b>. Do you wish to finish your occupation on <b>%2$s</b>?]]></string>
+    <string name="notification_remove_single_result_title" translatable="false">Finish %s?</string>
+    <string name="suggestion_already_confirmed_day">You cannot add an occupation to an already confirmed day!</string>
+    <string name="notification_remove_multi_results_title"/>
+    <string name="notification_remove_multi_results"/>
 </resources>

@@ -92,7 +92,7 @@ public class AddOccupationActivity extends AppCompatActivity {
 		enforceUTC(bd);
 		baseDate = bd;
 
-		if (getIntent().getAction().equals(RC.actions.addOccupation.ACTION_EDIT)) {
+		if (getIntent().getAction().equals(RC.action.addOccupation.ACTION_EDIT)) {
 			if (!getIntent().hasExtra(EDITING_OCCUPATION)) {
 				throw new IllegalArgumentException("When in edit mode, a RegisteredOccupation (EDITING_OCCUPATION) is required as extra!");
 			}

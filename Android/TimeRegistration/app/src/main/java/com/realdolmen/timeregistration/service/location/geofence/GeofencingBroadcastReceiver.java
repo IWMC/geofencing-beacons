@@ -6,6 +6,7 @@ import android.app.PendingIntent;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.support.annotation.StringRes;
 import android.support.v4.app.NotificationCompat;
 import android.util.Log;
 
@@ -22,7 +23,6 @@ import com.realdolmen.timeregistration.ui.dayregistration.DayRegistrationActivit
 
 import org.jdeferred.DoneCallback;
 import org.jdeferred.Promise;
-import org.jetbrains.annotations.TestOnly;
 import org.joda.time.DateTime;
 
 import java.util.Arrays;
@@ -34,13 +34,6 @@ public class GeofencingBroadcastReceiver extends BroadcastReceiver {
 
 	private Context context;
 	private Intent broadcastIntent = new Intent();
-	private boolean testMode;
-
-	@TestOnly
-	public void enableTestMode() {
-		testMode = true;
-	}
-
 
 	@Override
 	public void onReceive(Context context, Intent intent) {
@@ -83,7 +76,6 @@ public class GeofencingBroadcastReceiver extends BroadcastReceiver {
 			return Repositories.loadOccupationRepository(context).done(new DoneCallback<OccupationRepository>() {
 				@Override
 				public void onDone(OccupationRepository result) {
-					String output = context.getString(R.string.notification_enter_multiple_results);
 					showMultiResultEnterNotification(event, geofences);
 				}
 			});
@@ -93,62 +85,65 @@ public class GeofencingBroadcastReceiver extends BroadcastReceiver {
 	}
 
 	private void showSingleResultEnterNotification(GeofencingEvent event, Occupation o) {
-		Intent intent = new Intent(context, DayRegistrationActivity.class);
-		intent.setAction(RC.actions.fromNotifications.ADD_SINGLE_RESULT);
-
-		intent.putExtra(RC.actionExtras.fromNotifications.addSingleResult.OCCUPATION_ID, o.getId());
-		intent.putExtra(RC.actionExtras.fromNotifications.addSingleResult.TIME_DETECTED, new DateTime(event.getTriggeringLocation().getTime()));
-
-		intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
+		DateTime time = new DateTime(event.getTriggeringLocation().getTime());
+		if (Repositories.registeredOccupationRepository().isAlreadyOngoing(o, time)) {
+			return;
+		}
+		Intent intent = new Intent(context, DayRegistrationActivity.class)
+				.setAction(RC.action.fromNotification.ADD_SINGLE_RESULT)
+				.putExtra(RC.actionExtras.fromNotifications.addSingleResult.OCCUPATION_ID, o.getId())
+				.putExtra(RC.actionExtras.fromNotifications.addSingleResult.TIME_DETECTED, time)
+				.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
 
 		PendingIntent pendingIntent = PendingIntent.getActivity(context, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
-		if (!testMode) {
-			NotificationCompat.Builder builder = new NotificationCompat.Builder(context)
-					.setSmallIcon(R.drawable.logo_square)
-					.setContentTitle(context.getString(R.string.notification_title))
-					.setContentText(context.getString(R.string.notification_enter_single_result, o))
-					.setLights(0xFFed2b29, 1000, 1000)
-					.setDefaults(Notification.DEFAULT_SOUND)
-					.setContentIntent(pendingIntent)
-					.setAutoCancel(!RC.other.KEEP_NOTIFICATIONS);
+		NotificationCompat.Builder builder = newNotification(context.getString(R.string.notification_title), context.getString(R.string.notification_enter_single_result, o), pendingIntent);
 
-			if (o instanceof Project) {
-				builder.setContentInfo("#" + ((Project) o).getProjectNr());
-			}
-			NotificationManager manager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
-			manager.notify(1, builder.build());
-		} else {
-			NotificationManager manager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
-			manager.notify(1, new Notification());
+		if (o instanceof Project) {
+			builder.setContentInfo("#" + ((Project) o).getProjectNr());
 		}
+
+		notifyUser(1, builder);
 	}
+
+	//region Notification Builder methods
+	private NotificationCompat.Builder newNotification(@StringRes int title, @StringRes int content, PendingIntent pIntent) {
+		return newNotification(title, content, pIntent, !RC.other.KEEP_NOTIFICATIONS);
+	}
+
+	private NotificationCompat.Builder newNotification(String title, String content, PendingIntent pIntent) {
+		return newNotification(title, content, pIntent, !RC.other.KEEP_NOTIFICATIONS);
+	}
+
+	private NotificationCompat.Builder newNotification(@StringRes int title, @StringRes int content, PendingIntent pIntent, boolean autoCancel) {
+		return newNotification(context.getString(title), context.getString(content), pIntent, autoCancel);
+	}
+
+	private NotificationCompat.Builder newNotification(String title, String content, PendingIntent pIntent, boolean autoCancel) {
+		return Injections.getDefaultBuilder(context)
+				.setSmallIcon(R.drawable.logo_square)
+				.setContentTitle(title)
+				.setContentText(content)
+				.setLights(0xFFed2b29, 1000, 1000)
+				.setDefaults(Notification.DEFAULT_SOUND)
+				.setContentIntent(pIntent)
+				.setAutoCancel(!RC.other.KEEP_NOTIFICATIONS);
+	}
+	//endregion
 
 	private void showMultiResultEnterNotification(Intent event, List<Geofence> fences) {
-		Intent intent = new Intent(context, DayRegistrationActivity.class);
-		intent.setAction(RC.actions.fromNotifications.ADD_MULTI_RESULT);
-
-		intent.putExtra(RC.actionExtras.fromNotifications.addMultiResult.GEOFENCE_EVENT, event);
-		intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
+		Intent intent = new Intent(context, DayRegistrationActivity.class)
+				.setAction(RC.action.fromNotification.ADD_MULTI_RESULT)
+				.putExtra(RC.actionExtras.fromNotifications.addMultiResult.GEOFENCE_EVENT, event)
+				.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
 
 		PendingIntent pendingIntent = PendingIntent.getActivity(context, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
-		if (!testMode) {
-			NotificationCompat.Builder builder = new NotificationCompat.Builder(context)
-					.setSmallIcon(R.drawable.logo_square)
-					.setContentTitle(context.getString(R.string.notification_title))
-					.setContentText(context.getString(R.string.notification_enter_multiple_results))
-					.setLights(0xFFed2b29, 1000, 1000)
-					.setDefaults(Notification.DEFAULT_SOUND)
-					.setContentIntent(pendingIntent)
-					.setAutoCancel(!RC.other.KEEP_NOTIFICATIONS);
-
-			NotificationManager manager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
-			manager.notify(1, builder.build());
-		} else {
-			NotificationManager manager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
-			manager.notify(1, new Notification());
-		}
+		notifyUser(1, newNotification(R.string.notification_title, R.string.notification_enter_multiple_results, pendingIntent));
 	}
 
+	private void notifyUser(int id, NotificationCompat.Builder builder) {
+		NotificationManager manager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
+		manager.notify(id, builder.build());
+	}
 
 
 	public Promise doNotificationLeave(final GeofencingEvent geoEvent, final Intent event, final List<Geofence> geofences) {
@@ -157,62 +152,31 @@ public class GeofencingBroadcastReceiver extends BroadcastReceiver {
 				@Override
 				public void onDone(OccupationRepository result) {
 					Occupation o = result.getByGeofence(geofences.get(0));
-					Intent intent = new Intent(context, DayRegistrationActivity.class);
-					intent.setAction(RC.actions.fromNotifications.REMOVE_SINGLE_RESULT);
-					intent.putExtra(RC.actionExtras.fromNotifications.removeSingleResult.OCCUPATION_ID, o.getId());
-					intent.putExtra(RC.actionExtras.fromNotifications.removeSingleResult.TIME_DETECTED, new DateTime(geoEvent.getTriggeringLocation().getTime()));
-
-					intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
+					Intent intent = new Intent(context, DayRegistrationActivity.class)
+							.setAction(RC.action.fromNotification.REMOVE_SINGLE_RESULT)
+							.putExtra(RC.actionExtras.fromNotifications.removeSingleResult.OCCUPATION_ID, o.getId())
+							.putExtra(RC.actionExtras.fromNotifications.removeSingleResult.TIME_DETECTED, new DateTime(geoEvent.getTriggeringLocation().getTime()))
+							.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
 
 					PendingIntent pendingIntent = PendingIntent.getActivity(context, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
-
-					if (!testMode) {
-						NotificationCompat.Builder builder = new NotificationCompat.Builder(context)
-								.setSmallIcon(R.drawable.logo_square)
-								.setContentTitle(context.getString(R.string.notification_title))
-								.setContentText(context.getString(R.string.notification_leave_single_result, o))
-								.setLights(0xFFed2b29, 1000, 1000)
-								.setDefaults(Notification.DEFAULT_SOUND)
-								.setContentIntent(pendingIntent)
-								.setAutoCancel(!RC.other.KEEP_NOTIFICATIONS);
-
-						NotificationManager manager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
-						manager.notify(1, builder.build());
-					} else {
-						NotificationManager manager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
-						manager.notify(1, new Notification());
-					}
+					notifyUser(2, newNotification(context.getString(R.string.notification_title), context.getString(R.string.notification_leave_single_result, o), pendingIntent));
 				}
 			});
 		} else if (geofences.size() > 1) {
 			return Repositories.loadOccupationRepository(context).done(new DoneCallback<OccupationRepository>() {
 				@Override
 				public void onDone(OccupationRepository result) {
-					//TODO: showNotification(context.getString(R.string.notification_leave_multiple_results), null);
+					Intent intent = new Intent(context, DayRegistrationActivity.class)
+							.setAction(RC.action.fromNotification.REMOVE_MULTI_RESULT)
+							.putExtra(RC.actionExtras.fromNotifications.removeMultiResult.GEOFENCE_EVENT, event)
+							.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
+
+					PendingIntent pendingIntent = PendingIntent.getActivity(context, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
+					notifyUser(2, newNotification(R.string.notification_remove_multi_results_title, R.string.notification_remove_multi_results, pendingIntent));
 				}
 			});
 		}
 
 		return null;
 	}
-
-/*	public void showNotification(String s, PendingIntent intent) {
-		if (!testMode) {
-			NotificationCompat.Builder builder = new NotificationCompat.Builder(context)
-					.setSmallIcon(R.drawable.logo_square)
-					.setContentTitle(context.getString(R.string.notification_title))
-					.setContentText(s)
-					.setLights(0xFFed2b29, 1000, 1000)
-					.setDefaults(Notification.DEFAULT_SOUND)
-					.setContentIntent(intent)
-					.setSubText(context.getString(R.string.notification_title))
-					.setContentInfo("New occupation suggestion");
-			NotificationManager manager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
-			manager.notify(1, builder.build());
-		} else {
-			NotificationManager manager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
-			manager.notify(1, new Notification());
-		}
-
-	}*/
 }
