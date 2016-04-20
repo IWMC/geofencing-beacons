@@ -7,6 +7,7 @@ import android.support.v7.app.AlertDialog;
 import android.text.Html;
 import android.text.format.DateFormat;
 import android.util.Log;
+import android.widget.ArrayAdapter;
 
 import com.google.android.gms.location.Geofence;
 import com.google.android.gms.location.GeofencingEvent;
@@ -19,6 +20,7 @@ import com.realdolmen.timeregistration.service.repository.OccupationRepository;
 import com.realdolmen.timeregistration.service.repository.RegisteredOccupationRepository;
 import com.realdolmen.timeregistration.service.repository.Repositories;
 import com.realdolmen.timeregistration.util.DateUtil;
+import com.realdolmen.timeregistration.util.UTC;
 
 import org.jdeferred.DoneCallback;
 import org.joda.time.DateTime;
@@ -26,6 +28,7 @@ import org.joda.time.DateTimeZone;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class SuggestionDialogs {
 
@@ -96,12 +99,44 @@ public class SuggestionDialogs {
 			}
 		}
 
-		if (!filteredOccupations.isEmpty())
-			showMultiResultEnterDialog(geofencingEvent, filteredOccupations);
+		if (!filteredOccupations.isEmpty()) {
+			if(filteredOccupations.size() == 1) {
+				showSingleResultEnterDialog(new DateTime(geofencingEvent.getTriggeringLocation().getTime()), filteredOccupations.get(0));
+			} else {
+				showMultiResultEnterDialog(geofencingEvent, filteredOccupations);
+			}
+		}
 	}
 
-	private void handleMultiResultLeaveSuggestion(List<Geofence> triggeredGeofences, Intent intent) {
-		//TODO: make
+	private void handleMultiResultLeaveSuggestion(Intent intent) {
+		Intent receivedTemp = (Intent) intent.getSerializableExtra(RC.actionExtras.fromNotifications.removeMultiResult.GEOFENCE_EVENT);
+		if (receivedTemp == null) {
+			Log.e(LOG_TAG, "Received geofence intent is null!");
+			return;
+		}
+
+		GeofencingEvent geofencingEvent = GeofencingEvent.fromIntent(receivedTemp);
+
+		if (geofencingEvent.hasError()) {
+			Log.e(LOG_TAG, "Geofence event has an error!");
+			return;
+		}
+
+		List<Project> filteredOccupations = new ArrayList<>(); //only occupations that are ongoing
+		for (Geofence geofence : geofencingEvent.getTriggeringGeofences()) {
+			Project p = Repositories.occupationRepository().getByGeofence(geofence);
+			if (isAlreadyOngoing(p, new DateTime(geofencingEvent.getTriggeringLocation().getTime()))) {
+				filteredOccupations.add(p);
+			}
+		}
+
+		if (!filteredOccupations.isEmpty()) {
+			if (filteredOccupations.size() == 1) {
+				showSingleResultLeaveDialog(new DateTime(geofencingEvent.getTriggeringLocation().getTime()), filteredOccupations.get(0));
+			} else {
+				showMultiResultLeaveDialog(geofencingEvent, filteredOccupations);
+			}
+		}
 	}
 
 	private boolean isAllowed(DateTime time) {
@@ -134,18 +169,79 @@ public class SuggestionDialogs {
 
 		} else if (action.equals(RC.action.fromNotification.REMOVE_MULTI_RESULT)) {
 			Intent eventIntent = (Intent) intent.getSerializableExtra(RC.actionExtras.fromNotifications.removeMultiResult.GEOFENCE_EVENT);
-			GeofencingEvent event = GeofencingEvent.fromIntent(eventIntent);
-			handleMultiResultLeaveSuggestion(event.getTriggeringGeofences(), intent);
+			handleMultiResultLeaveSuggestion(eventIntent);
 		}
 
 	}
 
-	private void showMultiResultEnterDialog(GeofencingEvent geofencingEvent, List<Project> filteredOccupations) {
-		//TODO: make
+	private void showMultiResultEnterDialog(final GeofencingEvent geofencingEvent, final List<Project> filteredOccupations) {
+
+		final AtomicInteger selected = new AtomicInteger(-1);
+		new AlertDialog.Builder(context)
+				.setTitle("Choose a project")
+				.setAdapter(new ArrayAdapter<>(context, android.R.layout.select_dialog_singlechoice, filteredOccupations), new DialogInterface.OnClickListener() {
+					@Override
+					public void onClick(DialogInterface dialog, int which) {
+						selected.set(which);
+					}
+				})
+				.setPositiveButton(R.string.dialog_positive_yes, new DialogInterface.OnClickListener() {
+					@Override
+					public void onClick(DialogInterface dialog, int which) {
+						if (selected.get() >= 0 && selected.get() < filteredOccupations.size()) {
+							Occupation selectedOcc = filteredOccupations.get(selected.get());
+							dialog.dismiss();
+							context.handleNewlyRegisteredOccupation(selectedOcc, new DateTime(geofencingEvent.getTriggeringLocation().getTime()).withZone(DateTimeZone.UTC), null);
+						} else {
+							Log.e(LOG_TAG, "Selected index for suggested projects is invalid: " + selected.get());
+						}
+					}
+				})
+				.setNegativeButton(R.string.dialog_negative_no, new DialogInterface.OnClickListener() {
+					@Override
+					public void onClick(DialogInterface dialog, int which) {
+						dialog.dismiss();
+					}
+				})
+				.show();
 	}
 
-	private void showMultiResultLeaveDialog() {
-		//TODO: make
+	private void showMultiResultLeaveDialog(final GeofencingEvent geofencingEvent, final List<Project> filteredOccupations) {
+		final AtomicInteger selected = new AtomicInteger(-1);
+		new AlertDialog.Builder(context)
+				.setTitle("Choose the project you are done with")
+				.setAdapter(new ArrayAdapter<>(context, android.R.layout.select_dialog_singlechoice, filteredOccupations), new DialogInterface.OnClickListener() {
+					@Override
+					public void onClick(DialogInterface dialog, int which) {
+						selected.set(which);
+					}
+				})
+				.setPositiveButton(R.string.dialog_positive_yes, new DialogInterface.OnClickListener() {
+					@Override
+					public void onClick(DialogInterface dialog, int which) {
+						if (selected.get() >= 0 && selected.get() < filteredOccupations.size()) {
+							Occupation selectedOcc = filteredOccupations.get(selected.get());
+							dialog.dismiss();
+							@UTC DateTime time = new DateTime(geofencingEvent.getTriggeringLocation().getTime()).withZone(DateTimeZone.UTC);
+							for (RegisteredOccupation ro : Repositories.registeredOccupationRepository().getOngoingOccupations(time)) {
+								if (selectedOcc.equals(ro.getOccupation())) {
+									ro.setRegisteredEnd(time);
+									context.handleUpdatedRegisteredOccupation(ro);
+									break;
+								}
+							}
+						} else {
+							Log.e(LOG_TAG, "Selected index for suggested projects is invalid: " + selected.get());
+						}
+					}
+				})
+				.setNegativeButton(R.string.dialog_negative_no, new DialogInterface.OnClickListener() {
+					@Override
+					public void onClick(DialogInterface dialog, int which) {
+						dialog.dismiss();
+					}
+				})
+				.show();
 	}
 
 	private void showSingleResultLeaveDialog(final DateTime registeredTime, final Occupation occupation) {
