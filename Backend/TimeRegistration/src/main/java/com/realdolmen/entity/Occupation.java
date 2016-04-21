@@ -1,6 +1,7 @@
 package com.realdolmen.entity;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import org.hibernate.Hibernate;
 import org.hibernate.search.annotations.DocumentId;
 import org.hibernate.search.annotations.Field;
 import org.hibernate.search.annotations.Indexed;
@@ -8,6 +9,7 @@ import org.hibernate.search.annotations.Indexed;
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
+import javax.xml.bind.annotation.XmlRootElement;
 import java.io.Serializable;
 
 /**
@@ -22,6 +24,7 @@ import java.io.Serializable;
         @NamedQuery(name = "Occupation.removeById", query = "DELETE FROM Occupation o WHERE o.id = :id")
 })
 @Indexed
+@XmlRootElement
 public class Occupation implements Serializable, Initializable {
 
     /**
@@ -33,6 +36,10 @@ public class Occupation implements Serializable, Initializable {
     public static void initialize(Occupation occupation) {
         if (occupation instanceof Project) {
             Project.initialize((Project) occupation);
+        }
+
+        if (occupation instanceof Task) {
+            Hibernate.initialize(occupation);
         }
     }
 

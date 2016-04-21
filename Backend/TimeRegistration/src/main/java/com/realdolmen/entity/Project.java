@@ -82,6 +82,10 @@ public class Project extends Occupation implements Serializable {
     @JsonInclude(JsonInclude.Include.NON_DEFAULT)
     private Set<Location> locations = new HashSet<>();
 
+    @OneToMany(mappedBy = "project")
+    @JsonInclude(JsonInclude.Include.NON_DEFAULT)
+    private Set<Task> tasks = new HashSet<>();
+
     public Project() {
     }
 
@@ -126,6 +130,14 @@ public class Project extends Occupation implements Serializable {
 
     public Set<Employee> getEmployees() {
         return employees;
+    }
+
+    public Set<Task> getTasks() {
+        return tasks;
+    }
+
+    public void setTasks(Set<Task> tasks) {
+        this.tasks = tasks;
     }
 
     @Override
