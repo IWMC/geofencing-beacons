@@ -49,7 +49,7 @@ import java.util.Set;
 @Named
 @Inheritance(strategy = InheritanceType.JOINED)
 @JsonSerialize(include = JsonSerialize.Inclusion.NON_NULL)
-public class Employee implements Serializable {
+public class Employee implements Serializable, Initializable {
 
     /**
      * Initializes all lazy properties and collections of the entity recursively. Expects to be invoked while still running
@@ -59,10 +59,10 @@ public class Employee implements Serializable {
      */
     public static void initialize(Employee employee) {
         Hibernate.initialize(employee.getMemberProjects());
-        employee.getMemberProjects().forEach(Project::initialize);
-        employee.getRegisteredOccupations().forEach(RegisteredOccupation::initialize);
+        employee.getMemberProjects().forEach(Initializable::initialize);
+        employee.getRegisteredOccupations().forEach(Initializable::initialize);
         if (employee instanceof ProjectManager) {
-            ((ProjectManager) employee).getManagedProjects().forEach(Project::initialize);
+            ((ProjectManager) employee).getManagedProjects().forEach(Initializable::initialize);
         }
     }
 
@@ -281,5 +281,10 @@ public class Employee implements Serializable {
         if (salt != null && !salt.trim().isEmpty())
             result += ", salt: " + salt;
         return result;
+    }
+
+    @Override
+    public void initialize() {
+        Employee.initialize(this);
     }
 }

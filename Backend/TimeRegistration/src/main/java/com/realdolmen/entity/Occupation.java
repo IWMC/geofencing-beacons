@@ -22,7 +22,7 @@ import java.io.Serializable;
         @NamedQuery(name = "Occupation.removeById", query = "DELETE FROM Occupation o WHERE o.id = :id")
 })
 @Indexed
-public class Occupation implements Serializable {
+public class Occupation implements Serializable, Initializable {
 
     /**
      * Initializes all lazy properties and collections of the entity recursively. Expects to be invoked while still running
@@ -129,5 +129,10 @@ public class Occupation implements Serializable {
 
     public void setVersion(int version) {
         this.version = version;
+    }
+
+    @Override
+    public void initialize() {
+        Occupation.initialize(this);
     }
 }

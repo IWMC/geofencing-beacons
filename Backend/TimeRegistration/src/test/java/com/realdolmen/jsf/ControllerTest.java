@@ -1,6 +1,6 @@
 package com.realdolmen.jsf;
 
-import com.realdolmen.messages.Language;
+import com.realdolmen.TestMode;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.primefaces.material.application.ToastService;
@@ -22,6 +22,7 @@ public class ControllerTest {
     private ExternalContext externalContext;
 
     public ControllerTest() {
+        TestMode.enableTestMode();
         MockitoAnnotations.initMocks(this);
     }
 

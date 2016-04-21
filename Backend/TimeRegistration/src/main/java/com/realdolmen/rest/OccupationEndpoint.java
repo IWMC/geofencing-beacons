@@ -81,7 +81,7 @@ public class OccupationEndpoint {
         }
 
         List<Occupation> occupations = findAllQuery.getResultList();
-        occupations.forEach(Occupation::initialize);
+        occupations.forEach(Initializable::initialize);
         return Response.ok().entity(occupations).build();
     }
 
@@ -111,7 +111,7 @@ public class OccupationEndpoint {
     public Response getAvailableOccupations() {
         TypedQuery<Occupation> query = em.createNamedQuery("Occupation.findAvailableByEmployee", Occupation.class);
         List<Occupation> occupations = query.getResultList();
-        occupations.forEach(Occupation::initialize);
+        occupations.forEach(Initializable::initialize);
         return Response.ok(occupations).build();
     }
 
@@ -170,7 +170,7 @@ public class OccupationEndpoint {
             );
         });
 
-        occupations.forEach(RegisteredOccupation::initialize);
+        occupations.forEach(Initializable::initialize);
 
         return Response.ok(occupations).build();
     }

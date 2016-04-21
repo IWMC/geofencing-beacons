@@ -89,7 +89,7 @@ public class EmployeeEndpoint {
         }
 
         List<Employee> employees = findAllQuery.getResultList();
-        employees.forEach(Employee::initialize);
+        employees.forEach(Initializable::initialize);
         return Response.ok().entity(employees).build();
     }
 
