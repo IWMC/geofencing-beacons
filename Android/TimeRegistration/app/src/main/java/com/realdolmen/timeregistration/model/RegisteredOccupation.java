@@ -56,6 +56,7 @@ public class RegisteredOccupation implements Serializable {
 	}
 
 	public void setRegisteredEnd(@UTC DateTime registeredEnd) {
+		if(registeredEnd == null) return;
 		DateUtil.enforceUTC(registeredEnd);
 		this.registeredEnd = registeredEnd;
 	}

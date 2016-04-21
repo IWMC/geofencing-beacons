@@ -386,7 +386,6 @@ public class DayRegistrationActivity extends AppCompatActivity {
 			}
 		} else if (requestCode == EDIT_RESULT_CODE) {
 			if (resultCode == RESULT_OK) {
-				//TODO: Add OK result
 				handleUpdatedRegisteredOccupation((RegisteredOccupation) data.getSerializableExtra(EDITING_OCCUPATION));
 			}
 		}

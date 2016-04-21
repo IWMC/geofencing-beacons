@@ -72,6 +72,17 @@ public class GeofenceRequesterTest extends GeofenceTest {
 		geofenceRequester.testing.setGeofences(geofences);
 		geofenceRequester.disconnect();
 		verify(geofencingApi).removeGeofences(eq(googleApiClient), anyListOf(String.class));
+		verify(fusedLocationApi, never()).removeLocationUpdates(googleApiClient, geofenceRequester);
+		verify(googleApiClient).disconnect();
+	}
+
+	@Test
+	public void testDisconnectRemovesLocationUpdates() throws Exception {
+		geofenceRequester.testing.setConnected(true);
+		geofenceRequester.testing.setMode(true);
+		geofenceRequester.testing.setGeofences(geofences);
+		geofenceRequester.disconnect();
+		verify(geofencingApi).removeGeofences(eq(googleApiClient), anyListOf(String.class));
 		verify(fusedLocationApi).removeLocationUpdates(googleApiClient, geofenceRequester);
 		verify(googleApiClient).disconnect();
 	}
