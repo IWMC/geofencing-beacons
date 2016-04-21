@@ -28,4 +28,9 @@
     <string name="menu_done">Save</string>
     <string name="menu_settings">settings</string>
     <string name="edit_occupation_title">Edit occupation</string>
+    <string name="notification_title">RealDolmen Time Registration</string>
+    <string name="notification_enter_single_result">Are you going to work on %s?</string>
+    <string name="notification_enter_multiple_results">Which project are you going to work on?</string>
+    <string name="notification_leave_single_result">Are you done working on %s?</string>
+    <string name="notification_leave_multiple_results">What project have you worked on?</string>
 </resources>

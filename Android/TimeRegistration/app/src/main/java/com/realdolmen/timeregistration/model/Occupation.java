@@ -1,5 +1,7 @@
 package com.realdolmen.timeregistration.model;
 
+import com.realdolmen.timeregistration.util.Constants;
+
 import java.io.Serializable;
 
 public class Occupation implements Serializable {
@@ -9,6 +11,11 @@ public class Occupation implements Serializable {
 	private int version;
 
 	private String description = "";
+
+	public Occupation(String name, String description) {
+		this(name);
+		this.description = description;
+	}
 
 	public String getName() {
 		return name;
@@ -26,7 +33,7 @@ public class Occupation implements Serializable {
 		this.description = description;
 	}
 
-	private transient final int DTYPE = 1;
+	private transient final int DTYPE = Constants.OCCUPATION_DTYPE;
 
 	public Occupation(String name) {
 		this.name = name;

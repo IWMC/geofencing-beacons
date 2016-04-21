@@ -104,35 +104,6 @@ public class OccupationEndpoint {
     }
 
     @GET
-    @Authorized
-    @Path("/available")
-    @Produces(MediaType.APPLICATION_JSON)
-    @Transactional
-    public Response getAvailableOccupations() {
-        TypedQuery<Occupation> query = em.createNamedQuery("Occupation.findAvailableByEmployee", Occupation.class);
-        List<Occupation> occupations = query.getResultList();
-        occupations.forEach(Initializable::initialize);
-        return Response.ok(occupations).build();
-    }
-
-    @GET
-    @Path("registration/range")
-    @Authorized
-    @Produces(MediaType.APPLICATION_JSON)
-    @Transactional
-    public Response getRegisteredOccupationsOfLastXDays(@QueryParam("date") @DefaultValue("-1") long date, @QueryParam("count") @DefaultValue("7") int count) {
-        List<RegisteredOccupation> occupations = new ArrayList<>();
-        DateTime time = new DateTime(date, DateTimeZone.UTC);
-        if (count <= 0) {
-            count = 1;
-        }
-        for (int i = 0; i < count; i++) {
-            occupations.addAll((List<RegisteredOccupation>) getRegisteredOccupations(time.minusDays(i).getMillis()).getEntity());
-        }
-        return Response.ok(occupations).build();
-    }
-
-    @GET
     @Path("registration")
     @Authorized
     @Produces(MediaType.APPLICATION_JSON)
@@ -228,6 +199,38 @@ public class OccupationEndpoint {
 
         occupations.forEach(em::merge);
         return Response.ok().build();
+    }
+
+    @GET
+    @Authorized
+    @Path("/available")
+    @Produces(MediaType.APPLICATION_JSON)
+    @Transactional
+    public Response getAvailableOccupations() {
+        TypedQuery<Occupation> query = em.createNamedQuery("Occupation.findOnlyOccupations", Occupation.class);
+        List<Occupation> occupations = query.getResultList();
+        occupations.forEach(Initializable::initialize);
+        Employee e = sm.findEmployee();
+        Employee.initialize(e);
+        occupations.addAll(e.getMemberProjects());
+        return Response.ok(occupations).build();
+    }
+
+    @GET
+    @Path("registration/range")
+    @Authorized
+    @Produces(MediaType.APPLICATION_JSON)
+    @Transactional
+    public Response getRegisteredOccupationsOfLastXDays(@QueryParam("date") @DefaultValue("-1") long date, @QueryParam("count") @DefaultValue("7") int count) {
+        List<RegisteredOccupation> occupations = new ArrayList<>();
+        DateTime time = new DateTime(date, DateTimeZone.UTC);
+        if (count <= 0) {
+            count = 1;
+        }
+        for (int i = 0; i <= count; i++) {
+            occupations.addAll((List<RegisteredOccupation>) getRegisteredOccupations(time.minusDays(i).getMillis()).getEntity());
+        }
+        return Response.ok(occupations).build();
     }
 
     @POST

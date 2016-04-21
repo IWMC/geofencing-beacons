@@ -29,4 +29,9 @@
     <string name="menu_refresh">Vernieuwen</string>
     <string name="menu_settings">Instellingen</string>
     <string name="edit_occupation_title">Bezigheid aanpassen</string>
+    <string name="notification_title">RealDolmen Tijdsregistratie</string>
+    <string name="notification_enter_single_result">Ga je werken aan %s?</string>
+    <string name="notification_enter_multiple_results">Aan welk project ga je werken?</string>
+    <string name="notification_leave_multiple_results">Aan welk project heb je gewerkt?</string>
+    <string name="notification_leave_single_result">Heb je gedaan met werken aan %s?</string>
 </resources>

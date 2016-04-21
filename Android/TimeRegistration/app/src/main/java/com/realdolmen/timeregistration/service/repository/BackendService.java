@@ -24,6 +24,7 @@ import com.realdolmen.timeregistration.util.UTC;
 import com.realdolmen.timeregistration.util.json.DateSerializer;
 import com.realdolmen.timeregistration.util.json.GsonObjectRequest;
 
+import org.jetbrains.annotations.TestOnly;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
 import org.json.JSONException;
@@ -52,13 +53,9 @@ public class BackendService {
 			API_REMOVE_REGISTERED_OCCUPATION = HOST + "/api/occupations/registration/%d";
 
 	private Context context;
-
 	private static final Gson compactGson = new GsonBuilder().registerTypeAdapter(DateTime.class, new DateSerializer()).create();
-
 	private static final Map<Context, BackendService> contextMap = new HashMap<>();
-
 	private static Session currentSession;
-
 	private RequestQueue requestQueue;
 
 	public static Session getCurrentSession() {
@@ -71,6 +68,14 @@ public class BackendService {
 
 	public static boolean isAuthenticated() {
 		return currentSession != null && currentSession.getJwtToken() != null && !currentSession.getJwtToken().isEmpty();
+	}
+
+	public static class Testing {
+
+		@TestOnly
+		public static void setBackendService(Context context, BackendService service) {
+			contextMap.put(context, service);
+		}
 	}
 
 	/**
