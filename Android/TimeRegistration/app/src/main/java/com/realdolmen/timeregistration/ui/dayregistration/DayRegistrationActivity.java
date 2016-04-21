@@ -33,10 +33,12 @@ import com.realdolmen.timeregistration.model.RegisteredOccupation;
 import com.realdolmen.timeregistration.service.ResultCallback;
 import com.realdolmen.timeregistration.service.location.geofence.GeoService;
 import com.realdolmen.timeregistration.service.location.geofence.GeofenceRequester;
+import com.realdolmen.timeregistration.service.repository.BackendService;
 import com.realdolmen.timeregistration.service.repository.LoadCallback;
 import com.realdolmen.timeregistration.service.repository.OccupationRepository;
 import com.realdolmen.timeregistration.service.repository.RegisteredOccupationRepository;
 import com.realdolmen.timeregistration.service.repository.Repositories;
+import com.realdolmen.timeregistration.ui.login.LoginActivity;
 import com.realdolmen.timeregistration.util.DateUtil;
 import com.realdolmen.timeregistration.util.UTC;
 import com.realdolmen.timeregistration.util.adapters.dayregistration.DayRegistrationFragmentPagerAdapter;
@@ -57,13 +59,13 @@ import butterknife.Bind;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
 
+import static com.realdolmen.timeregistration.RC.action.addOccupation.ACTION_ADD;
+import static com.realdolmen.timeregistration.RC.action.addOccupation.ACTION_EDIT;
 import static com.realdolmen.timeregistration.RC.actionExtras.addOccupation.BASE_DATE;
 import static com.realdolmen.timeregistration.RC.actionExtras.addOccupation.EDITING_OCCUPATION;
 import static com.realdolmen.timeregistration.RC.actionExtras.addOccupation.END_DATE;
 import static com.realdolmen.timeregistration.RC.actionExtras.addOccupation.SELECTED_OCCUPATION;
 import static com.realdolmen.timeregistration.RC.actionExtras.addOccupation.START_DATE;
-import static com.realdolmen.timeregistration.RC.action.addOccupation.ACTION_ADD;
-import static com.realdolmen.timeregistration.RC.action.addOccupation.ACTION_EDIT;
 import static com.realdolmen.timeregistration.RC.resultCodes.addOccupation.ADD_RESULT_CODE;
 import static com.realdolmen.timeregistration.RC.resultCodes.addOccupation.EDIT_RESULT_CODE;
 
@@ -500,6 +502,11 @@ public class DayRegistrationActivity extends AppCompatActivity {
 		if (item.getItemId() == R.id.menu_refresh) {
 			refreshCurrent();
 			refreshGeofences(true);
+			return true;
+		} else if (item.getItemId() == R.id.menu_logout) {
+			finish();
+			BackendService.getCurrentSession().setJwtToken("");
+			startActivity(new Intent(this, LoginActivity.class));
 			return true;
 		}
 		return false;

@@ -65,7 +65,8 @@ public class GeofencingBroadcastReceiverTest extends GeofenceTest {
 		BackendService.Testing.setBackendService(context, service);
 		Repositories.Testing.setOccupationRepository(occupationRepository);
 		when(context.getSystemService(Context.NOTIFICATION_SERVICE)).thenReturn(notificationManager);
-		receiver.enableTestMode();
+//		receiver.enableTestMode();
+		// TODO: 20/04/2016 repair test mode for receiver (injections)
 		when(occupationRepository.isLoaded()).thenReturn(true);
 		when(occupationRepository.getByGeofence((Geofence) any())).thenReturn(new Project("", "", 0, null, null));
 	}
@@ -74,7 +75,7 @@ public class GeofencingBroadcastReceiverTest extends GeofenceTest {
 	public void testHandleEventWithTriggerEnterDelegatesToDoNotificationEnter() throws Exception {
 		when(geofencingEvent.getGeofenceTransition()).thenReturn(GeofencingRequest.INITIAL_TRIGGER_ENTER);
 		when(geofencingEvent.getTriggeringGeofences()).thenReturn(geofenceList);
-		receiver.handleEvent(geofencingEvent);
+		receiver.handleEvent(new Intent() ,geofencingEvent);
 		verify(receiver).doNotificationEnter(geofenceList);
 	}
 

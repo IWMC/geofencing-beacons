@@ -70,7 +70,7 @@ public class GeofenceRequester implements ConnectionCallbacks, OnConnectionFaile
 		if (geofenceIds != null && !geofenceIds.isEmpty())
 			getGeofencingApi().removeGeofences(getGoogleApiClient(), geofenceIds);
 		if (pollMode)
-			getFusedLocationApi().removeLocationUpdates(getGoogleApiClient(), this);
+			destroyPoll();
 		getGoogleApiClient().disconnect();
 	}
 
@@ -176,13 +176,6 @@ public class GeofenceRequester implements ConnectionCallbacks, OnConnectionFaile
 
 	private void pushGeofences() {
 		if (ActivityCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-			// TODO: Consider calling
-			//    ActivityCompat#requestPermissions
-			// here to request the missing permissions, and then overriding
-			//   public void onRequestPermissionsResult(int requestCode, String[] permissions,
-			//                                          int[] grantResults)
-			// to handle the case where the user grants the permission. See the documentation
-			// for ActivityCompat#requestPermissions for more details.
 			Log.e(LOG_TAG, "Required permissions not found when pushing geofences!");
 			return;
 		}
@@ -212,22 +205,19 @@ public class GeofenceRequester implements ConnectionCallbacks, OnConnectionFaile
 
 	private void initPoll() {
 		if (ActivityCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(context, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-			// TODO: Consider calling
-			//    ActivityCompat#requestPermissions
-			// here to request the missing permissions, and then overriding
-			//   public void onRequestPermissionsResult(int requestCode, String[] permissions,
-			//                                          int[] grantResults)
-			// to handle the case where the user grants the permission. See the documentation
-			// for ActivityCompat#requestPermissions for more details.
 			Log.e(LOG_TAG, "Required permissions not found when applying update request!");
 			return;
 		}
 		getFusedLocationApi().requestLocationUpdates(getGoogleApiClient(), createLocationRequest(), this);
 	}
 
+	private void destroyPoll() {
+		getFusedLocationApi().removeLocationUpdates(getGoogleApiClient(), this);
+	}
+
 	private LocationRequest createLocationRequest() {
 		return LocationRequest.create()
-				.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY)
+				.setPriority(LocationRequest.PRIORITY_BALANCED_POWER_ACCURACY)
 				.setInterval(RC.geofencing.POLL_INTERVAL)
 				.setFastestInterval(RC.geofencing.POLL_INTERVAL);
 	}
@@ -271,6 +261,7 @@ public class GeofenceRequester implements ConnectionCallbacks, OnConnectionFaile
 
 	@Override
 	public void onLocationChanged(Location location) {
-		//Log.d(LOG_TAG, "Polling for location: " + location);
+		if (RC.other.DEV_MODE)
+			Log.d(LOG_TAG, "Polling for location: " + location);
 	}
 }

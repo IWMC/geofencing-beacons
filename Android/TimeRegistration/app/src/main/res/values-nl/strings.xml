@@ -42,4 +42,5 @@
     <string name="dialog_negative_no">Nee</string>
     <string name="dialog_positive_yes">Ja</string>
     <string name="suggestion_already_confirmed_day">Je kan geen bezigheid toevoegen aan en dag dat al bevestigd is</string>
+    <string name="menu_logout">Afmelden</string>
 </resources>
