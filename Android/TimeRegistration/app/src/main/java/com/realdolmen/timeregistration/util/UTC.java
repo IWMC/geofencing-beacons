@@ -11,7 +11,7 @@ import java.lang.annotation.Target;
  * Marker interface to indicate that a given {@link org.joda.time.DateTime} is in UTC format.
  */
 @Retention(RetentionPolicy.CLASS)
-@Target({ElementType.FIELD, ElementType.PARAMETER, ElementType.METHOD})
+@Target({ElementType.FIELD, ElementType.PARAMETER, ElementType.METHOD, ElementType.LOCAL_VARIABLE})
 @Documented
 @Inherited
 public @interface UTC {

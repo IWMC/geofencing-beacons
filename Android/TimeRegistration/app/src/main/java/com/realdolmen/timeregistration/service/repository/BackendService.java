@@ -36,21 +36,18 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import static com.realdolmen.timeregistration.RC.backend.urls.API_ADD_OCCUPATION_REGISTRATION;
+import static com.realdolmen.timeregistration.RC.backend.urls.API_CONFIRM_OCCUPATIONS;
+import static com.realdolmen.timeregistration.RC.backend.urls.API_GET_OCCUPATIONS;
+import static com.realdolmen.timeregistration.RC.backend.urls.API_GET_REGISTERED_OCCUPATIONS;
+import static com.realdolmen.timeregistration.RC.backend.urls.API_GET_REGISTERED_OCCUPATIONS_RANGE;
+import static com.realdolmen.timeregistration.RC.backend.urls.API_LOGIN_URI;
+import static com.realdolmen.timeregistration.RC.backend.urls.API_REMOVE_REGISTERED_OCCUPATION;
+
 /**
  * A backend interface to facilitate communication with the backend. It also manages caching using SQLite.
  */
 public class BackendService {
-
-	private static final String HOST = "http://10.16.26.142";
-
-	private static final String
-			API_LOGIN_URI = HOST + "/api/user/login",
-			API_GET_REGISTERED_OCCUPATIONS = HOST + "/api/occupations/registration/?date=%d",
-			API_CONFIRM_OCCUPATIONS = HOST + "/api/occupations/registration/%d/confirm",
-			API_ADD_OCCUPATION_REGISTRATION = HOST + "/api/occupations/registration",
-			API_GET_OCCUPATIONS = HOST + "/api/occupations/available",
-			API_GET_REGISTERED_OCCUPATIONS_RANGE = HOST + "/api/occupations/registration/range?date=%d&count=%d",
-			API_REMOVE_REGISTERED_OCCUPATION = HOST + "/api/occupations/registration/%d";
 
 	private Context context;
 	private static final Gson compactGson = new GsonBuilder().registerTypeAdapter(DateTime.class, new DateSerializer()).create();
@@ -104,7 +101,8 @@ public class BackendService {
 
 		if (date == null) {
 			callback.onResult(ResultCallback.Result.FAIL, null,
-					new GenericVolleyError(new NullPointerException("Date should not be null!")));
+							  new GenericVolleyError(new NullPointerException("Date should not be null!"))
+			);
 			return;
 		}
 
@@ -112,8 +110,10 @@ public class BackendService {
 			return;
 		}
 
-		GsonObjectRequest req = new GsonObjectRequest<>(params(API_GET_REGISTERED_OCCUPATIONS,
-				date.toDateTime(DateTimeZone.UTC).getMillis()), RegisteredOccupation[].class
+		GsonObjectRequest req = new GsonObjectRequest<>(params(
+				API_GET_REGISTERED_OCCUPATIONS,
+				date.toDateTime(DateTimeZone.UTC).getMillis()
+		), RegisteredOccupation[].class
 				, auth(), new Response.Listener<RegisteredOccupation[]>() {
 			@Override
 			public void onResponse(RegisteredOccupation[] response) {
@@ -161,7 +161,7 @@ public class BackendService {
 	public void login(@NonNull final Session session, final @NonNull ResultCallback<Session> callback) {
 
 		JsonObjectRequest request = new JsonObjectRequest(Request.Method.POST, API_LOGIN_URI,
-				compactGson.toJson(session), new Response.Listener<JSONObject>() {
+														  compactGson.toJson(session), new Response.Listener<JSONObject>() {
 			@Override
 			public void onResponse(JSONObject response) {
 				if (response.has("token")) {
@@ -181,7 +181,8 @@ public class BackendService {
 			public void onErrorResponse(VolleyError error) {
 				callback.onResult(ResultCallback.Result.FAIL, null, error);
 			}
-		});
+		}
+		);
 
 		requestQueue.add(request);
 	}
@@ -215,7 +216,8 @@ public class BackendService {
 
 		if (date == null) {
 			callback.onResult(ResultCallback.Result.FAIL, null,
-					new GenericVolleyError(new NullPointerException("Date may not be null!")));
+							  new GenericVolleyError(new NullPointerException("Date may not be null!"))
+			);
 			return;
 		}
 
@@ -225,8 +227,10 @@ public class BackendService {
 
 		final AtomicInteger statusCode = new AtomicInteger(0);
 
-		JsonObjectRequest req = new JsonObjectRequest(Request.Method.PUT, params(API_CONFIRM_OCCUPATIONS,
-				date.getMillis()), "", new Response.Listener() {
+		JsonObjectRequest req = new JsonObjectRequest(Request.Method.PUT, params(
+				API_CONFIRM_OCCUPATIONS,
+				date.getMillis()
+		), "", new Response.Listener() {
 			@Override
 			public void onResponse(Object response) {
 				callback.onResult(ResultCallback.Result.SUCCESS, statusCode.get(), null);
@@ -335,7 +339,7 @@ public class BackendService {
 						callback.onResult(ResultCallback.Result.FAIL, null, new GenericVolleyError(e));
 					}
 				else if (existing) {
-					if(statusCode.get() == 204) {
+					if (statusCode.get() == 204) {
 						callback.onResult(ResultCallback.Result.SUCCESS, null, null);
 					} else {
 						callback.onResult(ResultCallback.Result.FAIL, null, new GenericVolleyError("Unable to update backend (status code: " + statusCode + ")"));
@@ -389,7 +393,8 @@ public class BackendService {
 					public void onErrorResponse(VolleyError error) {
 						callback.onResult(ResultCallback.Result.FAIL, error.networkResponse != null ? error.networkResponse.statusCode : -1, error);
 					}
-				}) {
+				}
+		) {
 
 			@Override
 			public Map<String, String> getHeaders() throws AuthFailureError {

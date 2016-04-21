@@ -3,7 +3,7 @@ package com.realdolmen.timeregistration.model;
 import android.location.Location;
 
 import com.google.android.gms.location.Geofence;
-import com.realdolmen.timeregistration.util.Constants;
+import com.realdolmen.timeregistration.RC;
 
 import org.joda.time.DateTime;
 
@@ -22,7 +22,7 @@ public class Project extends Occupation implements Serializable {
 
 	private int projectNr;
 
-	private final transient int DTYPE = Constants.PROJECT_DTYPE;
+	private final transient int DTYPE = RC.dtypes.PROJECT_DTYPE;
 
 	private Set<Project> subProjects = new HashSet<>();
 
@@ -69,8 +69,7 @@ public class Project extends Occupation implements Serializable {
 
 	@Override
 	public String toString() {
-		String result = getName() + " (#" + projectNr + ")";
-		return result;
+		return getName();
 	}
 
 	public Set<Location> getLocations() {

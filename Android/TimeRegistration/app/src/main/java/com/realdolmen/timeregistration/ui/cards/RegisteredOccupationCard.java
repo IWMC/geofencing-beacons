@@ -57,9 +57,18 @@ public class RegisteredOccupationCard extends OccupationCard<RegisteredOccupatio
 		data = o;
 		title.setText(data.getOccupation().getName());
 		description.setVisibility(VISIBLE);
-		if (data.getRegisteredStart() != null)
-			description.setText(DateUtil.formatToHours(DateUtil.toLocal(data.getRegisteredStart())) + " - " + (DateUtil.toLocal(data.getRegisteredEnd()) == null ? "Ongoing..." : DateUtil.formatToHours(DateUtil.toLocal(data.getRegisteredEnd()))));
-		else
+		if (data.getRegisteredStart() != null) {
+			StringBuilder sb = new StringBuilder();
+			sb.append(DateUtil.formatToHours(DateUtil.toLocal(data.getRegisteredStart())))
+					.append(" - ");
+
+			if(data.getRegisteredEnd() != null) {
+				sb.append(DateUtil.formatToHours(DateUtil.toLocal(data.getRegisteredEnd())));
+			} else {
+				sb.append("Ongoing...");
+			}
+			description.setText(sb.toString());
+		} else
 			description.setText("No duration set!");
 		updateViewState();
 	}

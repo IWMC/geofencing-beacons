@@ -51,7 +51,7 @@ public interface AdapterState {
 				owner.showRecycler();
 				owner.setState(new FilledState());
 				Log.i(TAG, "(FilledState) Adapter data is present, setting state to FilledState");
-				//TODO: Revise to have an additional newly filled state
+				//TODO: (maybe) Revise to have an additional newly filled state
 			}
 		}
 	}

@@ -23,6 +23,7 @@ import com.google.android.gms.location.GeofencingApi;
 import com.google.android.gms.location.LocationListener;
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationServices;
+import com.realdolmen.timeregistration.RC;
 
 import org.jetbrains.annotations.TestOnly;
 
@@ -31,12 +32,6 @@ import java.util.List;
 
 import static com.google.android.gms.common.api.GoogleApiClient.ConnectionCallbacks;
 import static com.google.android.gms.common.api.GoogleApiClient.OnConnectionFailedListener;
-import static com.realdolmen.timeregistration.service.location.geofence.GeofenceUtils.CONNECTION_FAILED_RESOLUTION_REQUEST;
-import static com.realdolmen.timeregistration.service.location.geofence.GeofenceUtils.Events.GEOFENCING_FENCES_ADD_FAIL;
-import static com.realdolmen.timeregistration.service.location.geofence.GeofenceUtils.Events.GEOFENCING_FENCES_ADD_SUCCESS;
-import static com.realdolmen.timeregistration.service.location.geofence.GeofenceUtils.Events.GOOGLE_API_CONNECTION_FAILED;
-import static com.realdolmen.timeregistration.service.location.geofence.GeofenceUtils.POLL_INTERVAL;
-import static com.realdolmen.timeregistration.service.location.geofence.GeofenceUtils.RECEIVE_GEOFENCE_REQUEST;
 import static com.realdolmen.timeregistration.service.location.geofence.GeofenceUtils.createGeofencingRequest;
 
 public class GeofenceRequester implements ConnectionCallbacks, OnConnectionFailedListener, ResultCallback<Status>, LocationListener {
@@ -72,8 +67,10 @@ public class GeofenceRequester implements ConnectionCallbacks, OnConnectionFaile
 		for (Geofence geofence : geofences) {
 			geofenceIds.add(geofence.getRequestId());
 		}
-		getGeofencingApi().removeGeofences(getGoogleApiClient(), geofenceIds);
-		getFusedLocationApi().removeLocationUpdates(getGoogleApiClient(), this);
+		if (geofenceIds != null && !geofenceIds.isEmpty())
+			getGeofencingApi().removeGeofences(getGoogleApiClient(), geofenceIds);
+		if (pollMode)
+			destroyPoll();
 		getGoogleApiClient().disconnect();
 	}
 
@@ -154,7 +151,7 @@ public class GeofenceRequester implements ConnectionCallbacks, OnConnectionFaile
 			return mPendingIntent;
 		}
 
-		Intent intent = new Intent(RECEIVE_GEOFENCE_REQUEST);
+		Intent intent = new Intent(RC.geofencing.requests.RECEIVE_GEOFENCE_REQUEST);
 		return mPendingIntent = PendingIntent.getBroadcast(context, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
 	}
 
@@ -179,13 +176,6 @@ public class GeofenceRequester implements ConnectionCallbacks, OnConnectionFaile
 
 	private void pushGeofences() {
 		if (ActivityCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-			// TODO: Consider calling
-			//    ActivityCompat#requestPermissions
-			// here to request the missing permissions, and then overriding
-			//   public void onRequestPermissionsResult(int requestCode, String[] permissions,
-			//                                          int[] grantResults)
-			// to handle the case where the user grants the permission. See the documentation
-			// for ActivityCompat#requestPermissions for more details.
 			Log.e(LOG_TAG, "Required permissions not found when pushing geofences!");
 			return;
 		}
@@ -215,24 +205,21 @@ public class GeofenceRequester implements ConnectionCallbacks, OnConnectionFaile
 
 	private void initPoll() {
 		if (ActivityCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(context, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-			// TODO: Consider calling
-			//    ActivityCompat#requestPermissions
-			// here to request the missing permissions, and then overriding
-			//   public void onRequestPermissionsResult(int requestCode, String[] permissions,
-			//                                          int[] grantResults)
-			// to handle the case where the user grants the permission. See the documentation
-			// for ActivityCompat#requestPermissions for more details.
 			Log.e(LOG_TAG, "Required permissions not found when applying update request!");
 			return;
 		}
 		getFusedLocationApi().requestLocationUpdates(getGoogleApiClient(), createLocationRequest(), this);
 	}
 
+	private void destroyPoll() {
+		getFusedLocationApi().removeLocationUpdates(getGoogleApiClient(), this);
+	}
+
 	private LocationRequest createLocationRequest() {
 		return LocationRequest.create()
-				.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY)
-				.setInterval(POLL_INTERVAL)
-				.setFastestInterval(POLL_INTERVAL);
+				.setPriority(LocationRequest.PRIORITY_BALANCED_POWER_ACCURACY)
+				.setInterval(RC.geofencing.POLL_INTERVAL)
+				.setFastestInterval(RC.geofencing.POLL_INTERVAL);
 	}
 
 	@Override
@@ -245,12 +232,12 @@ public class GeofenceRequester implements ConnectionCallbacks, OnConnectionFaile
 	public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
 		if (connectionResult.hasResolution() && contextActivity != null) {
 			try {
-				connectionResult.startResolutionForResult(contextActivity, CONNECTION_FAILED_RESOLUTION_REQUEST);
+				connectionResult.startResolutionForResult(contextActivity, RC.geofencing.requests.CONNECTION_FAILED_RESOLUTION_REQUEST);
 			} catch (IntentSender.SendIntentException e) {
 				Log.e(LOG_TAG, "Connection and resolution failed!", e);
 			}
 		} else {
-			broadcast(GOOGLE_API_CONNECTION_FAILED);
+			broadcast(RC.geofencing.events.GOOGLE_API_CONNECTION_FAILED);
 			Log.e(LOG_TAG, "Broadcast connection failed: " + connectionResult.getErrorMessage());
 		}
 	}
@@ -259,9 +246,9 @@ public class GeofenceRequester implements ConnectionCallbacks, OnConnectionFaile
 	public void onResult(Status status) {
 		Log.d(LOG_TAG, "Geofence add result: " + status);
 		if (status.isSuccess()) {
-			broadcast(GEOFENCING_FENCES_ADD_SUCCESS);
+			broadcast(RC.geofencing.events.FENCES_ADD_SUCCESS);
 		} else {
-			broadcast(GEOFENCING_FENCES_ADD_FAIL);
+			broadcast(RC.geofencing.events.FENCES_ADD_FAIL);
 		}
 	}
 
@@ -274,6 +261,7 @@ public class GeofenceRequester implements ConnectionCallbacks, OnConnectionFaile
 
 	@Override
 	public void onLocationChanged(Location location) {
-		//Log.d(LOG_TAG, "Polling for location: " + location);
+		if (RC.other.DEV_MODE)
+			Log.d(LOG_TAG, "Polling for location: " + location);
 	}
 }

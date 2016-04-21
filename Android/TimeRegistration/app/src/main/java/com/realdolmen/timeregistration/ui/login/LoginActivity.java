@@ -81,6 +81,7 @@ public class LoginActivity extends AppCompatActivity {
 							}
 						});
 						loggingIn = false;
+						finish();
 						startActivity(new Intent(getApplicationContext(), DayRegistrationActivity.class));
 					} else if (error.networkResponse != null) {
 						if (error.networkResponse.statusCode == 400) {

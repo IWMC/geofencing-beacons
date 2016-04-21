@@ -109,8 +109,6 @@ public class BackendServiceTest {
 		assertNotEquals("Instances of different contexts should not be the same", service2, BackendService.with(dummyContext1));
 	}
 
-	//TODO: evaluate cost of testing login network requests
-
 	@Test
 	public void testGetRegisteredOccupationsUntilNowWithNullDateFails() {
 		BackendService service = BackendService.with(dummyContext1);
