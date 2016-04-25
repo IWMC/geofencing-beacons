@@ -136,10 +136,10 @@ public class OccupationEndpoint {
                     DateUtil.toUTC(new DateTime(ro.getRegisteredStart())).toDate()
             );
 
-            if(ro.getRegisteredEnd() != null)
-            ro.setRegisteredEnd(
-                    DateUtil.toUTC(new DateTime(ro.getRegisteredEnd())).toDate()
-            );
+            if (ro.getRegisteredEnd() != null)
+                ro.setRegisteredEnd(
+                        DateUtil.toUTC(new DateTime(ro.getRegisteredEnd())).toDate()
+                );
         });
 
         occupations.forEach(Initializable::initialize);
@@ -208,7 +208,7 @@ public class OccupationEndpoint {
     @Produces(MediaType.APPLICATION_JSON)
     @Transactional
     public Response getAvailableOccupations() {
-        TypedQuery<Occupation> query = em.createNamedQuery("Occupation.findOnlyOccupations" , Occupation.class);
+        TypedQuery<Occupation> query = em.createNamedQuery("Occupation.findOnlyOccupations", Occupation.class);
         List<Occupation> occupations = query.getResultList();
         occupations.forEach(Initializable::initialize);
         Employee e = sm.findEmployee();
@@ -229,7 +229,9 @@ public class OccupationEndpoint {
             count = 1;
         }
         for (int i = 0; i <= count; i++) {
-            occupations.addAll((List<RegisteredOccupation>) getRegisteredOccupations(time.minusDays(i).getMillis()).getEntity());
+            Response response = getRegisteredOccupations(time.minusDays(i).getMillis());
+            if (response.getEntity() != null)
+                occupations.addAll((List<RegisteredOccupation>) response.getEntity());
         }
         return Response.ok(occupations).build();
     }

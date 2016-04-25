@@ -38,6 +38,7 @@ public class Project extends Occupation implements Serializable {
     public static void initialize(Project project) {
         Hibernate.initialize(project.getLocations());
         Hibernate.initialize(project.getSubProjects());
+        Hibernate.initialize(project.getTasks());
         project.getSubProjects().forEach(Initializable::initialize);
         project.getEmployees().forEach(Hibernate::initialize);
     }
@@ -69,13 +70,14 @@ public class Project extends Occupation implements Serializable {
     @OneToMany(cascade = {
             CascadeType.REMOVE
     })
-    @JsonInclude(JsonInclude.Include.NON_DEFAULT)
+    //@JsonInclude(JsonInclude.Include.NON_DEFAULT)
+    @JsonIgnore
     // TODO: 21/03/2016 Field bridge to allow search on subprojects
     private Set<Project> subProjects = new HashSet<>();
 
     @ManyToMany(mappedBy = "memberProjects")
     @JsonIgnore
-    @JsonInclude(JsonInclude.Include.NON_DEFAULT)
+    //@JsonInclude(JsonInclude.Include.NON_DEFAULT)
     private Set<Employee> employees = new HashSet<>();
 
     @OneToMany

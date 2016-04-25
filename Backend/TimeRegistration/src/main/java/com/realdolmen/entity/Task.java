@@ -1,5 +1,6 @@
 package com.realdolmen.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.realdolmen.entity.validation.Existing;
 
@@ -25,6 +26,7 @@ public class Task extends Occupation {
 
     @ManyToOne
     @NotNull(message = "project.empty", groups = Existing.class)
+    @JsonIgnore
     private Project project;
 
     @Transient

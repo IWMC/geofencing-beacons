@@ -370,7 +370,12 @@ public class DayRegistrationActivity extends AppCompatActivity {
 		});
 		//endregion
 
-		Repositories.occupationRepository().reload(this);
+		Repositories.loadOccupationRepository(this).done(new DoneCallback<OccupationRepository>() {
+			@Override
+			public void onDone(OccupationRepository result) {
+				Repositories.occupationRepository().reload(DayRegistrationActivity.this);
+			}
+		});
 	}
 
 	@Override
