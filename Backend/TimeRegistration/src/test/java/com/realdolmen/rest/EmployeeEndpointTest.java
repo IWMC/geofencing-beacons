@@ -5,7 +5,7 @@ import com.realdolmen.entity.Employee;
 import com.realdolmen.entity.ManagementEmployee;
 import com.realdolmen.entity.ProjectManager;
 import com.realdolmen.entity.validation.Existing;
-import com.realdolmen.jsf.Session;
+import com.realdolmen.jsf.UserContext;
 import com.realdolmen.validation.EmployeePasswordCredentialsValidator;
 import com.realdolmen.validation.EmployeeValidator;
 import com.realdolmen.validation.ValidationResult;
@@ -57,7 +57,7 @@ public class EmployeeEndpointTest {
     }
 
     @Inject
-    private Session session;
+    private UserContext userContext;
     
     private Employee employee1 = new Employee();
     private Employee employee2 = new Employee();
@@ -65,7 +65,7 @@ public class EmployeeEndpointTest {
     @Before
     public void setUp() throws Exception {
         MockitoAnnotations.initMocks(this);
-        session.setEmployee(new ManagementEmployee());
+        userContext.setEmployee(new ManagementEmployee());
         employee1.setFirstName("first name");
         employee1.setLastName("last name");
         employee1.setUsername("username");

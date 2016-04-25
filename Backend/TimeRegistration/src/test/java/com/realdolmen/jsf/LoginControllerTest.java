@@ -31,7 +31,7 @@ public class LoginControllerTest {
     private UserEndpoint endpoint;
 
     @Mock
-    private Session session;
+    private UserContext userContext;
 
     @InjectMocks
     private LoginController loginController = new LoginController();
@@ -54,7 +54,7 @@ public class LoginControllerTest {
         loginController.setPassword(employee.getPassword());
         String redirect = loginController.doLogin();
         verify(endpoint, times(1)).loginLocal(any());
-        verify(session, times(1)).setEmployee(any());
+        verify(userContext, times(1)).setEmployee(any());
         assertEquals("Correct login should redirect to index page", "/index.xhtml?faces-redirect=true", redirect);
     }
 
@@ -65,7 +65,7 @@ public class LoginControllerTest {
         loginController.setPassword(employee.getPassword() + "bad");
         String redirect = loginController.doLogin();
         verify(endpoint, times(1)).loginLocal(any());
-        verify(session, never()).setEmployee(any());
+        verify(userContext, never()).setEmployee(any());
         assertEquals("False login should not redirect to anything", "", redirect);
     }
 }

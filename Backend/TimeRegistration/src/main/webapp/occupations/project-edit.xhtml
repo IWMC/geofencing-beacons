@@ -68,24 +68,26 @@
                                                value="#{msg['save']}">
                                     <f:ajax execute="@form"/>
                                 </h:commandLink>
-                                <a class="red-text text-lighten-1 right modal-trigger waves-effect waves-red card-action-flat"
-                                   href="#remove-warning"><h:outputText value="#{msg['remove']}"/></a>
-                                <div id="remove-warning" class="modal">
-                                    <div class="modal-content">
-                                        <h4><h:outputText value="#{msg['project.remove_warning.title']}"/></h4>
-                                        <p><h:outputText value="#{msg['project.remove_warning.description']}"/></p>
+                                <h:panelGroup rendered="#{userContext.isManagementEmployee}">
+                                    <a class="red-text text-lighten-1 right modal-trigger waves-effect waves-red card-action-flat"
+                                       href="#remove-warning"><h:outputText value="#{msg['remove']}"/></a>
+                                    <div id="remove-warning" class="modal">
+                                        <div class="modal-content">
+                                            <h4><h:outputText value="#{msg['project.remove_warning.title']}"/></h4>
+                                            <p><h:outputText value="#{msg['project.remove_warning.description']}"/></p>
+                                        </div>
+                                        <div class="modal-footer">
+                                            <a href="#"
+                                               class="green-text modal-action modal-close waves-effect waves-green btn-flat">
+                                                <h:outputText value="#{msg['no']}"/>
+                                            </a>
+                                            <h:commandLink
+                                                    styleClass="red-text modal-action modal-close waves-effect waves-red btn-flat"
+                                                    value="#{msg['yes']}"
+                                                    action="#{projectDetails.removeProject}"/>
+                                        </div>
                                     </div>
-                                    <div class="modal-footer">
-                                        <a href="#"
-                                           class="green-text modal-action modal-close waves-effect waves-green btn-flat">
-                                            <h:outputText value="#{msg['no']}"/>
-                                        </a>
-                                        <h:commandLink
-                                                styleClass="red-text modal-action modal-close waves-effect waves-red btn-flat"
-                                                value="#{msg['yes']}"
-                                                action="#{projectDetails.removeProject}"/>
-                                    </div>
-                                </div>
+                                </h:panelGroup>
                             </div>
                         </o:form>
                     </div>
@@ -99,7 +101,8 @@
                                                 #{projectDetails.entity.subProjects.size() > 0 ? msg['project.details.subprojects'] : msg['project.details.no_subprojects']}
                                             </h5>
                                             <div class="col s4">
-                                                <h:link outcome="#{pages.selectSubProject().param('id', projectDetails.id).asRedirect()}"
+                                                <h:link rendered="#{userContext.isProjectManager}"
+                                                        outcome="#{pages.selectSubProject().param('id', projectDetails.id).asRedirect()}"
                                                         style="margin: 10px 0px;"
                                                         class="right btn-floating">
                                                     <i class="material-icons left">add</i>
@@ -114,7 +117,8 @@
                                                 <h:link outcome="#{pages.detailsProject().param('id', subproject.id).asLinkOutcome()}">
                                                     #{subproject.name}
                                                 </h:link>
-                                                <h:commandLink style="top: -2px; right: 16px;"
+                                                <h:commandLink rendered="#{userContext.isProjectManager}"
+                                                               style="top: -2px; right: 16px;"
                                                                class="right btn-small btn-floating red"
                                                                action="#{projectDetails.unlinkSubproject(subproject)}">
                                                     <f:ajax render=":subprojects" execute="@form"/>

@@ -5,7 +5,7 @@ import com.realdolmen.entity.Employee;
 import com.realdolmen.entity.ManagementEmployee;
 import com.realdolmen.entity.PersistenceUnit;
 import com.realdolmen.jsf.Pages;
-import com.realdolmen.jsf.Session;
+import com.realdolmen.jsf.UserContext;
 import com.realdolmen.rest.EmployeeEndpoint;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
@@ -49,7 +49,7 @@ public class EmployeeDetailsControllerTest {
     private Employee employee = new Employee();
 
     @Inject
-    private Session session;
+    private UserContext userContext;
 
     @Mock
     private EmployeeEndpoint endpoint = new EmployeeEndpoint();
@@ -75,7 +75,7 @@ public class EmployeeDetailsControllerTest {
         em.persist(employee);
         utx.commit();
         controller.setFacesContext(facesContext);
-        session.setEmployee(new ManagementEmployee());
+        userContext.setEmployee(new ManagementEmployee());
     }
 
     @Test

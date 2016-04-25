@@ -23,5 +23,4 @@ public class OccupationEditController extends OccupationDetailController impleme
             getToastService().newToast(getLanguage().getString("occupation.name_taken"), 3000);
         }
     }
-
 }

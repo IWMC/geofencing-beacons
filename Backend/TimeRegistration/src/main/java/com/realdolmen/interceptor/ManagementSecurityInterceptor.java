@@ -3,7 +3,7 @@ package com.realdolmen.interceptor;
 import com.realdolmen.annotations.Authorized;
 import com.realdolmen.annotations.UserGroup;
 import com.realdolmen.entity.*;
-import com.realdolmen.jsf.Session;
+import com.realdolmen.jsf.UserContext;
 import com.realdolmen.json.JsonWebToken;
 import com.realdolmen.service.SecurityManager;
 
@@ -29,15 +29,15 @@ public class ManagementSecurityInterceptor implements Serializable {
     private transient HttpServletRequest request;
 
     @Inject
-    private transient Session session;
+    private transient UserContext userContext;
 
     @Inject
     private transient SecurityManager securityManager;
 
     @AroundInvoke
     public Object manageTransaction(InvocationContext ctx) throws Exception {
-        if (session.getEmployee() != null) {
-            if (session.getEmployee() instanceof ProjectManager || session.getEmployee() instanceof ManagementEmployee) {
+        if (userContext.getUser() != null) {
+            if (userContext.getUser() instanceof ProjectManager || userContext.getUser() instanceof ManagementEmployee) {
                 return ctx.proceed();
             } else {
                 return Response.status(Response.Status.FORBIDDEN).build();

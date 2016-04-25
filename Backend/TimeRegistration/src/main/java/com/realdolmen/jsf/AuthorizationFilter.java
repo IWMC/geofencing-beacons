@@ -27,13 +27,13 @@ public class AuthorizationFilter implements Filter {
     public static final String INCLUDED_WEB_INIT_PARAM = "included";
 
     @Inject
-    private Session session;
+    private UserContext userContext;
 
     private List<String> includedUrls = new ArrayList<>();
 
     @Override
     public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws IOException, ServletException {
-        Employee employee = session.getEmployee();
+        Employee employee = userContext.getUser();
         HttpServletRequest httpRequest = (HttpServletRequest) request;
 
         if (includedUrls.stream().anyMatch(httpRequest.getRequestURI()::matches) && employee == null) {

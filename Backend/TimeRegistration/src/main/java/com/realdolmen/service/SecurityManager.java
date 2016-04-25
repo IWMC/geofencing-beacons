@@ -2,7 +2,7 @@ package com.realdolmen.service;
 
 import com.realdolmen.entity.Employee;
 import com.realdolmen.entity.PersistenceUnit;
-import com.realdolmen.jsf.Session;
+import com.realdolmen.jsf.UserContext;
 import com.realdolmen.json.JsonWebToken;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.MalformedJwtException;
@@ -43,7 +43,7 @@ public class SecurityManager {
     private HttpServletRequest request;
 
     @Inject
-    private Session session;
+    private UserContext userContext;
 
     public String randomSalt() throws NoSuchAlgorithmException {
         return new BigInteger(32 * 8, SecureRandom.getInstanceStrong()).toString(32);
@@ -80,7 +80,7 @@ public class SecurityManager {
     }
 
     public Employee findEmployee() {
-        return Optional.ofNullable(session.getEmployee()).orElse(findByJwt(new JsonWebToken(request.getHeader("Authorization"))));
+        return Optional.ofNullable(userContext.getUser()).orElse(findByJwt(new JsonWebToken(request.getHeader("Authorization"))));
     }
 
     @Nullable

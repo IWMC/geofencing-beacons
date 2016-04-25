@@ -138,10 +138,10 @@ public class ReportsEndpoint {
     @Path("tasks")
     @Produces({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
     public Response filteredTaskList(@QueryParam("values") String projection,
-                                                     @QueryParam("where") String selection,
-                                                     @QueryParam("group") String groups,
-                                                     @QueryParam("start") Integer startPosition,
-                                                     @QueryParam("max") Integer max) {
+                                     @QueryParam("where") String selection,
+                                     @QueryParam("group") String groups,
+                                     @QueryParam("start") Integer startPosition,
+                                     @QueryParam("max") Integer max) {
         return Response.ok(builder
                 .with(Task.class)
                 .select(projection)

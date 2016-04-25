@@ -8,6 +8,7 @@ import com.realdolmen.entity.PersistenceUnit;
 import com.realdolmen.entity.Project;
 import com.realdolmen.jsf.DetailController;
 import com.realdolmen.jsf.Pages;
+import com.realdolmen.jsf.UserContext;
 import com.realdolmen.rest.OccupationEndpoint;
 import org.primefaces.event.map.GeocodeEvent;
 import org.primefaces.event.map.OverlaySelectEvent;
@@ -33,6 +34,9 @@ import java.io.Serializable;
 @Named("projectDetails")
 @ViewScoped
 public class ProjectDetailController extends DetailController<Project> implements Serializable {
+
+    @Inject
+    private UserContext userContext;
 
     @PersistenceContext(unitName = PersistenceUnit.PRODUCTION)
     private transient EntityManager em;
@@ -159,6 +163,7 @@ public class ProjectDetailController extends DetailController<Project> implement
         searchLocation = new Location(location.getLat(), location.getLng());
     }
 
+    @Authorized(UserGroup.PROJECT_MANAGER_ONLY)
     public void removeProject() throws IOException {
         getOccupationEndpoint().removeOccupation(getEntity().getId());
         redirect(Pages.searchOccupation());
@@ -179,5 +184,10 @@ public class ProjectDetailController extends DetailController<Project> implement
 
     public void setSearchLocation(Location searchLocation) {
         this.searchLocation = searchLocation;
+    }
+
+    public boolean shouldShowEditOption() {
+        return userContext.getIsManagementEmployee() ||
+                (userContext.getIsProjectManager() && getEntity().getEmployees().contains(userContext.getUser()));
     }
 }

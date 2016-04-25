@@ -2,7 +2,7 @@ package com.realdolmen.rest;
 
 import com.realdolmen.entity.*;
 import com.realdolmen.entity.validation.Existing;
-import com.realdolmen.jsf.Session;
+import com.realdolmen.jsf.UserContext;
 import com.realdolmen.service.SecurityManager;
 import com.realdolmen.validation.ValidationResult;
 import com.realdolmen.validation.Validator;
@@ -41,7 +41,7 @@ public class OccupationEndpointTest {
     @Mock
     private SecurityManager sm;
 
-    private Session session = new Session();
+    private UserContext userContext = new UserContext();
 
     @Mock
     private Validator<Occupation> occupationValidator;
@@ -71,9 +71,9 @@ public class OccupationEndpointTest {
         endpoint = new OccupationEndpoint();
         MockitoAnnotations.initMocks(this);
         when(sm.isValidToken(any())).thenReturn(true);
-        session.setEmployee(new ManagementEmployee());
-        session.getEmployee().setId(1L);
-        when(sm.findByJwt(any())).thenReturn(session.getEmployee());
+        userContext.setEmployee(new ManagementEmployee());
+        userContext.getUser().setId(1L);
+        when(sm.findByJwt(any())).thenReturn(userContext.getUser());
         Occupation oc1 = new Occupation();
         oc1.setName("Lunch");
         Occupation oc2 = new Occupation();
@@ -91,7 +91,7 @@ public class OccupationEndpointTest {
 
     @Test
     public void testGetOccupationsWithStartDateOnlyReturnsAllOccupationsOfThatDay() {
-        when(sm.findEmployee()).thenReturn(session.getEmployee());
+        when(sm.findEmployee()).thenReturn(userContext.getUser());
         TypedQuery<RegisteredOccupation> query = when(mock(TypedQuery.class).getResultList()).thenReturn(occupations).getMock();
         when(query.setParameter(anyString(), any())).thenReturn(query);
         when(em.createNamedQuery("RegisteredOccupation.findOccupationsInRange", RegisteredOccupation.class))
@@ -104,7 +104,7 @@ public class OccupationEndpointTest {
 
     @Test
     public void testGetOccupationsWithEndDateOnlyReturnsBadRequest() {
-        when(sm.findEmployee()).thenReturn(session.getEmployee());
+        when(sm.findEmployee()).thenReturn(userContext.getUser());
         Response response = endpoint.getRegisteredOccupations(0);
         assertEquals("Response should be 400 because there is no start time: " + response.getEntity(), 400, response.getStatus());
     }
@@ -114,7 +114,7 @@ public class OccupationEndpointTest {
         List<Occupation> allOccupations = new ArrayList<>(Arrays.asList(new Occupation[]{
                 new Occupation("Occupation", "Occupation description"), new Project("Project", "Project description", 5, new Date(), new Date())
         }));
-        when(sm.findEmployee()).thenReturn(session.getEmployee());
+        when(sm.findEmployee()).thenReturn(userContext.getUser());
         TypedQuery<Occupation> query = when(mock(TypedQuery.class).getResultList()).thenReturn(allOccupations).getMock();
         when(query.setParameter(anyString(), any())).thenReturn(query);
         when(em.createNamedQuery("Occupation.findAll", Occupation.class))
@@ -130,7 +130,7 @@ public class OccupationEndpointTest {
         List<Occupation> allOccupations = new ArrayList<>(Arrays.asList(new Occupation[]{
                 new Occupation("Occupation", "Occupation description"), new Project("Project", "Project description", 5, new Date(), new Date())
         }));
-        when(sm.findEmployee()).thenReturn(session.getEmployee());
+        when(sm.findEmployee()).thenReturn(userContext.getUser());
         TypedQuery<Occupation> query = when(mock(TypedQuery.class).getResultList()).thenReturn(allOccupations).getMock();
         when(query.setParameter(anyString(), any())).thenReturn(query);
         when(em.createNamedQuery("Occupation.findAll", Occupation.class))
@@ -145,7 +145,7 @@ public class OccupationEndpointTest {
 
     @Test
     public void testGetOccupationsWithStartAndEndDateReturnsList() {
-        when(sm.findEmployee()).thenReturn(session.getEmployee());
+        when(sm.findEmployee()).thenReturn(userContext.getUser());
         TypedQuery<RegisteredOccupation> query = when(mock(TypedQuery.class).getResultList()).thenReturn(occupations).getMock();
         when(query.setParameter(anyString(), any())).thenReturn(query);
         when(em.createNamedQuery("RegisteredOccupation.findOccupationsInRange", RegisteredOccupation.class))
@@ -158,8 +158,8 @@ public class OccupationEndpointTest {
 
     @Test
     public void testGetOccupationsWithInvalidUserReturnsBadRequest() {
-        session.getEmployee().setId(0L);
-        when(sm.findEmployee()).thenReturn(session.getEmployee());
+        userContext.getUser().setId(0L);
+        when(sm.findEmployee()).thenReturn(userContext.getUser());
         Response response = endpoint.getRegisteredOccupations(new Date().getTime());
         assertEquals("Response should be 400 because the user is invalid (but somehow passed authentication): " + response.getEntity(), 400, response.getStatus());
     }
@@ -216,7 +216,7 @@ public class OccupationEndpointTest {
 
     @Test
     public void testRemoveOccupationWithValidIdResultsIn204() throws Exception {
-        when(sm.findEmployee()).thenReturn(session.getEmployee());
+        when(sm.findEmployee()).thenReturn(userContext.getUser());
         RegisteredOccupation ro = new RegisteredOccupation();
         ro.setId(25);
         ro.setOccupation(new Occupation());
@@ -234,7 +234,7 @@ public class OccupationEndpointTest {
 
     @Test
     public void testRemoveOccupationWithInvalidIdResultsInNotModified() throws Exception {
-        when(sm.findEmployee()).thenReturn(session.getEmployee());
+        when(sm.findEmployee()).thenReturn(userContext.getUser());
         RegisteredOccupation ro = new RegisteredOccupation();
         ro.setId(27);
         ro.setOccupation(new Occupation());

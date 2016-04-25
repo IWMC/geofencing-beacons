@@ -4,7 +4,7 @@ import com.realdolmen.WarFactory;
 import com.realdolmen.entity.Employee;
 import com.realdolmen.entity.ManagementEmployee;
 import com.realdolmen.entity.ProjectManager;
-import com.realdolmen.jsf.Session;
+import com.realdolmen.jsf.UserContext;
 import com.realdolmen.service.SecurityManager;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
@@ -39,7 +39,7 @@ public class ManagementEmployeeSecurityInterceptorTest {
     private SecurityManager securityManager;
 
     @Mock
-    private Session session;
+    private UserContext userContext;
 
     @Deployment
     public static WebArchive createDeployment() {
@@ -83,7 +83,7 @@ public class ManagementEmployeeSecurityInterceptorTest {
 
     @Test
     public void testInterceptorDeniesOnProjectManagerCredentialsJSF() throws Exception {
-        when(session.getEmployee()).thenReturn(new ProjectManager());
+        when(userContext.getUser()).thenReturn(new ProjectManager());
         invokeAndCheckDenial();
     }
 
@@ -96,7 +96,7 @@ public class ManagementEmployeeSecurityInterceptorTest {
 
     @Test
     public void testInterceptorAcceptsOnManagementEmployeeCredentialsJSF() throws Exception {
-        when(session.getEmployee()).thenReturn(new ManagementEmployee());
+        when(userContext.getUser()).thenReturn(new ManagementEmployee());
         invokeAndCheckAcceptance();
     }
 
@@ -109,7 +109,7 @@ public class ManagementEmployeeSecurityInterceptorTest {
 
     @Test
     public void testInterceptorDeniesOnEmployeeCredentialsJSF() throws Exception {
-        when(session.getEmployee()).thenReturn(new Employee());
+        when(userContext.getUser()).thenReturn(new Employee());
         invokeAndCheckDenial();
     }
 

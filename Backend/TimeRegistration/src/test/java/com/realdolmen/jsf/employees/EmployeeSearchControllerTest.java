@@ -4,7 +4,7 @@ import com.realdolmen.WarFactory;
 import com.realdolmen.entity.Employee;
 import com.realdolmen.entity.ManagementEmployee;
 import com.realdolmen.entity.PersistenceUnit;
-import com.realdolmen.jsf.Session;
+import com.realdolmen.jsf.UserContext;
 import com.realdolmen.rest.EmployeeEndpoint;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
@@ -41,7 +41,7 @@ public class EmployeeSearchControllerTest {
     private EmployeeSearchController realController;
 
     @Inject
-    private Session session;
+    private UserContext userContext;
 
     @Inject
     private UserTransaction transaction;
@@ -59,7 +59,7 @@ public class EmployeeSearchControllerTest {
 
     @Before
     public void init() {
-        session.setEmployee(new ManagementEmployee());
+        userContext.setEmployee(new ManagementEmployee());
         MockitoAnnotations.initMocks(this);
     }
 

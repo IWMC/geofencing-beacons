@@ -35,11 +35,14 @@
         </ui:define>
         <ui:define name="body">
             <div class="container">
-                <div class="fixed-action-btn">
-                    <h:link outcome="#{pages.addEmployee().asLinkOutcome()}" styleClass="btn-floating btn-large red">
-                        <i class="large material-icons">add</i>
-                    </h:link>
-                </div>
+                <h:panelGroup rendered="#{userContext.isManagementEmployee}">
+                    <div class="fixed-action-btn">
+                        <h:link outcome="#{pages.addEmployee().asLinkOutcome()}"
+                                styleClass="btn-floating btn-large red">
+                            <i class="large material-icons">add</i>
+                        </h:link>
+                    </div>
+                </h:panelGroup>
                 <h:panelGroup id="search-results">
                     <div class="row">
                         <ui:repeat value="#{employeeSearch.employees}"
