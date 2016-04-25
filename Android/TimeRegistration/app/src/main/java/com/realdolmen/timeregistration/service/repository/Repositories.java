@@ -4,9 +4,11 @@ import android.content.Context;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
-import com.realdolmen.timeregistration.model.Occupation;
+import com.android.volley.VolleyError;
 
+import org.jdeferred.AlwaysCallback;
 import org.jdeferred.Deferred;
+import org.jdeferred.DoneCallback;
 import org.jdeferred.Promise;
 import org.jdeferred.impl.DeferredObject;
 import org.jetbrains.annotations.TestOnly;
@@ -20,6 +22,15 @@ public class Repositories {
 	private static RegisteredOccupationRepository registeredOccupationRepository;
 
 	private static boolean testMode = false;
+
+	public static void logout() {
+		try {
+			occupationRepository().clear();
+			registeredOccupationRepository().clear();
+		} catch (Exception e) {
+		}
+		BackendService.getCurrentSession().setJwtToken("");
+	}
 
 	public static class Testing {
 
@@ -37,9 +48,9 @@ public class Repositories {
 
 	}
 
-	public static void loadOccupationRepository(@NonNull Context context, @Nullable LoadCallback loadCallback) {
-		if(testMode) {
-			if(loadCallback != null)
+	public static void loadOccupationRepository(@NonNull Context context, @Nullable final LoadCallback loadCallback) {
+		if (testMode) {
+			if (loadCallback != null)
 				loadCallback.onResult(LoadCallback.Result.SUCCESS, null);
 			return;
 		}
@@ -48,6 +59,15 @@ public class Repositories {
 		}
 		if (occupationRepository == null) {
 			occupationRepository = new OccupationRepository(context, loadCallback);
+		} else if (!occupationRepository.isLoaded()) {
+			occupationRepository.reload(context).always(new AlwaysCallback<OccupationRepository, VolleyError>() {
+				@Override
+				public void onAlways(Promise.State state, OccupationRepository resolved, VolleyError rejected) {
+					if (loadCallback != null) {
+						occupationRepository.addOnLoadCallback(loadCallback);
+					}
+				}
+			});
 		} else if (loadCallback != null) {
 			occupationRepository.addOnLoadCallback(loadCallback);
 		}
@@ -58,7 +78,7 @@ public class Repositories {
 		loadOccupationRepository(context, new LoadCallback() {
 			@Override
 			public void onResult(Result result, Throwable error) {
-				if(result == Result.SUCCESS)
+				if (result == Result.SUCCESS)
 					def.resolve(occupationRepository);
 				else
 					def.reject(error);
@@ -81,12 +101,21 @@ public class Repositories {
 		return def.promise();
 	}
 
-	public static void loadRegisteredOccupationRepository(@NonNull Context context, @Nullable LoadCallback loadCallback) {
+	public static void loadRegisteredOccupationRepository(@NonNull Context context, @Nullable final LoadCallback loadCallback) {
 		if (context == null) {
 			throw new IllegalArgumentException("Context cannot be null!");
 		}
 		if (registeredOccupationRepository == null) {
 			registeredOccupationRepository = new RegisteredOccupationRepository(context, loadCallback);
+		} else if (!registeredOccupationRepository.isLoaded()) {
+			registeredOccupationRepository.reload(context).always(new AlwaysCallback<RegisteredOccupationRepository, VolleyError>() {
+				@Override
+				public void onAlways(Promise.State state, RegisteredOccupationRepository resolved, VolleyError rejected) {
+					if (loadCallback != null) {
+						registeredOccupationRepository.addOnLoadCallback(loadCallback);
+					}
+				}
+			});
 		} else if (loadCallback != null) {
 			registeredOccupationRepository.addOnLoadCallback(loadCallback);
 		}

@@ -504,7 +504,8 @@ public class DayRegistrationActivity extends AppCompatActivity {
 			return true;
 		} else if (item.getItemId() == R.id.menu_logout) {
 			finish();
-			BackendService.getCurrentSession().setJwtToken("");
+			geofenceRequester.disconnect();
+			Repositories.logout();
 			startActivity(new Intent(this, LoginActivity.class));
 			return true;
 		}

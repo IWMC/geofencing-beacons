@@ -247,4 +247,10 @@ public class RegisteredOccupationRepository extends DataRepository<RegisteredOcc
 		}
 		return isConfirmed;
 	}
+
+	@Override
+	public void clear() {
+		super.clear();
+		invalidateData();
+	}
 }

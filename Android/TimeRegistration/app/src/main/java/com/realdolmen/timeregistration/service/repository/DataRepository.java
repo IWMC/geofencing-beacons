@@ -81,4 +81,9 @@ public abstract class DataRepository<E, RM_OUT, SAVE_OUT> {
 	public abstract Promise<? extends DataRepository, VolleyError, Object> reload(Context context);
 
 	public abstract E getById(long id);
+
+	public void clear() {
+		setLoaded(false, null);
+		data.clear();
+	}
 }
