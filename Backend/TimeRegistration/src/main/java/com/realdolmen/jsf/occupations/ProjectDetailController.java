@@ -2,10 +2,7 @@ package com.realdolmen.jsf.occupations;
 
 import com.realdolmen.annotations.Authorized;
 import com.realdolmen.annotations.UserGroup;
-import com.realdolmen.entity.Employee;
-import com.realdolmen.entity.Location;
-import com.realdolmen.entity.PersistenceUnit;
-import com.realdolmen.entity.Project;
+import com.realdolmen.entity.*;
 import com.realdolmen.jsf.DetailController;
 import com.realdolmen.jsf.Pages;
 import com.realdolmen.jsf.UserContext;
@@ -53,6 +50,7 @@ public class ProjectDetailController extends DetailController<Project> implement
     }
 
     @Override
+    @Transactional
     public Project loadEntity(long id) {
         Response response = occupationEndpoint.findById(id);
         Project project = response.getStatus() == 200 ? (Project) response.getEntity() : null;
@@ -61,6 +59,7 @@ public class ProjectDetailController extends DetailController<Project> implement
                     .forEach(mapModel::addOverlay);
         }
 
+        project.initialize();
         return project;
     }
 
@@ -189,5 +188,19 @@ public class ProjectDetailController extends DetailController<Project> implement
     public boolean shouldShowEditOption() {
         return userContext.getIsManagementEmployee() ||
                 (userContext.getIsProjectManager() && getEntity().getEmployees().contains(userContext.getUser()));
+    }
+
+    public String getEstimatedHours(Task task) {
+        if (task.getEstimatedHours() == (int) task.getEstimatedHours()) {
+            return getLanguage().getString("project.task.hours", (int) task.getEstimatedHours());
+        } else {
+            return getLanguage().getString("project.task.hours_minutes",
+                    (int) task.getEstimatedHours(),
+                    (int) ((task.getEstimatedHours() - Math.floor(task.getEstimatedHours())) * 60));
+        }
+    }
+
+    public void addTask() {
+
     }
 }

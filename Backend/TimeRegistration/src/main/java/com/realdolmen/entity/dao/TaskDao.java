@@ -1,5 +1,6 @@
 package com.realdolmen.entity.dao;
 
+import com.realdolmen.entity.Employee;
 import com.realdolmen.entity.PersistenceUnit;
 import com.realdolmen.entity.Project;
 import com.realdolmen.entity.Task;
@@ -27,6 +28,10 @@ public class TaskDao {
     @PersistenceContext(unitName = PersistenceUnit.PRODUCTION)
     private EntityManager em;
 
+    public Task findById(long id) {
+        return em.find(Task.class, id);
+    }
+
     public TypedQuery<Task> getTasks() {
         return em.createNamedQuery("Task.findAll", Task.class);
     }
@@ -41,10 +46,21 @@ public class TaskDao {
             Project project = em.find(Project.class, task.getProjectId());
 
             if (project == null) {
-                throw new IllegalArgumentException("project cannot be null");
+                throw new IllegalArgumentException("project with id " + task.getProjectId() + " does not exist");
             }
 
             task.setProject(project);
+        }
+
+        if (!task.getEmployeeIds().isEmpty()) {
+            for (Long id : task.getEmployeeIds()) {
+                Employee employee = em.find(Employee.class, id);
+                if (employee == null) {
+                    throw new IllegalArgumentException("employee with id " + id + "does not exist");
+                }
+
+                task.getEmployees().add(employee);
+            }
         }
 
         ValidationResult result = validator.validate(task, New.class);

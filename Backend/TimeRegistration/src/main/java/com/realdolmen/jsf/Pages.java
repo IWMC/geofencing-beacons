@@ -81,6 +81,10 @@ public class Pages {
         return new Page("/reports.xhtml");
     }
 
+    public static Page detailsTask() { return new Page("/tasks/task-details.xhtml"); }
+
+    public static Page editTask() { return new Page("/tasks/task-edit.xhtml"); }
+
     public static Page occupationDetailsFrom(Occupation occupation) {
         if (occupation instanceof Project) {
             return Pages.detailsProject().param("id", String.valueOf(occupation.getId()));
@@ -93,6 +97,7 @@ public class Pages {
 
         private static final String URL_ENCODING = "UTF-8";
         private String baseUrl;
+
         // Not Map to keep Page serializable, only change by another serializable class!
         private HashMap<String, String> params = new HashMap<>();
 

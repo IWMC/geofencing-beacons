@@ -97,7 +97,7 @@ public class TaskEndpoint {
         } catch (EJBTransactionRolledbackException etrex) {
             if (etrex.getCause() instanceof IllegalArgumentException) {
                 return Response.status(Response.Status.BAD_REQUEST)
-                        .entity(Json.error("no project with id " + task.getProjectId() + " exists"))
+                        .entity(Json.error(etrex.getCause().getMessage()))
                         .build();
             }
         }

@@ -110,7 +110,7 @@
                         </div>
                     </div>
                 </div>
-                <div class="row map-row">
+                <div class="row">
                     <h:inputText id="pac-input" styleClass="col s6 m3 s2" a:placeholder="#{msg['search']}"/>
                     <div class="card col s12 no-padding map">
                         <p:gmap type="MAP" center="#{projectDetails.locationOrDefault}"
@@ -118,6 +118,61 @@
                             <p:ajax event="geocode" listener="#{projectDetails.geocodeLookup}" update="@this"/>
                         </p:gmap>
                     </div>
+                    <nav class="col s12 row no-padding" style="position: relative; margin-top: -60px;">
+                        <div class="nav-wrapper col s12 no-padding">
+                            <h:form>
+                                <div class="input-field">
+                                    <input id="search" type="search" required="true"
+                                           placeholder="#{msg['project.task.search']}"/>
+                                    <label for="search"><i class="material-icons">search</i></label>
+                                    <i class="material-icons">close</i>
+                                </div>
+                            </h:form>
+                        </div>
+                    </nav>
+                </div>
+                <div class="row">
+                    <ui:repeat value="#{of:setToList(projectDetails.entity.tasks)}" var="task">
+                        <h:form>
+                            <div class="col s12 l6">
+                                <div class="card">
+                                    <div class="card-content">
+                                        <p class="card-title">#{task.name}</p>
+                                        <p>#{projectDetails.getEstimatedHours(task)}</p>
+                                    </div>
+                                    <div class="card-action">
+                                        <h:link outcome="#{pages.detailsTask().param('id', task.id).asLinkOutcome()}"
+                                                styleClass="waves-effect waves-orange card-action-flat"
+                                                value="#{msg['details']}"/>
+                                        <h:panelGroup rendered="#{userContext.isProjectManager}">
+                                            <a class="red-text text-lighten-1 right modal-trigger waves-effect waves-red card-action-flat"
+                                               href="#remove-warning-task"><h:outputText value="#{msg['remove']}"/></a>
+                                            <div id="remove-warning-task" class="modal">
+                                                <div class="modal-content">
+                                                    <h4><h:outputText value="#{msg['project.remove_warning.title']}"/>
+                                                    </h4>
+                                                    <p><h:outputText
+                                                            value="#{msg['project.remove_warning.description']}"/></p>
+                                                </div>
+                                                <div class="modal-footer">
+                                                    <h:form>
+                                                        <a href="#"
+                                                           class="green-text modal-action modal-close waves-effect waves-green btn-flat">
+                                                            <h:outputText value="#{msg['no']}"/>
+                                                        </a>
+                                                        <h:commandLink
+                                                                styleClass="red-text modal-action modal-close waves-effect waves-red btn-flat"
+                                                                value="#{msg['yes']}"
+                                                                action="#{projectDetails.removeProject}"/>
+                                                    </h:form>
+                                                </div>
+                                            </div>
+                                        </h:panelGroup>
+                                    </div>
+                                </div>
+                            </div>
+                        </h:form>
+                    </ui:repeat>
                 </div>
             </div>
         </ui:define>

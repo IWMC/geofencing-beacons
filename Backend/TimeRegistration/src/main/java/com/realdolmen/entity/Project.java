@@ -38,6 +38,7 @@ public class Project extends Occupation implements Serializable {
     public static void initialize(Project project) {
         Hibernate.initialize(project.getLocations());
         Hibernate.initialize(project.getSubProjects());
+        Hibernate.initialize(project.getTasks());
         project.getSubProjects().forEach(Initializable::initialize);
         project.getEmployees().forEach(Hibernate::initialize);
     }
@@ -82,7 +83,7 @@ public class Project extends Occupation implements Serializable {
     @JsonInclude(JsonInclude.Include.NON_DEFAULT)
     private Set<Location> locations = new HashSet<>();
 
-    @OneToMany(mappedBy = "project")
+    @OneToMany(mappedBy = "project", cascade = CascadeType.REMOVE)
     @JsonInclude(JsonInclude.Include.NON_DEFAULT)
     private Set<Task> tasks = new HashSet<>();
 
