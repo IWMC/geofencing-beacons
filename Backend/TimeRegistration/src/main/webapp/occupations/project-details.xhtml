@@ -122,18 +122,24 @@
                         <div class="nav-wrapper col s12 no-padding">
                             <h:form>
                                 <div class="input-field">
-                                    <input id="search" type="search" required="true"
-                                           placeholder="#{msg['project.task.search']}"/>
+                                    <h:inputText id="search" a:type="search"
+                                                 value="#{projectDetails.taskSearchTerms}"/>
+                                    <p:watermark for="search" value="#{msg['project.task.search']}" />
                                     <label for="search"><i class="material-icons">search</i></label>
                                     <i class="material-icons">close</i>
+                                    <p:commandButton id="searchButton"
+                                                     value="#{msg['search']}"
+                                                     style="display: none;">
+                                        <f:ajax render=":task-list" execute="search"/>
+                                    </p:commandButton>
                                 </div>
                             </h:form>
                         </div>
                     </nav>
                 </div>
-                <h:panelGroup id="taskList">
+                <h:panelGroup id="task-list">
                     <div class="row">
-                        <ui:repeat value="#{of:setToList(projectDetails.entity.tasks)}" var="task">
+                        <ui:repeat value="#{projectDetails.tasks}" var="task">
                             <div class="col s12 l6">
                                 <div class="card">
                                     <div class="card-content">

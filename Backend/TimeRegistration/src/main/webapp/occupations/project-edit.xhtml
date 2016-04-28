@@ -178,13 +178,45 @@
                             <p:ajax event="geocode" listener="#{projectDetails.geocodeLookup}" update="@this"/>
                         </p:gmap>
                     </div>
+                    <nav class="col s12 row no-padding" style="position: relative; margin-top: -60px;">
+                        <div class="nav-wrapper col s12 no-padding">
+                            <h:form>
+                                <div class="input-field">
+                                    <h:inputText id="search" a:type="search"
+                                                 value="#{projectDetails.taskSearchTerms}"/>
+                                    <p:watermark for="search" value="#{msg['project.task.search']}" />
+                                    <label for="search"><i class="material-icons">search</i></label>
+                                    <i class="material-icons">close</i>
+                                    <p:commandButton id="searchButton"
+                                                     value="#{msg['search']}"
+                                                     style="display: none;">
+                                        <f:ajax render=":task-list" execute="search"/>
+                                    </p:commandButton>
+                                </div>
+                            </h:form>
+                        </div>
+                    </nav>
                 </div>
+                <h:panelGroup id="task-list">
+                    <div class="row">
+                        <ui:repeat value="#{projectDetails.tasks}" var="task">
+                            <div class="col s12 l6">
+                                <div class="card">
+                                    <div class="card-content">
+                                        <p class="card-title">#{task.name}</p>
+                                        <p>#{projectDetails.getEstimatedHours(task)}</p>
+                                    </div>
+                                    <div class="card-action">
+                                        <h:link outcome="#{pages.detailsTask().param('id', task.id).asLinkOutcome()}"
+                                                styleClass="waves-effect waves-orange card-action-flat"
+                                                value="#{msg['details']}"/>
+                                    </div>
+                                </div>
+                            </div>
+                        </ui:repeat>
+                    </div>
+                </h:panelGroup>
             </div>
-            <script type="text/javascript">
-                $ = jQuery;
-                $(document).ready(function () {
-                });
-            </script>
         </ui:define>
     </ui:composition>
 </f:view>

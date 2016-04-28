@@ -9,6 +9,8 @@ import com.realdolmen.jsf.Pages;
 import com.realdolmen.jsf.UserContext;
 import com.realdolmen.rest.OccupationEndpoint;
 import com.realdolmen.service.SecurityManager;
+import org.hibernate.search.jpa.FullTextEntityManager;
+import org.hibernate.search.query.dsl.QueryBuilder;
 import org.primefaces.event.map.GeocodeEvent;
 import org.primefaces.event.map.OverlaySelectEvent;
 import org.primefaces.event.map.PointSelectEvent;
@@ -26,6 +28,9 @@ import javax.transaction.Transactional;
 import javax.ws.rs.core.Response;
 import java.io.IOException;
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * A controller for <code>/occupations/project-details.xhtml</code>.
@@ -52,6 +57,8 @@ public class ProjectDetailController extends DetailController<Project> implement
     private Location searchLocation;
 
     private transient MapModel mapModel = new DefaultMapModel();
+
+    private String taskSearchTerms;
 
     public ProjectDetailController() {
         super(Pages.searchOccupation());
@@ -223,5 +230,33 @@ public class ProjectDetailController extends DetailController<Project> implement
 
     public void addTask() {
 
+    }
+
+    public List<Task> getTasks() {
+        if (taskSearchTerms == null || taskSearchTerms.trim().isEmpty()) {
+            return new ArrayList<>(getEntity().getTasks());
+        }
+
+        FullTextEntityManager fullTextEntityManager = org.hibernate.search.jpa.Search.getFullTextEntityManager(em);
+
+        QueryBuilder qb = fullTextEntityManager.getSearchFactory()
+                .buildQueryBuilder().forEntity(Task.class).get();
+        org.apache.lucene.search.Query luceneQuery = qb
+                .bool().should(qb.keyword().onFields("employees.firstName", "employees.lastName", "employees.email", "name", "description")
+                        .matching(taskSearchTerms).createQuery())
+                .createQuery();
+
+        javax.persistence.Query jpaQuery = fullTextEntityManager.createFullTextQuery(luceneQuery, Task.class);
+        return (List<Task>) jpaQuery.getResultList().stream()
+                .filter(getEntity().getTasks()::contains)
+                .collect(Collectors.toList());
+    }
+
+    public String getTaskSearchTerms() {
+        return taskSearchTerms;
+    }
+
+    public void setTaskSearchTerms(String taskSearchTerms) {
+        this.taskSearchTerms = taskSearchTerms;
     }
 }

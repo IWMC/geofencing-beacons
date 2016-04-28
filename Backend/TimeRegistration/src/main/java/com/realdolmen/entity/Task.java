@@ -4,6 +4,8 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.realdolmen.entity.validation.Existing;
 import com.realdolmen.entity.validation.New;
+import org.hibernate.search.annotations.Indexed;
+import org.hibernate.search.annotations.IndexedEmbedded;
 
 import javax.persistence.*;
 import javax.validation.constraints.Min;
@@ -24,10 +26,11 @@ import java.util.Set;
         @NamedQuery(name = "Task.findByProjectId", query = "SELECT t FROM Task t WHERE t.project.id = :projectId"),
         @NamedQuery(name = "Task.deleteById", query = "DELETE FROM Task t WHERE t.id=:id")
 })
+@Indexed
 public class Task extends Occupation {
 
     @Min(0)
-    private float estimatedHours;
+    private double estimatedHours;
 
     @ManyToOne
     @NotNull(message = "project.empty", groups = Existing.class)
@@ -36,6 +39,7 @@ public class Task extends Occupation {
 
     @ManyToMany
     @JsonIgnore
+    @IndexedEmbedded
     private Set<Employee> employees = new HashSet<>();
 
     @Transient
@@ -47,7 +51,7 @@ public class Task extends Occupation {
     @JsonInclude(JsonInclude.Include.NON_DEFAULT)
     private List<Long> employeeIds = new ArrayList<>();
 
-    public float getEstimatedHours() {
+    public double getEstimatedHours() {
         return estimatedHours;
     }
 
