@@ -14,12 +14,12 @@
     <ui:composition template="../page-template.xhtml">
         <ui:define name="toolbar-after-logo">
             <h5 class="col s12 hide-on-med-and-down" id="subtitle"><h:outputText
-                    value="#{msg['occupation.details.title']}"/>
+                    value="#{msg['project.task.details.title']}"/>
             </h5>
         </ui:define>
         <ui:define name="additional-toolbar-full">
             <div class="row">
-                <h5 class="col s12 hide-on-large-only"><h:outputText value="#{msg['occupation.details.title']}"/></h5>
+                <h5 class="col s12 hide-on-large-only"><h:outputText value="#{msg['project.task.details.title']}"/></h5>
             </div>
         </ui:define>
         <ui:define name="body">
@@ -29,10 +29,11 @@
                         <h1 class="thin">
                             #{taskDetails.entity.name}<br/>
                         </h1>
-                        <p class="small">#{taskDetails.getEstimatedHours()}</p>
+                        <p class="small" style="margin-top: -15px;">#{taskDetails.getEstimatedHours()}</p>
+                        <br/>
                         <p>#{taskDetails.entity.description}</p>
                     </div>
-                    <h:panelGroup rendered="#{userContext.isProjectManager}">
+                    <h:panelGroup rendered="#{taskDetails.shouldShowEditOptions}">
                         <div class="card-action">
                             <h:link outcome="#{pages.editTask().param('id', taskDetails.id).asLinkOutcome()}"
                                     styleClass="waves-effect waves-orange card-action-flat" value="#{msg['edit']}"/>
@@ -43,7 +44,7 @@
                                     <h4><h:outputText value="#{msg['occupation.remove_warning.title']}"/></h4>
                                     <p><h:outputText value="#{msg['occupation.remove_warning.description']}"/></p>
                                 </div>
-                                <div class="modal-footer">
+                                <h:panelGroup styleClass="modal-footer" rendered="#{taskDetails.shouldShowEditOptions}">
                                     <h:form>
                                         <a href="#"
                                            class="green-text modal-action modal-close waves-effect waves-green btn-flat">
@@ -52,16 +53,16 @@
                                         <h:commandLink
                                                 styleClass="red-text modal-action modal-close waves-effect waves-red btn-flat"
                                                 value="#{msg['yes']}"
-                                                action="#{occupationDetails.removeOccupation}"/>
+                                                action="#{taskDetails.removeTask}"/>
                                     </h:form>
-                                </div>
+                                </h:panelGroup>
                             </div>
                         </div>
                     </h:panelGroup>
                 </div>
                 <div class="row">
                     <ui:repeat value="#{of:setToList(taskDetails.entity.employees)}" var="employee">
-                        <div class="col s12 m6">
+                        <div class="col s12 l6">
                             <h:form>
                                 <div class="card">
                                     <div class="card-content">
@@ -71,7 +72,7 @@
                                     </div>
                                     <div class="card-action">
                                         <h:link styleClass="realdolmen-blue-text waves-effect waves-realdolmen-blue card-action-flat"
-                                                value="#{msg['employee.search.open_details']}"
+                                                value="#{msg['details']}"
                                                 outcome="#{pages.detailsEmployee().param('id', employee.id).asRedirect()}"/>
                                     </div>
                                 </div>

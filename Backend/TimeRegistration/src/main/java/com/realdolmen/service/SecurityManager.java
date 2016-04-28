@@ -1,7 +1,9 @@
 package com.realdolmen.service;
 
 import com.realdolmen.entity.Employee;
+import com.realdolmen.entity.ManagementEmployee;
 import com.realdolmen.entity.PersistenceUnit;
+import com.realdolmen.entity.ProjectManager;
 import com.realdolmen.jsf.UserContext;
 import com.realdolmen.json.JsonWebToken;
 import io.jsonwebtoken.Jwts;
@@ -85,6 +87,10 @@ public class SecurityManager {
 
     @Nullable
     public Employee findByJwt(@NotNull JsonWebToken jwt) {
+        if (jwt == null || jwt.getToken() == null || jwt.getToken().isEmpty()) {
+            return null;
+        }
+
         try {
             long id = Long.parseLong(Jwts.parser().setSigningKey(key).parseClaimsJws(jwt.getToken()).getBody().get("id")
                     .toString());
@@ -92,5 +98,20 @@ public class SecurityManager {
         } catch (MalformedJwtException | NoResultException | SignatureException ex) {
             return null;
         }
+    }
+
+    public boolean isManagementEmployee() {
+        Employee employee = findEmployee();
+        return employee != null && employee instanceof ManagementEmployee;
+    }
+
+    public boolean isProjectManager() {
+        Employee employee = findEmployee();
+        return employee != null && employee instanceof ProjectManager;
+    }
+
+    public boolean isManagement() {
+        Employee employee = findEmployee();
+        return employee != null && (employee instanceof ProjectManager || employee instanceof ManagementEmployee);
     }
 }

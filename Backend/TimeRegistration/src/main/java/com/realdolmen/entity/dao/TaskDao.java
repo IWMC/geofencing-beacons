@@ -1,9 +1,7 @@
 package com.realdolmen.entity.dao;
 
-import com.realdolmen.entity.Employee;
-import com.realdolmen.entity.PersistenceUnit;
-import com.realdolmen.entity.Project;
-import com.realdolmen.entity.Task;
+import com.realdolmen.entity.*;
+import com.realdolmen.entity.validation.Existing;
 import com.realdolmen.entity.validation.New;
 import com.realdolmen.validation.ValidationResult;
 import com.realdolmen.validation.Validator;
@@ -11,6 +9,7 @@ import com.realdolmen.validation.Validator;
 import javax.ejb.Stateless;
 import javax.inject.Inject;
 import javax.persistence.EntityManager;
+import javax.persistence.EntityNotFoundException;
 import javax.persistence.PersistenceContext;
 import javax.persistence.TypedQuery;
 import javax.transaction.Transactional;
@@ -30,6 +29,10 @@ public class TaskDao {
 
     public Task findById(long id) {
         return em.find(Task.class, id);
+    }
+
+    public Task findReferenceById(long id) {
+        return em.getReference(Task.class, id);
     }
 
     public TypedQuery<Task> getTasks() {
@@ -71,10 +74,81 @@ public class TaskDao {
 
     @Transactional
     public void removeTask(@NotNull Task task) {
-        em.remove(task);
+        if (em.contains(task)) {
+            em.remove(task);
+        } else {
+            removeTask(task.getId());
+        }
     }
 
+    public Task refresh(Task task) {
+        if (!em.contains(task)) {
+            return em.find(Task.class, task.getId());
+        } else {
+            em.refresh(task);
+            return task;
+        }
+    }
+
+    public Task refreshWithReference(Task task) {
+        if (!em.contains(task)) {
+            return em.getReference(Task.class, task.getId());
+        } else {
+            em.refresh(task);
+            return task;
+        }
+    }
+
+    @Transactional
     public void removeTask(long taskId) {
         em.createNamedQuery("Task.deleteById").setParameter("id", taskId).executeUpdate();
+    }
+
+    public ValidationResult update(Task task) {
+        try {
+            ValidationResult result = validator.validate(task, Existing.class);
+
+            if (result.isValid()) {
+                em.merge(task);
+            }
+
+            return result;
+        } catch (IllegalArgumentException enfex) {
+            throw new IllegalArgumentException("trying to update non-existing task", enfex);
+        }
+    }
+
+    /**
+     * Checks if the given employee is a project manager of the given task.
+     *
+     * @param task The task that should be checked
+     * @param employee The employee that should be checked
+     * @return True if the employee is a project manager of the given task, false otherwise
+     */
+    public boolean isManagingProjectManager(Task task, Employee employee) {
+        if (task == null || employee == null || !(employee instanceof ProjectManager)) {
+            return false;
+        }
+
+        return refreshWithReference(task).getProject().getEmployees().contains(employee);
+    }
+
+    /**
+     * Checks if the given employee is a project manager of the project with the given project id.
+     *
+     * @param projectId The project id of the project
+     * @param employee The employee that should be checked
+     * @return True if the employee is a project manager of the project, false otherwise
+     */
+    public boolean isManagingProjectManager(long projectId, Employee employee) {
+        if (employee == null || !(employee instanceof ProjectManager)) {
+            return false;
+        }
+
+        try {
+            return em.find(Project.class, projectId).getEmployees().contains(employee);
+        } catch (EntityNotFoundException enfex) {
+            return false;
+        }
     }
 }

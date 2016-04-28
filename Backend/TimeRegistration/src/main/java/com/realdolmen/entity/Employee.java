@@ -291,4 +291,8 @@ public class Employee implements Serializable, Initializable {
     public void initialize() {
         Employee.initialize(this);
     }
+
+    public String getName() {
+        return firstName + " " + lastName;
+    }
 }

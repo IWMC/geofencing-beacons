@@ -367,6 +367,23 @@ public class OccupationEndpoint {
             return Response.status(Response.Status.BAD_REQUEST).entity(validationResult).build();
         }
 
+        if (sm.isProjectManager()) {
+            if (occupation instanceof Project) {
+                Project dbProject = em.createNamedQuery("Project.findProjectWithEmployeesById", Project.class)
+                        .setParameter("id", occupation.getId()).getSingleResult();
+
+                if (dbProject == null || !dbProject.getEmployees().contains(sm.findEmployee())) {
+                    return Response.status(Response.Status.FORBIDDEN)
+                            .entity(com.realdolmen.json.Json.error("Project with id " + occupation.getId() + " is not from this project manager"))
+                            .build();
+                }
+            } else {
+                return Response.status(Response.Status.FORBIDDEN)
+                        .entity(com.realdolmen.json.Json.error("A project manager can only edit his own projects"))
+                        .build();
+            }
+        }
+
         return runAsTransaction(() -> em.merge(occupation),
                 () -> Response.noContent().build(),
                 e -> e.getCause() != null && e.getCause() instanceof PersistenceException && e.getCause().getCause() != null

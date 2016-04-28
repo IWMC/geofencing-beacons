@@ -19,7 +19,8 @@ import java.util.stream.Stream;
  */
 @ApplicationScoped
 @WebFilter(urlPatterns = "*.xhtml", initParams = {
-        @WebInitParam(name = AuthorizationFilter.INCLUDED_WEB_INIT_PARAM, value = ".*/index.xhtml;.*/employees/.*;.*/occupations/.*")
+        @WebInitParam(name = AuthorizationFilter.INCLUDED_WEB_INIT_PARAM,
+                value = ".*/index.xhtml;.*/employees/.*;.*/occupations/.*;.*/tasks/.*")
 })
 public class AuthorizationFilter implements Filter {
 

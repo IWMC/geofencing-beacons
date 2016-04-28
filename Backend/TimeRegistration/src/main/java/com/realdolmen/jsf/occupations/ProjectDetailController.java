@@ -3,10 +3,12 @@ package com.realdolmen.jsf.occupations;
 import com.realdolmen.annotations.Authorized;
 import com.realdolmen.annotations.UserGroup;
 import com.realdolmen.entity.*;
+import com.realdolmen.entity.dao.TaskDao;
 import com.realdolmen.jsf.DetailController;
 import com.realdolmen.jsf.Pages;
 import com.realdolmen.jsf.UserContext;
 import com.realdolmen.rest.OccupationEndpoint;
+import com.realdolmen.service.SecurityManager;
 import org.primefaces.event.map.GeocodeEvent;
 import org.primefaces.event.map.OverlaySelectEvent;
 import org.primefaces.event.map.PointSelectEvent;
@@ -31,6 +33,12 @@ import java.io.Serializable;
 @Named("projectDetails")
 @ViewScoped
 public class ProjectDetailController extends DetailController<Project> implements Serializable {
+
+    @Inject
+    private TaskDao taskDao;
+
+    @Inject
+    private SecurityManager sm;
 
     @Inject
     private UserContext userContext;
@@ -110,6 +118,8 @@ public class ProjectDetailController extends DetailController<Project> implement
         Response response = getOccupationEndpoint().update(getEntity().getId(), getEntity());
         if (response.getStatus() == Response.Status.NO_CONTENT.getStatusCode()) {
             redirect(Pages.occupationDetailsFrom(getEntity()));
+        } else if (response.getStatus() == Response.Status.FORBIDDEN.getStatusCode()) {
+            redirectToErrorPage();
         } else {
             getToastService().newToast(getLanguage().getString("occupation.name_taken"));
         }
@@ -140,7 +150,7 @@ public class ProjectDetailController extends DetailController<Project> implement
      *
      * @param employee the employee that should be removed
      */
-    @Authorized(UserGroup.PROJECT_MANAGER_ONLY)
+    @Authorized(UserGroup.MANAGEMENT)
     @Transactional
     public void unlinkEmployee(Employee employee) {
         employee = em.merge(employee);
@@ -185,9 +195,13 @@ public class ProjectDetailController extends DetailController<Project> implement
         this.searchLocation = searchLocation;
     }
 
-    public boolean shouldShowEditOption() {
-        return userContext.getIsManagementEmployee() ||
-                (userContext.getIsProjectManager() && getEntity().getEmployees().contains(userContext.getUser()));
+    public boolean getShouldShowEditOption() {
+        return sm.isManagementEmployee() ||
+                (sm.isProjectManager() && getEntity().getEmployees().contains(userContext.getUser()));
+    }
+
+    public boolean getShouldShowTaskEditOption() {
+        return sm.isProjectManager() && getEntity().getEmployees().contains(userContext.getUser());
     }
 
     public String getEstimatedHours(Task task) {
@@ -197,6 +211,13 @@ public class ProjectDetailController extends DetailController<Project> implement
             return getLanguage().getString("project.task.hours_minutes",
                     (int) task.getEstimatedHours(),
                     (int) ((task.getEstimatedHours() - Math.floor(task.getEstimatedHours())) * 60));
+        }
+    }
+
+    @Transactional
+    public void removeTask(Task task) {
+        if (taskDao.isManagingProjectManager(task, sm.findEmployee())) {
+            taskDao.removeTask(task);
         }
     }
 

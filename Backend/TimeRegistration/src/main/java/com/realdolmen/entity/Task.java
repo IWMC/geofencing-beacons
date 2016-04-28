@@ -3,6 +3,7 @@ package com.realdolmen.entity;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.realdolmen.entity.validation.Existing;
+import com.realdolmen.entity.validation.New;
 
 import javax.persistence.*;
 import javax.validation.constraints.Min;
@@ -39,6 +40,7 @@ public class Task extends Occupation {
 
     @Transient
     @JsonInclude(JsonInclude.Include.NON_DEFAULT)
+    @Min(value = 1, message = "project_id.invalid", groups = New.class)
     private long projectId;
 
     @Transient

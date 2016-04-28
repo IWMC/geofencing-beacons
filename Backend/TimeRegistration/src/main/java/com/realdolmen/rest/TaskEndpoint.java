@@ -7,6 +7,7 @@ import com.realdolmen.entity.Task;
 import com.realdolmen.entity.dao.TaskDao;
 import com.realdolmen.entity.validation.New;
 import com.realdolmen.json.Json;
+import com.realdolmen.service.SecurityManager;
 import com.realdolmen.validation.ValidationResult;
 import com.realdolmen.validation.Validator;
 
@@ -33,6 +34,9 @@ public class TaskEndpoint {
 
     @PersistenceContext(unitName = PersistenceUnit.PRODUCTION)
     private EntityManager em;
+
+    @Inject
+    private SecurityManager sm;
 
     @Context
     private UriInfo uriInfo;
@@ -87,6 +91,12 @@ public class TaskEndpoint {
     @Produces(MediaType.APPLICATION_JSON)
     @Transactional
     public Response addTask(Task task) {
+        if (task.getProjectId() != 0 && !taskDao.isManagingProjectManager(task.getProjectId(), sm.findEmployee())) {
+            return Response.status(Response.Status.FORBIDDEN)
+                    .entity(com.realdolmen.json.Json.error("project with projectId " + task.getProjectId() + " is not managed by " + sm.findEmployee().getName()))
+                    .build();
+        }
+
         ValidationResult result = validator.validate(task, New.class);
         if (!result.isValid()) {
             return Response.status(Response.Status.BAD_REQUEST).entity(result).build();
