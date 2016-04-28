@@ -55,7 +55,7 @@ public class Task extends Occupation {
         return estimatedHours;
     }
 
-    public void setEstimatedHours(float estimatedHours) {
+    public void setEstimatedHours(double estimatedHours) {
         this.estimatedHours = estimatedHours;
     }
 

@@ -27,6 +27,13 @@
         <ui:define name="body">
             <script src="http://maps.google.com/maps/api/js?sensor=true|false" type="text/javascript"></script>
             <div class="container large-container">
+                <h:panelGroup layout="block" rendered="#{projectDetails.shouldShowTaskEditOption}"
+                              class="fixed-action-btn">
+                    <h:link outcome="#{pages.addTaskFor(projectDetails.entity.id).asLinkOutcome()}"
+                            styleClass="btn-floating btn-large red">
+                        <i class="large material-icons">add</i>
+                    </h:link>
+                </h:panelGroup>
                 <div class="row">
                     <div class="card col l7 s12">
                         <div class="card-content">
@@ -124,7 +131,7 @@
                                 <div class="input-field">
                                     <h:inputText id="search" a:type="search"
                                                  value="#{projectDetails.taskSearchTerms}"/>
-                                    <p:watermark for="search" value="#{msg['project.task.search']}" />
+                                    <p:watermark for="search" value="#{msg['project.task.search']}"/>
                                     <label for="search"><i class="material-icons">search</i></label>
                                     <i class="material-icons">close</i>
                                     <p:commandButton id="searchButton"

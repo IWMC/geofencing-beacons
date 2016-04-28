@@ -53,6 +53,10 @@ public class Pages {
         return new Page("/occupations/occupation-add.xhtml");
     }
 
+    public static Page addTaskFor(long projectId) {
+        return new Page("/tasks/task-add.xhtml").param("id", projectId);
+    }
+
     public static Page detailsOccupation() {
         return new Page("/occupations/occupation-details.xhtml");
     }
