@@ -35,6 +35,6 @@ public class TaskAddController extends TaskEditController {
             taskDao.addTask(getEntity());
         }
 
-        return Pages.detailsProject().param("id", getId()).asRedirect();
+        return Pages.editTask(getEntity().getId()).asRedirect();
     }
 }

@@ -25,6 +25,14 @@
         </ui:define>
         <ui:define name="body">
             <div class="container small-container">
+                <h:panelGroup layout="block" rendered="#{taskEdit.shouldShowEditOptions}"
+                              class="fixed-action-btn">
+                    <h:link outcome="#{pages.selectEmployeeForTask(taskEdit.entity.id).asLinkOutcome()}"
+                            styleClass="btn-floating btn-large red">
+                        <i class="large material-icons">person_add</i>
+                    </h:link>
+                </h:panelGroup>
+
                 <h:form>
                     <div class="card">
                         <div class="card-content text-center">

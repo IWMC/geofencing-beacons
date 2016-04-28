@@ -29,8 +29,12 @@ public class Pages {
         return new Page("/employees/search-employees.xhtml");
     }
 
-    public static Page selectEmployee() {
-        return new Page("/employees/employee-select.xhtml");
+    public static Page selectEmployeeForOccupation(long occupationId) {
+        return new Page("/employees/employee-select.xhtml").param("occupationId", occupationId);
+    }
+
+    public static Page selectEmployeeForTask(long taskId) {
+        return new Page("/employees/employee-select.xhtml").param("taskId", taskId);
     }
 
     public static Page detailsEmployee() {
@@ -88,6 +92,10 @@ public class Pages {
     public static Page detailsTask() { return new Page("/tasks/task-details.xhtml"); }
 
     public static Page editTask() { return new Page("/tasks/task-edit.xhtml"); }
+
+    public static Page editTask(long taskId) {
+        return editTask().param("id", taskId);
+    }
 
     public static Page occupationDetailsFrom(Occupation occupation) {
         if (occupation instanceof Project) {
