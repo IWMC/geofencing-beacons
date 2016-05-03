@@ -1,14 +1,20 @@
 package com.realdolmen.service;
 
+import com.realdolmen.TestMode;
 import com.realdolmen.entity.Employee;
+import com.realdolmen.entity.ManagementEmployee;
+import com.realdolmen.entity.ProjectManager;
+import com.realdolmen.jsf.UserContext;
 import com.realdolmen.json.JsonWebToken;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.SignatureException;
 import io.jsonwebtoken.impl.crypto.MacProvider;
-import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.InjectMocks;
+import org.mockito.runners.MockitoJUnitRunner;
 
 import java.nio.charset.Charset;
 import java.security.MessageDigest;
@@ -17,23 +23,20 @@ import java.util.Date;
 
 import static org.junit.Assert.*;
 
-/**
- * Created by BCCAZ45 on 24/02/2016.
- */
+@RunWith(MockitoJUnitRunner.class)
 public class SecurityManagerTest {
 
+    private UserContext userContext = new UserContext();
+
+    @InjectMocks
     private SecurityManager securityManager;
     private Employee employee;
 
     @Before
     public void setUp() throws Exception {
+        TestMode.enableTestMode();
         securityManager = new SecurityManager();
         employee = new Employee("test", "asalt", null, "bla@bla.com", "testuser", "user", "test");
-    }
-
-    @After
-    public void tearDown() throws Exception {
-
     }
 
     @Test
@@ -91,5 +94,52 @@ public class SecurityManagerTest {
                 .signWith(SignatureAlgorithm.HS256, MacProvider.generateKey()).compact());
         assertFalse(securityManager.isValidToken(badToken));
         Jwts.parser().setSigningKey(securityManager.getKey()).parseClaimsJws(badToken.getToken());
+    }
+
+    @Test
+    public void testIsProjectManagerReturnsTrueIfProjectManager() throws Exception {
+        ProjectManager manager = new ProjectManager();
+        securityManager.setUserContext(userContext);
+        userContext.setEmployee(manager);
+        assertTrue(securityManager.isProjectManager());
+    }
+
+    @Test
+    public void testIsProjectManagerReturnsFalseIfNoProjectManager() throws Exception {
+        assertFalse(securityManager.isProjectManager());
+    }
+
+    @Test
+    public void testIsManagementEmployeeReturnsTrueIfManagementEmployee() throws Exception {
+        ManagementEmployee employee = new ManagementEmployee();
+        securityManager.setUserContext(userContext);
+        userContext.setEmployee(employee);
+        assertTrue(securityManager.isManagementEmployee());
+    }
+
+    @Test
+    public void testIsManagementEmployeeReturnsFalseIfNoManagementEmployee() throws Exception {
+        assertFalse(securityManager.isManagementEmployee());
+    }
+
+    @Test
+    public void testIsManagementReturnsTrueIfManagementEmployee() throws Exception {
+        ManagementEmployee employee = new ManagementEmployee();
+        securityManager.setUserContext(userContext);
+        userContext.setEmployee(employee);
+        assertTrue(securityManager.isManagement());
+    }
+
+    @Test
+    public void testIsManagementReturnsTrueIfProjectManager() throws Exception {
+        ProjectManager employee = new ProjectManager();
+        securityManager.setUserContext(userContext);
+        userContext.setEmployee(employee);
+        assertTrue(securityManager.isManagement());
+    }
+
+    @Test
+    public void testIsManagementReturnFalseIfRegularEmployee() throws Exception {
+        assertFalse(securityManager.isManagement());
     }
 }

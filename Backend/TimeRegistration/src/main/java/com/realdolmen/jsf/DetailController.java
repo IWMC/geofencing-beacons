@@ -39,7 +39,7 @@ public abstract class DetailController<E extends Serializable> extends Controlle
             return;
         }
 
-        if (id == null || id.equals(0)) {
+        if (id == null || id.equals(0L)) {
             redirectToErrorPage();
             return;
         }

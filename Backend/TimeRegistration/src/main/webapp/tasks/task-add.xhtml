@@ -1,0 +1,128 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+        "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:of="http://omnifaces.org/functions" xmlns:mp="http://primefaces.org/ui/material"
+      xmlns:a="http://xmlns.jcp.org/jsf/passthrough" xmlns:c="http://java.sun.com/jsp/jstl/core">
+<f:view>
+    <f:metadata>
+        <f:viewParam name="id" value="#{taskAdd.id}"/>
+        <f:event type="preRenderView" listener="#{taskAdd.onPreRender}"/>
+    </f:metadata>
+    <ui:composition template="../page-template.xhtml">
+        <ui:define name="toolbar-after-logo">
+            <h5 class="col s12 hide-on-med-and-down" id="subtitle">
+                <h:outputText value="#{msg['project.task.add.title']}"/>
+            </h5>
+        </ui:define>
+        <ui:define name="additional-toolbar-full">
+            <div class="row">
+                <h5 class="col s12 hide-on-large-only"><h:outputText value="#{msg['project.task.edit.title']}"/></h5>
+            </div>
+        </ui:define>
+        <ui:define name="body">
+            <div class="container small-container">
+                <h:form>
+                    <div class="card">
+                        <div class="card-content text-center">
+                            <div class="input-field">
+                                <h1 class="thin">
+                                    <h:inputText styleClass="edit-big thin ml0"
+                                                 a:placeholder="#{msg['name']}"
+                                                 id="name"
+                                                 value="#{taskAdd.entity.name}">
+                                        <f:validateRequired for="name"/>
+                                    </h:inputText>
+                                </h1>
+                            </div>
+                            <div class="input-field">
+                                <h:inputTextarea styleClass="materialize-textarea"
+                                                 value="#{taskAdd.entity.description}"
+                                                 a:placeholder="#{msg['occupation.description']}"/>
+                            </div>
+                            <p class="range-field">
+                                <label for="estimatedHours">#{msg['project.task.estimated_hours']}</label>
+                                <h:inputText id="estimatedHours" a:type="range" a:min="0" a:max="16" a:step="0.5"
+                                             value="#{taskAdd.entity.estimatedHours}"/>
+                            </p>
+                        </div>
+                        <div class="card-action">
+                            <h:commandLink action="#{taskAdd.saveTask()}"
+                                           styleClass="waves-effect waves-orange card-action-flat"
+                                           value="#{msg['save']}">
+                                <f:ajax execute="@form"/>
+                            </h:commandLink>
+                            <a class="red-text text-lighten-1 right modal-trigger waves-effect waves-red card-action-flat"
+                               href="#remove-warning"><h:outputText value="#{msg['remove']}"/></a>
+                            <div id="remove-warning" class="modal">
+                                <div class="modal-content">
+                                    <h4><h:outputText value="#{msg['project.task.remove_warning.title']}"/></h4>
+                                    <p><h:outputText value="#{msg['project.task.remove_warning.description']}"/></p>
+                                </div>
+                                <div class="modal-footer">
+                                    <a href="#"
+                                       class="green-text modal-action modal-close waves-effect waves-green btn-flat">
+                                        <h:outputText value="#{msg['no']}"/>
+                                    </a>
+                                    <h:commandLink
+                                            styleClass="red-text modal-action modal-close waves-effect waves-red btn-flat"
+                                            value="#{msg['yes']}"
+                                            action="#{taskAdd.removeTask}"/>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </h:form>
+                <h:panelGroup id="employeeList">
+                    <div class="row">
+                        <ui:repeat value="#{of:setToList(taskAdd.entity.employees)}" var="employee">
+                            <div class="col s12 l6">
+                                <h:form>
+                                    <div class="card">
+                                        <div class="card-content">
+                                            <h:outputText styleClass="card-title"
+                                                          value="#{employee.firstName} #{employee.lastName}"/><br/>
+                                            <h:outputText styleClass="truncate" value="#{employee.email}"/>
+                                        </div>
+                                        <div class="card-action">
+                                            <h:link styleClass="realdolmen-blue-text waves-effect waves-realdolmen-blue card-action-flat"
+                                                    value="#{msg['employee.search.open_details']}"
+                                                    outcome="#{pages.detailsEmployee().param('id', employee.id).asRedirect()}"/>
+                                            <a class="right red-text text-lighten-1 modal-trigger waves-effect waves-red card-action-flat"
+                                               href="#remove-employee-warning">#{msg['remove']}</a>
+                                            <div id="remove-employee-warning" class="modal">
+                                                <div class="modal-content">
+                                                    <h4>#{msg['employee.remove_warning.title']}</h4>
+                                                    <h:outputText
+                                                            value="#{msg['project.task.employee.remove_warning.description']}"/>
+                                                </div>
+                                                <div class="modal-footer">
+                                                    <h:form>
+                                                        <a href="#!"
+                                                           class="green-text modal-action modal-close waves-effect waves-green btn-flat">
+                                                            #{msg['no']}
+                                                        </a>
+                                                        <h:commandLink
+                                                                styleClass="red-text modal-action modal-close waves-effect waves-red btn-flat"
+                                                                value="#{msg['yes']}"
+                                                                action="#{taskAdd.removeEmployee(employee)}">
+                                                            <f:ajax execute="@form" render="employeeList"/>
+                                                        </h:commandLink>
+                                                    </h:form>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </h:form>
+                            </div>
+                        </ui:repeat>
+                    </div>
+                </h:panelGroup>
+            </div>
+        </ui:define>
+    </ui:composition>
+</f:view>
+</html>

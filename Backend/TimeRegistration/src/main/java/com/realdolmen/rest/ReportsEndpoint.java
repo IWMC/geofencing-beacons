@@ -88,10 +88,10 @@ public class ReportsEndpoint {
     @Path("occupations")
     @Produces({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
     public Response filteredOccupationList(@QueryParam("values") String projection,
-                                         @QueryParam("where") String selection,
-                                         @QueryParam("group") String groups,
-                                         @QueryParam("start") Integer startPosition,
-                                         @QueryParam("max") Integer max) {
+                                           @QueryParam("where") String selection,
+                                           @QueryParam("group") String groups,
+                                           @QueryParam("start") Integer startPosition,
+                                           @QueryParam("max") Integer max) {
         return Response.ok(builder
                 .with(Occupation.class)
                 .select(projection)
@@ -104,10 +104,10 @@ public class ReportsEndpoint {
     @Path("projects")
     @Produces({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
     public Response filteredProjectList(@QueryParam("values") String projection,
-                                           @QueryParam("where") String selection,
-                                           @QueryParam("group") String groups,
-                                           @QueryParam("start") Integer startPosition,
-                                           @QueryParam("max") Integer max) {
+                                        @QueryParam("where") String selection,
+                                        @QueryParam("group") String groups,
+                                        @QueryParam("start") Integer startPosition,
+                                        @QueryParam("max") Integer max) {
         return Response.ok(builder
                 .with(Project.class)
                 .select(projection)
@@ -122,12 +122,28 @@ public class ReportsEndpoint {
     @Path("registered-occupations")
     @Produces({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
     public Response filteredRegisteredOccupationList(@QueryParam("values") String projection,
-                                           @QueryParam("where") String selection,
-                                           @QueryParam("group") String groups,
-                                           @QueryParam("start") Integer startPosition,
-                                           @QueryParam("max") Integer max) {
+                                                     @QueryParam("where") String selection,
+                                                     @QueryParam("group") String groups,
+                                                     @QueryParam("start") Integer startPosition,
+                                                     @QueryParam("max") Integer max) {
         return Response.ok(builder
                 .with(RegisteredOccupation.class)
+                .select(projection)
+                .where(selection)
+                .groupBy(groups)
+                .build(startPosition, max)).build();
+    }
+
+    @GET
+    @Path("tasks")
+    @Produces({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
+    public Response filteredTaskList(@QueryParam("values") String projection,
+                                     @QueryParam("where") String selection,
+                                     @QueryParam("group") String groups,
+                                     @QueryParam("start") Integer startPosition,
+                                     @QueryParam("max") Integer max) {
+        return Response.ok(builder
+                .with(Task.class)
                 .select(projection)
                 .where(selection)
                 .groupBy(groups)

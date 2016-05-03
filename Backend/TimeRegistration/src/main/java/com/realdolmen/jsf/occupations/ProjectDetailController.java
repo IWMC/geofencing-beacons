@@ -2,13 +2,16 @@ package com.realdolmen.jsf.occupations;
 
 import com.realdolmen.annotations.Authorized;
 import com.realdolmen.annotations.UserGroup;
-import com.realdolmen.entity.Employee;
-import com.realdolmen.entity.Location;
-import com.realdolmen.entity.PersistenceUnit;
-import com.realdolmen.entity.Project;
+import com.realdolmen.entity.*;
+import com.realdolmen.entity.dao.TaskDao;
 import com.realdolmen.jsf.DetailController;
 import com.realdolmen.jsf.Pages;
+import com.realdolmen.jsf.UserContext;
 import com.realdolmen.rest.OccupationEndpoint;
+import com.realdolmen.service.SecurityManager;
+import org.hibernate.search.jpa.FullTextEntityManager;
+import org.hibernate.search.query.dsl.QueryBuilder;
+import org.jetbrains.annotations.TestOnly;
 import org.primefaces.event.map.GeocodeEvent;
 import org.primefaces.event.map.OverlaySelectEvent;
 import org.primefaces.event.map.PointSelectEvent;
@@ -26,6 +29,9 @@ import javax.transaction.Transactional;
 import javax.ws.rs.core.Response;
 import java.io.IOException;
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * A controller for <code>/occupations/project-details.xhtml</code>.
@@ -38,23 +44,36 @@ public class ProjectDetailController extends DetailController<Project> implement
     private transient EntityManager em;
 
     @Inject
+    private TaskDao taskDao;
+
+    @Inject
+    private SecurityManager sm;
+
+    @Inject
+    private UserContext userContext;
+
+    @Inject
     private transient OccupationEndpoint occupationEndpoint;
 
     private Location searchLocation;
 
     private transient MapModel mapModel = new DefaultMapModel();
 
+    private String taskSearchTerms;
+
     public ProjectDetailController() {
         super(Pages.searchOccupation());
     }
 
     @Override
+    @Transactional
     public Project loadEntity(long id) {
         Response response = occupationEndpoint.findById(id);
         Project project = response.getStatus() == 200 ? (Project) response.getEntity() : null;
         if (project != null) {
             project.getLocations().stream().map(l -> new Marker(new LatLng(l.getLatitude(), l.getLongitude())))
                     .forEach(mapModel::addOverlay);
+            project.initialize();
         }
 
         return project;
@@ -107,7 +126,9 @@ public class ProjectDetailController extends DetailController<Project> implement
         Response response = getOccupationEndpoint().update(getEntity().getId(), getEntity());
         if (response.getStatus() == Response.Status.NO_CONTENT.getStatusCode()) {
             redirect(Pages.occupationDetailsFrom(getEntity()));
-        } else {
+        } else if (response.getStatus() == Response.Status.FORBIDDEN.getStatusCode()) {
+            redirectToErrorPage();
+        } else if (response.getStatus() == Response.Status.CONFLICT.getStatusCode()) {
             getToastService().newToast(getLanguage().getString("occupation.name_taken"));
         }
     }
@@ -137,7 +158,7 @@ public class ProjectDetailController extends DetailController<Project> implement
      *
      * @param employee the employee that should be removed
      */
-    @Authorized(UserGroup.PROJECT_MANAGER_ONLY)
+    @Authorized(UserGroup.MANAGEMENT)
     @Transactional
     public void unlinkEmployee(Employee employee) {
         employee = em.merge(employee);
@@ -159,6 +180,7 @@ public class ProjectDetailController extends DetailController<Project> implement
         searchLocation = new Location(location.getLat(), location.getLng());
     }
 
+    @Authorized(UserGroup.PROJECT_MANAGER_ONLY)
     public void removeProject() throws IOException {
         getOccupationEndpoint().removeOccupation(getEntity().getId());
         redirect(Pages.searchOccupation());
@@ -179,5 +201,58 @@ public class ProjectDetailController extends DetailController<Project> implement
 
     public void setSearchLocation(Location searchLocation) {
         this.searchLocation = searchLocation;
+    }
+
+    public boolean getShouldShowEditOption() {
+        return sm.isManagementEmployee() ||
+                (sm.isProjectManager() && getEntity().getEmployees().contains(userContext.getUser()));
+    }
+
+    public boolean getShouldShowTaskEditOption() {
+        return sm.isProjectManager() && getEntity().getEmployees().contains(userContext.getUser());
+    }
+
+    public String getEstimatedHours(Task task) {
+        if (task.getEstimatedHours() == (int) task.getEstimatedHours()) {
+            return getLanguage().getString("project.task.hours", (int) task.getEstimatedHours());
+        } else {
+            return getLanguage().getString("project.task.hours_minutes",
+                    (int) task.getEstimatedHours(),
+                    (int) ((task.getEstimatedHours() - Math.floor(task.getEstimatedHours())) * 60));
+        }
+    }
+
+    // TODO: 3/05/2016 Test Lucene
+    public List<Task> getTasks() {
+        if (taskSearchTerms == null || taskSearchTerms.trim().isEmpty()) {
+            return new ArrayList<>(getEntity().getTasks());
+        }
+
+        FullTextEntityManager fullTextEntityManager = org.hibernate.search.jpa.Search.getFullTextEntityManager(em);
+
+        QueryBuilder qb = fullTextEntityManager.getSearchFactory()
+                .buildQueryBuilder().forEntity(Task.class).get();
+        org.apache.lucene.search.Query luceneQuery = qb
+                .bool().should(qb.keyword().onFields("employees.firstName", "employees.lastName", "employees.email", "name", "description")
+                        .matching(taskSearchTerms).createQuery())
+                .createQuery();
+
+        javax.persistence.Query jpaQuery = fullTextEntityManager.createFullTextQuery(luceneQuery, Task.class);
+        return (List<Task>) jpaQuery.getResultList().stream()
+                .filter(getEntity().getTasks()::contains)
+                .collect(Collectors.toList());
+    }
+
+    public String getTaskSearchTerms() {
+        return taskSearchTerms;
+    }
+
+    public void setTaskSearchTerms(String taskSearchTerms) {
+        this.taskSearchTerms = taskSearchTerms;
+    }
+
+    @TestOnly
+    public void setUserContext(UserContext userContext) {
+        this.userContext = userContext;
     }
 }

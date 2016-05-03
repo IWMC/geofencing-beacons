@@ -43,7 +43,7 @@ public class AuthorizationFilterTest {
     private FilterChain filterChain;
 
     @Inject
-    private Session session;
+    private UserContext userContext;
 
     @Before
     public void setUp() throws Exception {
@@ -74,7 +74,7 @@ public class AuthorizationFilterTest {
 
     @Test
     public void testFilterWithCredentialsWhenRegisteredPage() throws Exception {
-        session.setEmployee(new Employee());
+        userContext.setEmployee(new Employee());
         when(request.getRequestURI()).thenReturn("/index.xhtml");
         authorizationFilter.doFilter(request, response, filterChain);
         testPageNoRedirection();
@@ -85,7 +85,7 @@ public class AuthorizationFilterTest {
 
     @Test
     public void testFilterNoRedirectWithCredentialsWhenUnregisteredPage() throws Exception {
-        session.setEmployee(new Employee());
+        userContext.setEmployee(new Employee());
         when(request.getRequestURI()).thenReturn("/unregistered.xhtml");
         authorizationFilter.doFilter(request, response, filterChain);
         testPageNoRedirection();
@@ -103,7 +103,7 @@ public class AuthorizationFilterTest {
         when(request.getRequestURI()).thenReturn("/unregistered.xhtml");
         authorizationFilter.doFilter(request, response, filterChain);
         verify(filterChain, atLeastOnce()).doFilter(request, response);
-        session.setEmployee(new Employee());
+        userContext.setEmployee(new Employee());
         when(request.getRequestURI()).thenReturn("/index.xhtml");
         authorizationFilter.doFilter(request, response, filterChain);
         verify(filterChain, atLeastOnce()).doFilter(request, response);

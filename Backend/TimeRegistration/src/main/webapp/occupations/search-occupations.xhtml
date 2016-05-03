@@ -35,37 +35,40 @@
         </ui:define>
         <ui:define name="body">
             <div class="container">
-                <div class="fixed-action-btn">
-                    <h:link styleClass="btn-floating btn-large red">
-                        <i class="large material-icons">add</i>
-                    </h:link>
-                    <ul>
-                        <li class="tooltipped" data-position="left" data-delay="0"
-                            data-tooltip="#{msg['occupation.add']}">
-                            <h:link outcome="#{pages.addOccupation().asLinkOutcome()}" styleClass="btn-floating green">
-                                <i class="large material-icons">assignment</i>
-                            </h:link>
-                        </li>
-                        <li class="tooltipped" data-position="left" data-delay="0"
-                            data-tooltip="#{msg['project.add']}">
-                            <h:link outcome="#{pages.addProject().asLinkOutcome()}" styleClass="btn-floating blue">
-                                <i class="large material-icons">format_list_numbered</i>
-                            </h:link>
-                        </li>
-                    </ul>
-
-                </div>
+                <h:panelGroup rendered="#{userContext.isManagementEmployee}">
+                    <div class="fixed-action-btn">
+                        <h:link styleClass="btn-floating btn-large red">
+                            <i class="large material-icons">add</i>
+                        </h:link>
+                        <ul>
+                            <li class="tooltipped" data-position="left" data-delay="0"
+                                data-tooltip="#{msg['occupation.add']}">
+                                <h:link outcome="#{pages.addOccupation().asLinkOutcome()}"
+                                        styleClass="btn-floating green">
+                                    <i class="large material-icons">assignment</i>
+                                </h:link>
+                            </li>
+                            <li class="tooltipped" data-position="left" data-delay="0"
+                                data-tooltip="#{msg['project.add']}">
+                                <h:link outcome="#{pages.addProject().asLinkOutcome()}" styleClass="btn-floating blue">
+                                    <i class="large material-icons">format_list_numbered</i>
+                                </h:link>
+                            </li>
+                        </ul>
+                    </div>
+                </h:panelGroup>
                 <h:panelGroup id="search-results">
                     <div class="row">
                         <ui:repeat value="#{occupationSearch.occupations}"
                                    var="occupation">
-                            <div class="col m12 l6">
+                            <div class="col s12 l6">
                                 <h:form>
                                     <div class="card">
                                         <div class="card-content">
                                             <h:outputText styleClass="card-title"
                                                           value="#{occupation.name}"/><br/>
-                                            <h:outputText styleClass="occupation-content" value="#{occupation.description}"/>
+                                            <h:outputText styleClass="occupation-content"
+                                                          value="#{occupation.description}"/>
                                         </div>
                                         <div class="card-action">
                                             <p:link styleClass="realdolmen-blue-text waves-effect waves-realdolmen-blue card-action-flat"

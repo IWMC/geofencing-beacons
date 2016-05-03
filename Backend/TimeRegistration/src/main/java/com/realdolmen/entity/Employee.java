@@ -123,6 +123,10 @@ public class Employee implements Serializable, Initializable {
     @JsonInclude(JsonInclude.Include.NON_DEFAULT)
     private Set<RegisteredOccupation> registeredOccupations = new HashSet<>();
 
+    @ManyToMany(mappedBy = "employees")
+    @JsonIgnore
+    private Set<Task> tasks;
+
     public Employee() {
     }
 
@@ -286,5 +290,9 @@ public class Employee implements Serializable, Initializable {
     @Override
     public void initialize() {
         Employee.initialize(this);
+    }
+
+    public String getName() {
+        return firstName + " " + lastName;
     }
 }

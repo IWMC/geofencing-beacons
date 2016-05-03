@@ -30,3 +30,9 @@ $(document).ready(function () {
 
 window.validate_field = function (e) {
 }
+
+// function scrollToSearchBar() {
+//     jQuery('html, body').animate({
+//         scrollTop: jQuery("#search").offset().top
+//     }, 2000);
+// }

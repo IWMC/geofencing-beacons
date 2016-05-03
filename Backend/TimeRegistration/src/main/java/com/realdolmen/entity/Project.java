@@ -25,7 +25,8 @@ import java.util.Set;
 @XmlRootElement
 @Indexed
 @NamedQueries({
-        @NamedQuery(name = "Project.findAll", query = "SELECT p FROM Project p")
+        @NamedQuery(name = "Project.findAll", query = "SELECT p FROM Project p"),
+        @NamedQuery(name = "Project.findProjectWithEmployeesById", query = "SELECT p FROM Project p JOIN FETCH p.employees where p.id=:id")
 })
 public class Project extends Occupation implements Serializable {
 
@@ -38,6 +39,7 @@ public class Project extends Occupation implements Serializable {
     public static void initialize(Project project) {
         Hibernate.initialize(project.getLocations());
         Hibernate.initialize(project.getSubProjects());
+        Hibernate.initialize(project.getTasks());
         project.getSubProjects().forEach(Initializable::initialize);
         project.getEmployees().forEach(Hibernate::initialize);
     }
@@ -81,6 +83,10 @@ public class Project extends Occupation implements Serializable {
     @OneToMany
     @JsonInclude(JsonInclude.Include.NON_DEFAULT)
     private Set<Location> locations = new HashSet<>();
+
+    @OneToMany(mappedBy = "project", cascade = CascadeType.REMOVE)
+    @JsonInclude(JsonInclude.Include.NON_DEFAULT)
+    private Set<Task> tasks = new HashSet<>();
 
     public Project() {
     }
@@ -126,6 +132,14 @@ public class Project extends Occupation implements Serializable {
 
     public Set<Employee> getEmployees() {
         return employees;
+    }
+
+    public Set<Task> getTasks() {
+        return tasks;
+    }
+
+    public void setTasks(Set<Task> tasks) {
+        this.tasks = tasks;
     }
 
     @Override

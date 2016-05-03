@@ -29,8 +29,12 @@ public class Pages {
         return new Page("/employees/search-employees.xhtml");
     }
 
-    public static Page selectEmployee() {
-        return new Page("/employees/employee-select.xhtml");
+    public static Page selectEmployeeForOccupation(long occupationId) {
+        return new Page("/employees/employee-select.xhtml").param("occupationId", occupationId);
+    }
+
+    public static Page selectEmployeeForTask(long taskId) {
+        return new Page("/employees/employee-select.xhtml").param("taskId", taskId);
     }
 
     public static Page detailsEmployee() {
@@ -53,6 +57,10 @@ public class Pages {
         return new Page("/occupations/occupation-add.xhtml");
     }
 
+    public static Page addTaskFor(long projectId) {
+        return new Page("/tasks/task-add.xhtml").param("id", projectId);
+    }
+
     public static Page detailsOccupation() {
         return new Page("/occupations/occupation-details.xhtml");
     }
@@ -69,6 +77,10 @@ public class Pages {
         return new Page("/occupations/project-details.xhtml");
     }
 
+    public static Page detailsProject(long id) {
+        return detailsProject().param("id", id);
+    }
+
     public static Page selectSubProject() {
         return new Page("/occupations/subproject-select.xhtml");
     }
@@ -79,6 +91,16 @@ public class Pages {
 
     public static Page reports() {
         return new Page("/reports.xhtml");
+    }
+
+    public static Page detailsTask() { return new Page("/tasks/task-details.xhtml"); }
+
+    public static Page detailsTask(long taskId) { return detailsTask().param("id", taskId); }
+
+    public static Page editTask() { return new Page("/tasks/task-edit.xhtml"); }
+
+    public static Page editTask(long taskId) {
+        return editTask().param("id", taskId);
     }
 
     public static Page occupationDetailsFrom(Occupation occupation) {
@@ -93,6 +115,7 @@ public class Pages {
 
         private static final String URL_ENCODING = "UTF-8";
         private String baseUrl;
+
         // Not Map to keep Page serializable, only change by another serializable class!
         private HashMap<String, String> params = new HashMap<>();
 
