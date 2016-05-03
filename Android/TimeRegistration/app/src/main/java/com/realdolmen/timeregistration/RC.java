@@ -79,10 +79,11 @@ public interface RC {
 
 	interface backend {
 
-		String HOST = "http://10.16.27.4";
+		String HOST = "http://10.16.25.193";
 
 		interface urls {
 			String API_LOGIN_URI = HOST + "/api/user/login",
+					API_VALIDATE_TOKEN = HOST + "/api/user/validate/%s",
 					API_GET_REGISTERED_OCCUPATIONS = HOST + "/api/occupations/registration/?date=%d",
 					API_CONFIRM_OCCUPATIONS = HOST + "/api/occupations/registration/%d/confirm",
 					API_ADD_OCCUPATION_REGISTRATION = HOST + "/api/occupations/registration",
@@ -95,6 +96,11 @@ public interface RC {
 	interface dtypes {
 		int OCCUPATION_DTYPE = 1;
 		int PROJECT_DTYPE = 2;
+	}
+
+	interface pref {
+		String SHARED_PREFERENCES = "com.realdolmen.timeregistration.preferences";
+		String KEY_LAST_LOGGED_IN = "lli";
 	}
 
 	interface other {

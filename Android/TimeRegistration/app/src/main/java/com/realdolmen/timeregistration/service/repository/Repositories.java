@@ -5,6 +5,7 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
 import com.android.volley.VolleyError;
+import com.realdolmen.timeregistration.service.data.UserManager;
 
 import org.jdeferred.AlwaysCallback;
 import org.jdeferred.Deferred;
@@ -23,13 +24,13 @@ public class Repositories {
 
 	private static boolean testMode = false;
 
-	public static void logout() {
+	public static void logout(@NonNull Context context) {
 		try {
 			occupationRepository().clear();
 			registeredOccupationRepository().clear();
 		} catch (Exception e) {
 		}
-		BackendService.getCurrentSession().setJwtToken("");
+		UserManager.logout(context);
 	}
 
 	public static class Testing {

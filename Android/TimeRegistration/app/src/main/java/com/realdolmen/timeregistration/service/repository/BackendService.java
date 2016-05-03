@@ -11,19 +11,26 @@ import com.android.volley.RequestQueue;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonObjectRequest;
+import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.realdolmen.timeregistration.RC;
+import com.realdolmen.timeregistration.model.LoginRequest;
 import com.realdolmen.timeregistration.model.Occupation;
 import com.realdolmen.timeregistration.model.RegisteredOccupation;
 import com.realdolmen.timeregistration.model.Session;
 import com.realdolmen.timeregistration.service.GenericVolleyError;
 import com.realdolmen.timeregistration.service.ResultCallback;
+import com.realdolmen.timeregistration.service.data.UserManager;
 import com.realdolmen.timeregistration.util.DateUtil;
 import com.realdolmen.timeregistration.util.UTC;
 import com.realdolmen.timeregistration.util.json.DateSerializer;
 import com.realdolmen.timeregistration.util.json.GsonObjectRequest;
 
+import org.jdeferred.Deferred;
+import org.jdeferred.Promise;
+import org.jdeferred.impl.DeferredObject;
 import org.jetbrains.annotations.TestOnly;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
@@ -52,19 +59,30 @@ public class BackendService {
 	private Context context;
 	private static final Gson compactGson = new GsonBuilder().registerTypeAdapter(DateTime.class, new DateSerializer()).create();
 	private static final Map<Context, BackendService> contextMap = new HashMap<>();
-	private static Session currentSession;
 	private RequestQueue requestQueue;
 
-	public static Session getCurrentSession() {
-		return currentSession;
+	public boolean isAuthenticated() {
+		return UserManager.with(context).getLoggedInUser() != null && UserManager.with(context).getLoggedInUser().getToken() != null && !UserManager.with(context).getLoggedInUser().getToken().isEmpty();
 	}
 
-	public static void setSession(@NonNull Session session) {
-		currentSession = session;
-	}
+	public Promise<Boolean, Throwable, Void> validateLoginToken(String token) {
+		final Deferred<Boolean, Throwable, Void> def = new DeferredObject<>();
 
-	public static boolean isAuthenticated() {
-		return currentSession != null && currentSession.getJwtToken() != null && !currentSession.getJwtToken().isEmpty();
+		Request r = new StringRequest(Request.Method.GET, params(RC.backend.urls.API_VALIDATE_TOKEN, token), new Response.Listener<String>() {
+			@Override
+			public void onResponse(String response) {
+				def.resolve(true);
+			}
+		}, new Response.ErrorListener() {
+			@Override
+			public void onErrorResponse(VolleyError error) {
+				def.reject(error);
+			}
+		}) {
+
+		};
+		requestQueue.add(r);
+		return def.promise();
 	}
 
 	public static class Testing {
@@ -153,38 +171,37 @@ public class BackendService {
 
 	/**
 	 * Sends a login request to the backend. The {@link Session} is converted to JSON using {@link Gson}.
-	 *
-	 * @param session  The session that contains the username and password to use for authentication.
-	 * @param callback The {@link ResultCallback < Session >}
-	 *                 used to inform the UI of network events.
 	 */
-	public void login(@NonNull final Session session, final @NonNull ResultCallback<Session> callback) {
+	public Promise<LoginRequest, Throwable, Void> login(@NonNull final LoginRequest loginRequest) {
+		final Deferred<LoginRequest, Throwable, Void> def = new DeferredObject<>();
+
 
 		JsonObjectRequest request = new JsonObjectRequest(Request.Method.POST, API_LOGIN_URI,
-														  compactGson.toJson(session), new Response.Listener<JSONObject>() {
+														  compactGson.toJson(loginRequest), new Response.Listener<JSONObject>() {
 			@Override
 			public void onResponse(JSONObject response) {
 				if (response.has("token")) {
 					try {
-						session.setJwtToken(response.getString("token"));
-						setSession(session);
-						callback.onResult(ResultCallback.Result.SUCCESS, session, null);
+						String token = response.getString("token");
+						loginRequest.setToken(token);
+						def.resolve(loginRequest);
 					} catch (JSONException e) {
-						callback.onResult(ResultCallback.Result.FAIL, null, new GenericVolleyError(e.getMessage()));
+						def.reject(new GenericVolleyError(e.getMessage()));
 					}
 				} else {
-					callback.onResult(ResultCallback.Result.FAIL, null, new GenericVolleyError("Server response does not contain jwt token in JSON format"));
+					def.reject(new GenericVolleyError("Server response does not contain jwt token in JSON format"));
 				}
 			}
 		}, new Response.ErrorListener() {
 			@Override
 			public void onErrorResponse(VolleyError error) {
-				callback.onResult(ResultCallback.Result.FAIL, null, error);
+				def.reject(error);
 			}
 		}
 		);
 
 		requestQueue.add(request);
+		return def.promise();
 	}
 
 	/**
@@ -203,7 +220,7 @@ public class BackendService {
 		}
 
 		if (isAuthenticated()) {
-			headers.put("Authorization", currentSession.getJwtToken());
+			headers.put("Authorization", UserManager.with(context).getLoggedInUser().getToken());
 		}
 
 		return headers;

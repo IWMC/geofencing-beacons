@@ -44,4 +44,6 @@ dependencies {
     compile 'org.jdeferred:jdeferred-android-aar:1.2.4'
     compile 'com.google.android.gms:play-services-location:8.4.0'
     compile 'org.jetbrains:annotations:13.0'
+    compile 'com.j256.ormlite:ormlite-core:4.48'
+    compile 'com.j256.ormlite:ormlite-android:4.48'
 }

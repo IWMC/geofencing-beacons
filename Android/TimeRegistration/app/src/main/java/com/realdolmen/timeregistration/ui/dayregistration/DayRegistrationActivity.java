@@ -510,7 +510,7 @@ public class DayRegistrationActivity extends AppCompatActivity {
 		} else if (item.getItemId() == R.id.menu_logout) {
 			finish();
 			geofenceRequester.disconnect();
-			Repositories.logout();
+			Repositories.logout(this);
 			startActivity(new Intent(this, LoginActivity.class));
 			return true;
 		}

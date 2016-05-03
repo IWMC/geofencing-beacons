@@ -72,7 +72,7 @@ public class SecurityManager {
     public boolean isValidToken(@NotNull JsonWebToken jwtToken) {
         try {
             Jwts.parser().setSigningKey(key).parseClaimsJws(jwtToken.getToken());
-        } catch (SignatureException se) {
+        } catch (Exception se) {
             return false;
         }
 
