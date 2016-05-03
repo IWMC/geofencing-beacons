@@ -1,5 +1,6 @@
 package com.realdolmen.service;
 
+import com.realdolmen.TestMode;
 import com.realdolmen.entity.Employee;
 import com.realdolmen.entity.ManagementEmployee;
 import com.realdolmen.entity.PersistenceUnit;
@@ -12,6 +13,7 @@ import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.SignatureException;
 import io.jsonwebtoken.impl.crypto.MacProvider;
 import org.jetbrains.annotations.Nullable;
+import org.jetbrains.annotations.TestOnly;
 
 import javax.ejb.Singleton;
 import javax.inject.Inject;
@@ -82,7 +84,11 @@ public class SecurityManager {
     }
 
     public Employee findEmployee() {
-        return Optional.ofNullable(userContext.getUser()).orElse(findByJwt(new JsonWebToken(request.getHeader("Authorization"))));
+        if (TestMode.isTestMode()) {
+            return Optional.ofNullable(userContext == null ? null : userContext.getUser()).orElse(request == null ? null : findByJwt(new JsonWebToken(request.getHeader("Authorization"))));
+        } else {
+            return Optional.ofNullable(userContext.getUser()).orElse(findByJwt(new JsonWebToken(request.getHeader("Authorization"))));
+        }
     }
 
     @Nullable
@@ -113,5 +119,10 @@ public class SecurityManager {
     public boolean isManagement() {
         Employee employee = findEmployee();
         return employee != null && (employee instanceof ProjectManager || employee instanceof ManagementEmployee);
+    }
+
+    @TestOnly
+    public void setUserContext(UserContext userContext) {
+        this.userContext = userContext;
     }
 }

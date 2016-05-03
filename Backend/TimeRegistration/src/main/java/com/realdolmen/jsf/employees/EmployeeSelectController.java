@@ -49,6 +49,7 @@ public class EmployeeSelectController extends EmployeeSearchController {
     @Inject
     private OccupationEndpoint occupationEndpoint;
 
+    @Transactional
     public void onParentId() {
         try {
             if (occupationId != null) {
@@ -66,7 +67,7 @@ public class EmployeeSelectController extends EmployeeSearchController {
             }
 
             if (taskId != null) {
-                task = taskDao.findById(Long.parseLong(taskId));
+                task = taskDao.findByIdEagerly(Long.parseLong(taskId));
                 if (task != null) {
                     return;
                 }
@@ -87,11 +88,19 @@ public class EmployeeSelectController extends EmployeeSearchController {
     }
 
     public List<Employee> filterEmployees(List<Employee> employees) {
-        if (employees == null || project == null) {
-            return employees;
+        if (employees == null) {
+            return null;
         }
 
-        return employees.stream().filter(e -> !project.getEmployees().contains(e)).collect(Collectors.toList());
+        if (project != null) {
+            return employees.stream().filter(e -> !project.getEmployees().contains(e)).collect(Collectors.toList());
+        }
+
+        if (task != null) {
+            return employees.stream().filter(e -> task.getProject().getEmployees().contains(e)).collect(Collectors.toList());
+        }
+
+        return employees;
     }
 
     @Override
@@ -117,7 +126,7 @@ public class EmployeeSelectController extends EmployeeSearchController {
             if (taskDao.isManagingProjectManager(task, sm.findEmployee())) {
                 task.getEmployees().add(employee);
                 taskDao.update(task);
-                return Pages.editTask(task.getId()).asRedirect();
+                return Pages.detailsTask(task.getId()).asRedirect();
             }
         }
 

@@ -40,10 +40,11 @@ public class Occupation implements Serializable, Initializable {
 
         if (occupation instanceof Task) {
             Hibernate.initialize(((Task) occupation).getEmployees());
+            Project.initialize(((Task) occupation).getProject());
         }
     }
 
-    @Column(unique = true)
+    @Column
     @NotNull(message = "name.empty")
     @Size(min = 1, message = "name.empty")
     @Field

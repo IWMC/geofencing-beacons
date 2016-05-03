@@ -1,6 +1,5 @@
 package com.realdolmen.jsf.tasks;
 
-import com.realdolmen.entity.PersistenceUnit;
 import com.realdolmen.entity.Task;
 import com.realdolmen.entity.dao.TaskDao;
 import com.realdolmen.jsf.DetailController;
@@ -10,8 +9,6 @@ import com.realdolmen.service.SecurityManager;
 import javax.faces.view.ViewScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
 import javax.transaction.Transactional;
 
 /**
@@ -27,9 +24,6 @@ public class TaskDetailsController extends DetailController<Task> {
     @Inject
     private TaskDao taskDao;
 
-    @PersistenceContext(unitName = PersistenceUnit.PRODUCTION)
-    private EntityManager em;
-
     public TaskDetailsController() {
         super(Pages.searchOccupation());
     }
@@ -37,7 +31,11 @@ public class TaskDetailsController extends DetailController<Task> {
     @Override
     public Task loadEntity(long id) {
         Task task = taskDao.findById(id);
-        Task.initialize(task);
+
+        if (task != null) {
+            task.initialize();
+        }
+
         return task;
     }
 

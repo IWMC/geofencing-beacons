@@ -14,6 +14,7 @@ import javax.persistence.PersistenceContext;
 import javax.persistence.TypedQuery;
 import javax.transaction.Transactional;
 import javax.validation.constraints.NotNull;
+import java.util.List;
 
 /**
  * Dao class for common CRUD-operations with the {@link Task} entity.
@@ -31,6 +32,13 @@ public class TaskDao {
         return em.find(Task.class, id);
     }
 
+    @Transactional
+    public Task findByIdEagerly(long id) {
+        Task task = findById(id);
+        task.initialize();
+        return task;
+    }
+
     public Task findReferenceById(long id) {
         return em.getReference(Task.class, id);
     }
@@ -39,21 +47,28 @@ public class TaskDao {
         return em.createNamedQuery("Task.findAll", Task.class);
     }
 
+    public List<Task> getAllTasks() {
+        return getTasks().getResultList();
+    }
+
     public TypedQuery<Task> getTasksByProject(@NotNull String projectNr) {
         return em.createNamedQuery("Task.findByProjectId", Task.class).setParameter("projectId", projectNr);
     }
 
     @Transactional
     public void addTask(@NotNull Task task) {
-        if (task.getProjectId() > 0) {
-            Project project = em.find(Project.class, task.getProjectId());
-
-            if (project == null) {
-                throw new IllegalArgumentException("project with id " + task.getProjectId() + " does not exist");
-            }
-
-            task.setProject(project);
+        if (task.getProjectId() == 0 && task.getProject() == null) {
+            throw new IllegalArgumentException("task should have a project or a project id");
         }
+
+        Project project = task.getProject() != null ? em.find(Project.class, task.getProject().getId())
+                : em.find(Project.class, task.getProjectId());
+
+        if (project == null) {
+            throw new IllegalArgumentException("project with id " + task.getProjectId() + " does not exist");
+        }
+
+        task.setProject(project);
 
         if (!task.getEmployeeIds().isEmpty()) {
             for (Long id : task.getEmployeeIds()) {
@@ -121,7 +136,7 @@ public class TaskDao {
     /**
      * Checks if the given employee is a project manager of the given task.
      *
-     * @param task The task that should be checked
+     * @param task     The task that should be checked
      * @param employee The employee that should be checked
      * @return True if the employee is a project manager of the given task, false otherwise
      */
@@ -137,7 +152,7 @@ public class TaskDao {
      * Checks if the given employee is a project manager of the project with the given project id.
      *
      * @param projectId The project id of the project
-     * @param employee The employee that should be checked
+     * @param employee  The employee that should be checked
      * @return True if the employee is a project manager of the project, false otherwise
      */
     public boolean isManagingProjectManager(long projectId, Employee employee) {
@@ -146,7 +161,7 @@ public class TaskDao {
         }
 
         try {
-            return em.find(Project.class, projectId).getEmployees().contains(employee);
+            return em.getReference(Project.class, projectId).getEmployees().contains(employee);
         } catch (EntityNotFoundException enfex) {
             return false;
         }

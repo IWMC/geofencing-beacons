@@ -11,6 +11,7 @@ import com.realdolmen.rest.OccupationEndpoint;
 import com.realdolmen.service.SecurityManager;
 import org.hibernate.search.jpa.FullTextEntityManager;
 import org.hibernate.search.query.dsl.QueryBuilder;
+import org.jetbrains.annotations.TestOnly;
 import org.primefaces.event.map.GeocodeEvent;
 import org.primefaces.event.map.OverlaySelectEvent;
 import org.primefaces.event.map.PointSelectEvent;
@@ -39,6 +40,9 @@ import java.util.stream.Collectors;
 @ViewScoped
 public class ProjectDetailController extends DetailController<Project> implements Serializable {
 
+    @PersistenceContext(unitName = PersistenceUnit.PRODUCTION)
+    private transient EntityManager em;
+
     @Inject
     private TaskDao taskDao;
 
@@ -47,9 +51,6 @@ public class ProjectDetailController extends DetailController<Project> implement
 
     @Inject
     private UserContext userContext;
-
-    @PersistenceContext(unitName = PersistenceUnit.PRODUCTION)
-    private transient EntityManager em;
 
     @Inject
     private transient OccupationEndpoint occupationEndpoint;
@@ -72,9 +73,9 @@ public class ProjectDetailController extends DetailController<Project> implement
         if (project != null) {
             project.getLocations().stream().map(l -> new Marker(new LatLng(l.getLatitude(), l.getLongitude())))
                     .forEach(mapModel::addOverlay);
+            project.initialize();
         }
 
-        project.initialize();
         return project;
     }
 
@@ -127,7 +128,7 @@ public class ProjectDetailController extends DetailController<Project> implement
             redirect(Pages.occupationDetailsFrom(getEntity()));
         } else if (response.getStatus() == Response.Status.FORBIDDEN.getStatusCode()) {
             redirectToErrorPage();
-        } else {
+        } else if (response.getStatus() == Response.Status.CONFLICT.getStatusCode()) {
             getToastService().newToast(getLanguage().getString("occupation.name_taken"));
         }
     }
@@ -221,17 +222,7 @@ public class ProjectDetailController extends DetailController<Project> implement
         }
     }
 
-    @Transactional
-    public void removeTask(Task task) {
-        if (taskDao.isManagingProjectManager(task, sm.findEmployee())) {
-            taskDao.removeTask(task);
-        }
-    }
-
-    public void addTask() {
-
-    }
-
+    // TODO: 3/05/2016 Test Lucene
     public List<Task> getTasks() {
         if (taskSearchTerms == null || taskSearchTerms.trim().isEmpty()) {
             return new ArrayList<>(getEntity().getTasks());
@@ -258,5 +249,10 @@ public class ProjectDetailController extends DetailController<Project> implement
 
     public void setTaskSearchTerms(String taskSearchTerms) {
         this.taskSearchTerms = taskSearchTerms;
+    }
+
+    @TestOnly
+    public void setUserContext(UserContext userContext) {
+        this.userContext = userContext;
     }
 }

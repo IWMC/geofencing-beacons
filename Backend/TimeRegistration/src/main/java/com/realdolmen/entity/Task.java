@@ -23,7 +23,7 @@ import java.util.Set;
 @XmlRootElement
 @NamedQueries({
         @NamedQuery(name = "Task.findAll", query = "SELECT t FROM Task t"),
-        @NamedQuery(name = "Task.findByProjectId", query = "SELECT t FROM Task t WHERE t.project.id = :projectId"),
+        @NamedQuery(name = "Task.findByProjectId", query = "SELECT t FROM Task t WHERE t.project.projectNr = :projectId"),
         @NamedQuery(name = "Task.deleteById", query = "DELETE FROM Task t WHERE t.id=:id")
 })
 @Indexed
@@ -50,6 +50,15 @@ public class Task extends Occupation {
     @Transient
     @JsonInclude(JsonInclude.Include.NON_DEFAULT)
     private List<Long> employeeIds = new ArrayList<>();
+
+    public Task() {
+    }
+
+    public Task(String name, String description, double estimatedHours, Project project) {
+        super(name, description);
+        this.estimatedHours = estimatedHours;
+        this.project = project;
+    }
 
     public double getEstimatedHours() {
         return estimatedHours;

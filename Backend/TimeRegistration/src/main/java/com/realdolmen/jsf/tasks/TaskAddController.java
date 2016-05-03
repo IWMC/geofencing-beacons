@@ -31,10 +31,10 @@ public class TaskAddController extends TaskEditController {
 
     @Override
     public String saveTask() {
-        if (taskDao.isManagingProjectManager(getEntity().getProjectId(), sm.findEmployee())) {
+        if (taskDao.isManagingProjectManager(getEntity(), sm.findEmployee())) {
             taskDao.addTask(getEntity());
         }
 
-        return Pages.editTask(getEntity().getId()).asRedirect();
+        return Pages.detailsTask(getEntity().getId()).asRedirect();
     }
 }

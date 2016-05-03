@@ -2,7 +2,6 @@ package com.realdolmen.rest;
 
 import com.realdolmen.annotations.Authorized;
 import com.realdolmen.annotations.UserGroup;
-import com.realdolmen.entity.PersistenceUnit;
 import com.realdolmen.entity.Task;
 import com.realdolmen.entity.dao.TaskDao;
 import com.realdolmen.entity.validation.New;
@@ -13,8 +12,6 @@ import com.realdolmen.validation.Validator;
 
 import javax.ejb.EJBTransactionRolledbackException;
 import javax.inject.Inject;
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
 import javax.persistence.TypedQuery;
 import javax.transaction.Transactional;
 import javax.ws.rs.*;
@@ -31,9 +28,6 @@ public class TaskEndpoint {
 
     @Inject
     private Validator<Task> validator;
-
-    @PersistenceContext(unitName = PersistenceUnit.PRODUCTION)
-    private EntityManager em;
 
     @Inject
     private SecurityManager sm;
@@ -69,7 +63,7 @@ public class TaskEndpoint {
     public Response getTasksByProject(@QueryParam("start") Integer startPosition,
                                       @QueryParam("max") Integer maxResult,
                                       @PathParam("projectNr") String projectNr) {
-        if (projectNr == null && projectNr.isEmpty()) {
+        if (projectNr == null || projectNr.isEmpty()) {
             return Response.status(Response.Status.BAD_REQUEST).entity(Json.error("projectNr cannot be empty")).build();
         }
 
@@ -91,7 +85,13 @@ public class TaskEndpoint {
     @Produces(MediaType.APPLICATION_JSON)
     @Transactional
     public Response addTask(Task task) {
-        if (task.getProjectId() != 0 && !taskDao.isManagingProjectManager(task.getProjectId(), sm.findEmployee())) {
+        if (task.getProjectId() <= 0) {
+            return Response.status(Response.Status.BAD_REQUEST)
+                    .entity(com.realdolmen.json.Json.error("invalid projectNr"))
+                    .build();
+        }
+
+        if (!taskDao.isManagingProjectManager(task.getProjectId(), sm.findEmployee())) {
             return Response.status(Response.Status.FORBIDDEN)
                     .entity(com.realdolmen.json.Json.error("project with projectId " + task.getProjectId() + " is not managed by " + sm.findEmployee().getName()))
                     .build();

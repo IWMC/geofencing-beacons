@@ -77,6 +77,10 @@ public class Pages {
         return new Page("/occupations/project-details.xhtml");
     }
 
+    public static Page detailsProject(long id) {
+        return detailsProject().param("id", id);
+    }
+
     public static Page selectSubProject() {
         return new Page("/occupations/subproject-select.xhtml");
     }
@@ -90,6 +94,8 @@ public class Pages {
     }
 
     public static Page detailsTask() { return new Page("/tasks/task-details.xhtml"); }
+
+    public static Page detailsTask(long taskId) { return detailsTask().param("id", taskId); }
 
     public static Page editTask() { return new Page("/tasks/task-edit.xhtml"); }
 
