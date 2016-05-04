@@ -58,6 +58,8 @@ public class RegisteredOccupationRepository extends DataRepository<RegisteredOcc
 		});
 	}
 
+
+
 	/**
 	 * Saves a {@link RegisteredOccupation} to the backend. If the {@code RegisteredOccupation} does
 	 * not yet exist, it will be persisted as a new one. If it does, it is merged with the remote version.

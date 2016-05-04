@@ -79,7 +79,7 @@ public interface RC {
 
 	interface backend {
 
-		String HOST = "http://10.16.25.193";
+		String HOST = "http://10.16.26.85";
 
 		interface urls {
 			String API_LOGIN_URI = HOST + "/api/user/login",
@@ -89,8 +89,14 @@ public interface RC {
 					API_ADD_OCCUPATION_REGISTRATION = HOST + "/api/occupations/registration",
 					API_GET_OCCUPATIONS = HOST + "/api/occupations/available",
 					API_GET_REGISTERED_OCCUPATIONS_RANGE = HOST + "/api/occupations/registration/range?date=%d&count=%d",
-					API_REMOVE_REGISTERED_OCCUPATION = HOST + "/api/occupations/registration/%d";
+					API_REMOVE_REGISTERED_OCCUPATION = HOST + "/api/occupations/registration/%d",
+					API_GET_BEACONS = HOST + "/api/beacons",
+					API_GET_BEACON_BY_ID = HOST + "/api/beacons/%s";
 		}
+	}
+
+	interface beacon {
+
 	}
 
 	interface dtypes {

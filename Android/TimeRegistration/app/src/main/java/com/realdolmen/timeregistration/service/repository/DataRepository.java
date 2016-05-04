@@ -5,7 +5,6 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
 import com.android.volley.VolleyError;
-import com.realdolmen.timeregistration.model.Occupation;
 import com.realdolmen.timeregistration.service.ResultCallback;
 
 import org.jdeferred.Deferred;
@@ -78,7 +77,7 @@ public abstract class DataRepository<E, RM_OUT, SAVE_OUT> {
 		return def.promise();
 	}
 
-	public abstract Promise<? extends DataRepository, VolleyError, Object> reload(Context context);
+	public abstract Promise<? extends DataRepository, ? extends Throwable, Object> reload(Context context);
 
 	public abstract E getById(long id);
 

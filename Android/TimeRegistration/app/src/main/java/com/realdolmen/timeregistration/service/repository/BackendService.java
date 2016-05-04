@@ -16,6 +16,7 @@ import com.android.volley.toolbox.Volley;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.realdolmen.timeregistration.RC;
+import com.realdolmen.timeregistration.model.Beacon;
 import com.realdolmen.timeregistration.model.LoginRequest;
 import com.realdolmen.timeregistration.model.Occupation;
 import com.realdolmen.timeregistration.model.RegisteredOccupation;
@@ -430,5 +431,23 @@ public class BackendService {
 
 		requestQueue.add(req);
 
+	}
+
+	public Promise<List<Beacon>, Throwable, Void> getBeacons() {
+		final Deferred<List<Beacon>, Throwable, Void> def = new DeferredObject<>();
+		Request r = new GsonObjectRequest<>(RC.backend.urls.API_GET_BEACONS, Beacon[].class, auth(), new Response.Listener<Beacon[]>() {
+			@Override
+			public void onResponse(Beacon[] response) {
+				def.resolve(Arrays.asList(response));
+			}
+		}, new Response.ErrorListener() {
+			@Override
+			public void onErrorResponse(VolleyError error) {
+				def.reject(error);
+			}
+		});
+
+		requestQueue.add(r);
+		return def.promise();
 	}
 }

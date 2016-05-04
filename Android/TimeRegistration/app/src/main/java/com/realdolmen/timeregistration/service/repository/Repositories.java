@@ -9,7 +9,6 @@ import com.realdolmen.timeregistration.service.data.UserManager;
 
 import org.jdeferred.AlwaysCallback;
 import org.jdeferred.Deferred;
-import org.jdeferred.DoneCallback;
 import org.jdeferred.Promise;
 import org.jdeferred.impl.DeferredObject;
 import org.jetbrains.annotations.TestOnly;
@@ -21,6 +20,7 @@ public class Repositories {
 
 	private static OccupationRepository occupationRepository;
 	private static RegisteredOccupationRepository registeredOccupationRepository;
+	private static BeaconRepository beaconRepository;
 
 	private static boolean testMode = false;
 
@@ -28,6 +28,7 @@ public class Repositories {
 		try {
 			occupationRepository().clear();
 			registeredOccupationRepository().clear();
+			beaconRepository().clear();
 		} catch (Exception e) {
 		}
 		UserManager.logout(context);
@@ -122,6 +123,40 @@ public class Repositories {
 		}
 	}
 
+	public static Promise<BeaconRepository, Throwable, Object> loadBeaconRepository(@NonNull Context context) {
+		final Deferred<BeaconRepository, Throwable, Object> def = new DeferredObject<>();
+		loadBeaconRepository(context, new LoadCallback() {
+			@Override
+			public void onResult(Result result, Throwable error) {
+				if (result == Result.SUCCESS)
+					def.resolve(beaconRepository);
+				else
+					def.reject(error);
+			}
+		});
+		return def.promise();
+	}
+
+	public static void loadBeaconRepository(@NonNull Context context, @Nullable final LoadCallback loadCallback) {
+		if (context == null) {
+			throw new IllegalArgumentException("Context cannot be null!");
+		}
+		if (beaconRepository == null) {
+			beaconRepository = new BeaconRepository(context, loadCallback);
+		} else if (!beaconRepository.isLoaded()) {
+			beaconRepository.reload(context).always(new AlwaysCallback<BeaconRepository, Throwable>() {
+				@Override
+				public void onAlways(Promise.State state, BeaconRepository resolved, Throwable rejected) {
+					if (loadCallback != null) {
+						beaconRepository.addOnLoadCallback(loadCallback);
+					}
+				}
+			});
+		} else if (loadCallback != null) {
+			beaconRepository.addOnLoadCallback(loadCallback);
+		}
+	}
+
 	public static RegisteredOccupationRepository registeredOccupationRepository() {
 		if (registeredOccupationRepository == null || !registeredOccupationRepository.isLoaded()) {
 			throw new IllegalStateException("Repository must be loaded before using it!");
@@ -134,5 +169,12 @@ public class Repositories {
 			throw new IllegalStateException("Repository must be loaded before using it!");
 		}
 		return occupationRepository;
+	}
+
+	public static BeaconRepository beaconRepository() {
+		if (beaconRepository == null || !beaconRepository.isLoaded()) {
+			throw new IllegalStateException("Repository must be loaded before using it!");
+		}
+		return beaconRepository;
 	}
 }
