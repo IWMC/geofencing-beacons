@@ -12,6 +12,7 @@ import com.realdolmen.entity.PersistenceUnit;
 import org.jetbrains.annotations.TestOnly;
 
 import javax.ejb.Stateless;
+import javax.enterprise.inject.Default;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
@@ -33,7 +34,10 @@ import java.util.stream.Stream;
  * Typically used by endpoints and controllers to generate reports based on a dynamic query language.
  */
 @Stateless
+@Default
 public class ReportsQueryBuilder {
+
+    public static final String SELECT_ALL = null;
 
     @PersistenceContext(unitName = PersistenceUnit.PRODUCTION)
     private EntityManager em;
@@ -184,6 +188,10 @@ public class ReportsQueryBuilder {
         this.query = query;
     }
 
+    protected ReportsQueryParser getParser() {
+        return parser;
+    }
+
     /**
      * This class is responsible for parsing the query parameters used in the RESTful APIs (under <code>com.realdolmen.rest</code>).
      * It allows the usage of query parameters in the URL to retrieve tailored data, using:
@@ -193,7 +201,7 @@ public class ReportsQueryBuilder {
      * <li>grouping: how should the system group records for aggregate functions</li>
      * </ul>
      */
-    public class ReportsQueryParser {
+    protected class ReportsQueryParser {
 
         public static final String FIELD_REGEXP = "[a-zA-Z]*\\.?[a-zA-Z]+";
         public static final String FIELD_PROPERTY_REGEXP = "[a-zA-Z]*\\.[a-zA-Z]+";

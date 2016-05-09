@@ -177,9 +177,10 @@ nav + .container {
     line-height: 27px !important;
 }
 
-p.small {
+p.small, span.small {
     font-size: 13px;
 }
+
 
 /*************** Maps ***************/
 #pac-input {

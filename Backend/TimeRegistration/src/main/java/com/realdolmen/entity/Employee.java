@@ -15,6 +15,7 @@ import javax.validation.constraints.Pattern;
 import javax.validation.constraints.Size;
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.bind.annotation.XmlTransient;
 import java.io.Serializable;
 import java.util.HashSet;
 import java.util.Set;
@@ -68,12 +69,10 @@ public class Employee implements Serializable, Initializable {
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
-    @XmlAttribute
     private long id;
 
     @Version
     @Column(name = "version")
-    @XmlAttribute
     private int version;
 
     @Column(length = 50)
@@ -102,10 +101,12 @@ public class Employee implements Serializable, Initializable {
 
     @Column
     @JsonIgnore
+    @XmlTransient
     private String hash;
 
     @Column
     @JsonIgnore
+    @XmlTransient
     private String salt;
 
     @Transient
@@ -162,6 +163,7 @@ public class Employee implements Serializable, Initializable {
                 employee.getEmail(), employee.getHash(), employee.getSalt(), employee.getPassword(), employee.getMemberProjects());
     }
 
+    @XmlAttribute
     public Long getId() {
         return this.id;
     }
@@ -170,6 +172,7 @@ public class Employee implements Serializable, Initializable {
         this.id = id;
     }
 
+    @XmlAttribute
     public int getVersion() {
         return this.version;
     }
@@ -233,6 +236,7 @@ public class Employee implements Serializable, Initializable {
         this.email = email;
     }
 
+    @XmlTransient
     public String getHash() {
         return hash;
     }
@@ -241,6 +245,7 @@ public class Employee implements Serializable, Initializable {
         this.hash = hash;
     }
 
+    @XmlTransient
     public String getSalt() {
         return salt;
     }

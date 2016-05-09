@@ -13,6 +13,7 @@ import javax.persistence.*;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
 import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.bind.annotation.XmlTransient;
 import java.io.Serializable;
 import java.util.Date;
 import java.util.HashSet;
@@ -85,7 +86,8 @@ public class Project extends Occupation implements Serializable {
     private Set<Location> locations = new HashSet<>();
 
     @OneToMany(mappedBy = "project", cascade = CascadeType.REMOVE)
-    @JsonInclude(JsonInclude.Include.NON_DEFAULT)
+    @XmlTransient
+    @JsonIgnore
     private Set<Task> tasks = new HashSet<>();
 
     public Project() {
@@ -134,6 +136,7 @@ public class Project extends Occupation implements Serializable {
         return employees;
     }
 
+    @XmlTransient
     public Set<Task> getTasks() {
         return tasks;
     }
