@@ -115,7 +115,7 @@ public class OccupationEndpoint {
 
 
         LocalDateTime startDate = new DateTime(date, DateTimeZone.UTC).withHourOfDay(0).withMinuteOfHour(0).toLocalDateTime();
-        System.out.println(startDate + " in zone: " + startDate.toDateTime().getZone());
+//        System.out.println(startDate + " in zone: " + startDate.toDateTime().getZone());
         if (sm.findEmployee() == null || sm.findEmployee().getId() == null || sm.findEmployee().getId() == 0) {
             return Response.status(400).build();
         }
@@ -123,7 +123,7 @@ public class OccupationEndpoint {
         //TODO: take into account timezone differences with the phone and the server
 
         TypedQuery<RegisteredOccupation> query = em.createNamedQuery("RegisteredOccupation.findOccupationsInRange", RegisteredOccupation.class);
-        System.out.printf("Performing query: Start time: %d -> %s, employee id: %d%n", startDate.toDateTime().getMillis(), startDate.toDateTime().toString(), sm.findEmployee().getId());
+//        System.out.printf("Performing query: Start time: %d -> %s, employee id: %d%n", startDate.toDateTime().getMillis(), startDate.toDateTime().toString(), sm.findEmployee().getId());
         query
                 .setParameter("employeeId", sm.findEmployee().getId())
                 .setParameter("year", startDate.get(year()))

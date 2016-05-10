@@ -26,6 +26,10 @@ public abstract class DataRepository<E, RM_OUT, SAVE_OUT> {
 
 	private boolean loaded;
 
+	DataRepository(Context context) {
+		//setup(context);
+	}
+
 	private Queue<LoadCallback> callbacksOnLoaded = new LinkedList<>();
 
 	public List<E> getAll() {
@@ -54,6 +58,10 @@ public abstract class DataRepository<E, RM_OUT, SAVE_OUT> {
 		} else {
 			callbacksOnLoaded.add(callback);
 		}
+	}
+
+	protected void setup(Context context) {
+
 	}
 
 	protected void setLoaded(boolean isLoaded, @Nullable Throwable throwable) {

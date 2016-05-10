@@ -16,6 +16,7 @@ import com.realdolmen.timeregistration.RC;
 import com.realdolmen.timeregistration.model.Occupation;
 import com.realdolmen.timeregistration.model.Project;
 import com.realdolmen.timeregistration.model.RegisteredOccupation;
+import com.realdolmen.timeregistration.service.location.beacon.BeaconEvent;
 import com.realdolmen.timeregistration.service.repository.OccupationRepository;
 import com.realdolmen.timeregistration.service.repository.RegisteredOccupationRepository;
 import com.realdolmen.timeregistration.service.repository.Repositories;
@@ -77,21 +78,13 @@ public class SuggestionDialogs {
 		});
 	}
 
-	private void handleMultiResultEnterSuggestion(Intent intent) {
-		Intent receivedTemp = (Intent) intent.getSerializableExtra(RC.actionExtras.fromNotifications.addMultiResult.GEOFENCE_EVENT);
-		if (receivedTemp == null) {
-			Log.e(LOG_TAG, "Received geofence intent is null!");
-			return;
-		}
-
-		GeofencingEvent geofencingEvent = GeofencingEvent.fromIntent(receivedTemp);
-
+	private void handleMultiResultEnterSuggestion(GeofencingEvent geofencingEvent) {
 		if (geofencingEvent.hasError()) {
 			Log.e(LOG_TAG, "Geofence event has an error!");
 			return;
 		}
 
-		List<Project> filteredOccupations = new ArrayList<>(); //only occupations that are not yet ongoing
+		List<Occupation> filteredOccupations = new ArrayList<>(); //only occupations that are not yet ongoing
 		for (Geofence geofence : geofencingEvent.getTriggeringGeofences()) {
 			Project p = Repositories.occupationRepository().getByGeofence(geofence);
 			if (!isAlreadyOngoing(p, new DateTime(geofencingEvent.getTriggeringLocation().getTime()))) {
@@ -100,10 +93,28 @@ public class SuggestionDialogs {
 		}
 
 		if (!filteredOccupations.isEmpty()) {
-			if(filteredOccupations.size() == 1) {
+			if (filteredOccupations.size() == 1) {
 				showSingleResultEnterDialog(new DateTime(geofencingEvent.getTriggeringLocation().getTime()), filteredOccupations.get(0));
 			} else {
-				showMultiResultEnterDialog(geofencingEvent, filteredOccupations);
+				showMultiResultEnterDialog(new DateTime(geofencingEvent.getTriggeringLocation().getTime()), filteredOccupations);
+			}
+		}
+	}
+
+	private void handleMultiResultEnterSuggestion(BeaconEvent beaconEvent, DateTime triggerTime) {
+		List<Occupation> filteredOccupations = new ArrayList<>(); //only occupations that are not yet ongoing
+
+		for (Occupation oc : beaconEvent.getAction().getOccupations()) {
+			if (!isAlreadyOngoing(oc, triggerTime)) {
+				filteredOccupations.add(oc);
+			}
+		}
+
+		if (!filteredOccupations.isEmpty()) {
+			if (filteredOccupations.size() == 1) {
+				showSingleResultEnterDialog(triggerTime, filteredOccupations.get(0));
+			} else {
+				showMultiResultEnterDialog(triggerTime, filteredOccupations);
 			}
 		}
 	}
@@ -155,8 +166,17 @@ public class SuggestionDialogs {
 
 
 		} else if (action.equals(RC.action.fromNotification.ADD_MULTI_RESULT)) {
-			Intent eventIntent = (Intent) intent.getSerializableExtra(RC.actionExtras.fromNotifications.addMultiResult.GEOFENCE_EVENT);
-			handleMultiResultEnterSuggestion(eventIntent);
+
+			if (intent.hasExtra(RC.actionExtras.fromNotifications.addMultiResult.GEOFENCE_EVENT)) {
+				Intent eventIntent = (Intent) intent.getSerializableExtra(RC.actionExtras.fromNotifications.addMultiResult.GEOFENCE_EVENT);
+				handleMultiResultEnterSuggestion(GeofencingEvent.fromIntent(eventIntent));
+
+			} else if (intent.hasExtra(RC.actionExtras.fromNotifications.addMultiResult.BEACON_EVENT)) {
+				handleMultiResultEnterSuggestion(
+						(BeaconEvent) intent.getSerializableExtra(RC.actionExtras.fromNotifications.addMultiResult.BEACON_EVENT),
+						(DateTime) intent.getSerializableExtra(RC.actionExtras.fromNotifications.addMultiResult.TIME_DETECTED)
+				);
+			}
 
 		} else if (action.equals(RC.action.fromNotification.REMOVE_SINGLE_RESULT)) {
 			final long occId = intent.getLongExtra(RC.actionExtras.fromNotifications.removeSingleResult.OCCUPATION_ID, 0);
@@ -174,7 +194,7 @@ public class SuggestionDialogs {
 
 	}
 
-	private void showMultiResultEnterDialog(final GeofencingEvent geofencingEvent, final List<Project> filteredOccupations) {
+	private void showMultiResultEnterDialog(final DateTime time, final List<Occupation> filteredOccupations) {
 
 		final AtomicInteger selected = new AtomicInteger(-1);
 		new AlertDialog.Builder(context)
@@ -191,7 +211,7 @@ public class SuggestionDialogs {
 						if (selected.get() >= 0 && selected.get() < filteredOccupations.size()) {
 							Occupation selectedOcc = filteredOccupations.get(selected.get());
 							dialog.dismiss();
-							context.handleNewlyRegisteredOccupation(selectedOcc, new DateTime(geofencingEvent.getTriggeringLocation().getTime()).withZone(DateTimeZone.UTC), null);
+							context.handleNewlyRegisteredOccupation(selectedOcc, time.withZone(DateTimeZone.UTC), null);
 						} else {
 							Log.e(LOG_TAG, "Selected index for suggested projects is invalid: " + selected.get());
 						}

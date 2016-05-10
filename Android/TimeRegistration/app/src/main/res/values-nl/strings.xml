@@ -43,4 +43,10 @@
     <string name="dialog_positive_yes">Ja</string>
     <string name="suggestion_already_confirmed_day">Je kan geen bezigheid toevoegen aan en dag dat al bevestigd is</string>
     <string name="menu_logout">Afmelden</string>
+    <string name="notification_remove_single_result_title" translatable="false">%s afwerken?</string>
+    <string name="menu_reports">Rapporten</string>
+    <string name="notification_beacon_add_single_result">U bent in de buurt van \'%s\'.</string>
+    <string name="notification_beacon_remove_single_result">U bent niet langer in de buurt van \'%s\'.</string>
+    <string name="notification_beacon_add_multiple_results">U bent in de buurt van verschillende bezigheden.</string>
+    <string name="notification_beacon_remove_multiple_results">U verlaat verschillende bezigheden.</string>
 </resources>

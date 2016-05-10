@@ -7,7 +7,7 @@ import java.io.Serializable;
 import java.util.HashSet;
 import java.util.Set;
 
-public class Beacon implements Serializable {
+public class BeaconAction implements Serializable {
 
 	private static final long serialVersionUID = 1L;
 
@@ -15,7 +15,10 @@ public class Beacon implements Serializable {
 	private Long id;
 
 	@DatabaseField
-	private Set<Occupation> occupation = new HashSet<>();
+	private Set<Occupation> occupations = new HashSet<>();
+
+	@DatabaseField
+	private String region;
 
 	private BeaconMode mode;
 
@@ -27,12 +30,12 @@ public class Beacon implements Serializable {
 		this.id = id;
 	}
 
-	public Set<Occupation> getOccupation() {
-		return this.occupation;
+	public Set<Occupation> getOccupations() {
+		return this.occupations;
 	}
 
-	public void setOccupation(final Set<Occupation> occupation) {
-		this.occupation = occupation;
+	public void setOccupations(final Set<Occupation> occupations) {
+		this.occupations = occupations;
 	}
 
 	public BeaconMode getMode() {
@@ -43,15 +46,23 @@ public class Beacon implements Serializable {
 		this.mode = mode;
 	}
 
+	public String getRegion() {
+		return region;
+	}
+
+	public void setRegion(String region) {
+		this.region = region;
+	}
+
 	@Override
 	public boolean equals(Object obj) {
 		if (this == obj) {
 			return true;
 		}
-		if (!(obj instanceof Beacon)) {
+		if (!(obj instanceof BeaconAction)) {
 			return false;
 		}
-		Beacon other = (Beacon) obj;
+		BeaconAction other = (BeaconAction) obj;
 		if (id != null) {
 			if (!id.equals(other.id)) {
 				return false;
@@ -70,9 +81,9 @@ public class Beacon implements Serializable {
 
 	@Override
 	public String toString() {
-		return "Beacon{" +
+		return "BeaconAction{" +
 				"id=" + id +
-				", occupation=" + occupation +
+				", occupations=" + occupations +
 				", mode=" + mode +
 				'}';
 	}

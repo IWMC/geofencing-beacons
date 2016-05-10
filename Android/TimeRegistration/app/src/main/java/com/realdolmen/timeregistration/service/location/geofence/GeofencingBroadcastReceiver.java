@@ -1,12 +1,9 @@
 package com.realdolmen.timeregistration.service.location.geofence;
 
-import android.app.Notification;
-import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
-import android.support.annotation.StringRes;
 import android.support.v4.app.NotificationCompat;
 import android.util.Log;
 
@@ -27,6 +24,9 @@ import org.joda.time.DateTime;
 
 import java.util.Arrays;
 import java.util.List;
+
+import static com.realdolmen.timeregistration.util.Util.newNotification;
+import static com.realdolmen.timeregistration.util.Util.notifyUser;
 
 public class GeofencingBroadcastReceiver extends BroadcastReceiver {
 
@@ -100,39 +100,14 @@ public class GeofencingBroadcastReceiver extends BroadcastReceiver {
 		intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
 
 		PendingIntent pendingIntent = PendingIntent.getActivity(context, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
-		NotificationCompat.Builder builder = newNotification(context.getString(R.string.notification_title), context.getString(R.string.notification_enter_single_result, o), pendingIntent);
+		NotificationCompat.Builder builder = newNotification(context, context.getString(R.string.notification_title), context.getString(R.string.notification_enter_single_result, o), pendingIntent);
 
 		if (o instanceof Project) {
 			builder.setContentInfo("#" + ((Project) o).getProjectNr());
 		}
 
-		notifyUser(1, builder);
+		notifyUser(context, 1, builder);
 	}
-
-	//region Notification Builder methods
-	private NotificationCompat.Builder newNotification(@StringRes int title, @StringRes int content, PendingIntent pIntent) {
-		return newNotification(title, content, pIntent, !RC.other.KEEP_NOTIFICATIONS);
-	}
-
-	private NotificationCompat.Builder newNotification(String title, String content, PendingIntent pIntent) {
-		return newNotification(title, content, pIntent, !RC.other.KEEP_NOTIFICATIONS);
-	}
-
-	private NotificationCompat.Builder newNotification(@StringRes int title, @StringRes int content, PendingIntent pIntent, boolean autoCancel) {
-		return newNotification(context.getString(title), context.getString(content), pIntent, autoCancel);
-	}
-
-	private NotificationCompat.Builder newNotification(String title, String content, PendingIntent pIntent, boolean autoCancel) {
-		return Injections.getDefaultBuilder(context)
-				.setSmallIcon(R.drawable.logo_square)
-				.setContentTitle(title)
-				.setContentText(content)
-				.setLights(0xFFed2b29, 1000, 1000)
-				.setDefaults(Notification.DEFAULT_SOUND)
-				.setContentIntent(pIntent)
-				.setAutoCancel(!RC.other.KEEP_NOTIFICATIONS);
-	}
-	//endregion
 
 	Intent newIntent(Class c) {
 		return new Intent(context, c);
@@ -145,13 +120,10 @@ public class GeofencingBroadcastReceiver extends BroadcastReceiver {
 		intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
 
 		PendingIntent pendingIntent = PendingIntent.getActivity(context, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
-		notifyUser(1, newNotification(R.string.notification_title, R.string.notification_enter_multiple_results, pendingIntent));
+		notifyUser(context, 1, newNotification(context, R.string.notification_title, R.string.notification_enter_multiple_results, pendingIntent));
 	}
 
-	void notifyUser(int id, NotificationCompat.Builder builder) {
-		NotificationManager manager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
-		manager.notify(id, builder.build());
-	}
+
 
 	void showSingleResultLeaveNotification(GeofencingEvent geoEvent, Occupation o) {
 		Intent intent = newIntent(DayRegistrationActivity.class);
@@ -161,7 +133,7 @@ public class GeofencingBroadcastReceiver extends BroadcastReceiver {
 		intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
 
 		PendingIntent pendingIntent = PendingIntent.getActivity(context, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
-		notifyUser(2, newNotification(context.getString(R.string.notification_title), context.getString(R.string.notification_leave_single_result, o), pendingIntent));
+		notifyUser(context, 2, newNotification(context, context.getString(R.string.notification_title), context.getString(R.string.notification_leave_single_result, o), pendingIntent));
 
 	}
 
@@ -172,7 +144,7 @@ public class GeofencingBroadcastReceiver extends BroadcastReceiver {
 		intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
 
 		PendingIntent pendingIntent = PendingIntent.getActivity(context, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
-		notifyUser(2, newNotification(R.string.notification_remove_multi_results_title, R.string.notification_remove_multi_results, pendingIntent));
+		notifyUser(context, 2, newNotification(context, R.string.notification_remove_multi_results_title, R.string.notification_remove_multi_results, pendingIntent));
 
 	}
 

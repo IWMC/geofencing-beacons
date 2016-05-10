@@ -74,8 +74,8 @@ public class JPAImportConfig {
         }
 
         Beacon b = new Beacon();
-        b.getOccupation().add(project);
-        b.setMode(new BeaconMode(true, 5));
+        b.getOccupations().add(project);
+        b.setMode(new BeaconMode(true, 1));
 
         entityManager.persist(o);
         entityManager.persist(project);

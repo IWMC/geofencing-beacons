@@ -1,11 +1,16 @@
 package com.realdolmen.timeregistration.ui.dayregistration;
 
+import android.bluetooth.BluetoothAdapter;
 import android.content.BroadcastReceiver;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.ServiceConnection;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.IBinder;
+import android.os.RemoteException;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.design.widget.Snackbar;
@@ -31,9 +36,11 @@ import com.realdolmen.timeregistration.model.Occupation;
 import com.realdolmen.timeregistration.model.Project;
 import com.realdolmen.timeregistration.model.RegisteredOccupation;
 import com.realdolmen.timeregistration.service.ResultCallback;
+import com.realdolmen.timeregistration.service.location.beacon.BeaconDwellManager;
+import com.realdolmen.timeregistration.service.location.beacon.RDBeaconListener;
 import com.realdolmen.timeregistration.service.location.geofence.GeoService;
 import com.realdolmen.timeregistration.service.location.geofence.GeofenceRequester;
-import com.realdolmen.timeregistration.service.repository.BackendService;
+import com.realdolmen.timeregistration.service.repository.BeaconRepository;
 import com.realdolmen.timeregistration.service.repository.LoadCallback;
 import com.realdolmen.timeregistration.service.repository.OccupationRepository;
 import com.realdolmen.timeregistration.service.repository.RegisteredOccupationRepository;
@@ -41,8 +48,10 @@ import com.realdolmen.timeregistration.service.repository.Repositories;
 import com.realdolmen.timeregistration.ui.login.LoginActivity;
 import com.realdolmen.timeregistration.util.DateUtil;
 import com.realdolmen.timeregistration.util.UTC;
+import com.realdolmen.timeregistration.util.Util;
 import com.realdolmen.timeregistration.util.adapters.dayregistration.DayRegistrationFragmentPagerAdapter;
 
+import org.altbeacon.beacon.BeaconConsumer;
 import org.jdeferred.AlwaysCallback;
 import org.jdeferred.Deferred;
 import org.jdeferred.DoneCallback;
@@ -53,6 +62,7 @@ import org.jdeferred.impl.DeferredObject;
 import org.joda.time.DateTime;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import butterknife.Bind;
@@ -70,7 +80,7 @@ import static com.realdolmen.timeregistration.RC.resultCodes.addOccupation.ADD_R
 import static com.realdolmen.timeregistration.RC.resultCodes.addOccupation.EDIT_RESULT_CODE;
 
 
-public class DayRegistrationActivity extends AppCompatActivity {
+public class DayRegistrationActivity extends AppCompatActivity implements BeaconConsumer, ServiceConnection {
 
 	private static final String LOG_TAG = DayRegistrationActivity.class.getSimpleName();
 
@@ -98,6 +108,8 @@ public class DayRegistrationActivity extends AppCompatActivity {
 	public static final String SELECTED_DAY = "SELECTED_DAY";
 	private GeofenceRequester geofenceRequester;
 	private SuggestionDialogs suggestionDialogs = new SuggestionDialogs(this);
+
+	private RDBeaconListener rdBeaconListener;
 
 	private BroadcastReceiver geofenceReceiver = new BroadcastReceiver() {
 		@Override
@@ -147,6 +159,7 @@ public class DayRegistrationActivity extends AppCompatActivity {
 		super.onResume();
 	}
 
+
 	@Override
 	protected void onPause() {
 		unregisterReceiver(geofenceReceiver);
@@ -157,6 +170,35 @@ public class DayRegistrationActivity extends AppCompatActivity {
 		startService(new Intent(this, GeoService.class));
 		geofenceRequester = new GeofenceRequester(this);
 		refreshGeofences(false);
+
+		Util.BluetoothState state = Util.getBluetoothState();
+
+		if (state == Util.BluetoothState.ON) {
+			initBeacons();
+		} else if (state == Util.BluetoothState.OFF) {
+			Intent enableBtIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
+			startActivityForResult(enableBtIntent, RC.resultCodes.bluetooth.ENABLE_REQUEST_RESULT);
+		}
+	}
+
+	private void initBeacons() {
+		Intent beaconDwellManagerService = new Intent(this, BeaconDwellManager.class);
+		startService(beaconDwellManagerService);
+		bindService(beaconDwellManagerService, this, 0);
+		Repositories.loadBeaconRepository(this).done(new DoneCallback<BeaconRepository>() {
+			@Override
+			public void onDone(BeaconRepository result) {
+				Log.d(LOG_TAG, "onDone: " + Arrays.toString(result.getAll().toArray()));
+				result.bind(DayRegistrationActivity.this);
+			}
+		}).fail(new FailCallback<Throwable>() {
+			@Override
+			public void onFail(Throwable result) {
+				Log.d(LOG_TAG, "onFail: Getting beacons failed", result);
+			}
+		});
+
+
 	}
 
 	private void initSupportActionBar() {
@@ -393,6 +435,10 @@ public class DayRegistrationActivity extends AppCompatActivity {
 			if (resultCode == RESULT_OK) {
 				handleUpdatedRegisteredOccupation((RegisteredOccupation) data.getSerializableExtra(EDITING_OCCUPATION));
 			}
+		} else if (requestCode == RC.resultCodes.bluetooth.ENABLE_REQUEST_RESULT) {
+			if (resultCode == RESULT_OK) {
+				initBeacons();
+			}
 		}
 	}
 
@@ -440,6 +486,7 @@ public class DayRegistrationActivity extends AppCompatActivity {
 	public void refreshTabIcons() {
 		for (int i = 0; i < tabLayout.getTabCount(); i++) {
 			final TabLayout.Tab tab = tabLayout.getTabAt(i);
+			tab.setIcon(R.drawable.ic_assignment_late_24dp);
 			getStateIcon(dates.get(i)).done(new DoneCallback<Integer>() {
 				@Override
 				public void onDone(Integer result) {
@@ -501,6 +548,25 @@ public class DayRegistrationActivity extends AppCompatActivity {
 
 	//endregion
 
+
+	@Override
+	protected void onDestroy() {
+		try {
+			Repositories.beaconRepository().unbindAndStop(this);
+		} catch (RemoteException e) {
+			e.printStackTrace();
+		} catch (IllegalStateException ise) {
+			//Repository was not loaded
+		}
+
+		unbindService(this);
+		if(rdBeaconListener != null) {
+			Repositories.beaconRepository().unsubscribe(rdBeaconListener);
+			rdBeaconListener = null;
+		}
+		super.onDestroy();
+	}
+
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
 		if (item.getItemId() == R.id.menu_refresh) {
@@ -542,5 +608,30 @@ public class DayRegistrationActivity extends AppCompatActivity {
 		super.onRestoreInstanceState(savedInstanceState);
 		viewPager.setCurrentItem(savedInstanceState.getInt(SELECTED_DAY));
 	}
+
+	@Override
+	public void onBeaconServiceConnect() {
+		Log.d(LOG_TAG, "onBeaconServiceConnect: starting beacon service");
+		Repositories.beaconRepository().subscribe(rdBeaconListener);
+		try {
+			Repositories.beaconRepository().startMonitor();
+		} catch (RemoteException e) {
+			Log.d(LOG_TAG, "onBeaconServiceConnect: ", e);
+		}
+	}
+
+	@Override
+	public void onServiceConnected(ComponentName name, IBinder service) {
+		if (service instanceof BeaconDwellManager.Binder) {
+			BeaconDwellManager dwellManager = ((BeaconDwellManager.Binder) service).getService();
+			rdBeaconListener = new RDBeaconListener(dwellManager);
+		}
+	}
+
+	@Override
+	public void onServiceDisconnected(ComponentName name) {
+
+	}
+
 	//endregion
 }

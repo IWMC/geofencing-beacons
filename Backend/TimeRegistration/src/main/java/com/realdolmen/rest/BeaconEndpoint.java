@@ -83,12 +83,31 @@ public class BeaconEndpoint {
 
     @GET
     @Produces("application/json")
-    @Authorized
-    public List<Beacon> listAll(@QueryParam("start") Integer startPosition,
+    @Authorized(UserGroup.MANAGEMENT_EMPLOYEE_ONLY)
+    public Response listAll(@QueryParam("start") Integer startPosition,
                                 @QueryParam("max") Integer maxResult) {
-        TypedQuery<Beacon> findAllQuery = em
-                .createQuery("SELECT DISTINCT b FROM Beacon b LEFT JOIN FETCH b.occupation ORDER BY b.id",
-                        Beacon.class);
+        TypedQuery<Beacon> findAllQuery = em.createNamedQuery("Beacon.findAll", Beacon.class);
+        if (startPosition != null) {
+            findAllQuery.setFirstResult(startPosition);
+        }
+
+        if (maxResult != null) {
+            findAllQuery.setMaxResults(maxResult);
+        }
+
+        final List<Beacon> results = findAllQuery.getResultList();
+        results.forEach(Initializable::initialize);
+        return Response.ok(results).build();
+    }
+
+    @Path("me")
+    @GET
+    @Produces("application/json")
+    @Authorized
+    public List<Beacon> listAllForEmployee(@QueryParam("start") Integer startPosition,
+                                           @QueryParam("max") Integer maxResult) {
+        TypedQuery<Beacon> findAllQuery = em.createNamedQuery("Beacon.findAllForEmployee", Beacon.class);
+        findAllQuery.setParameter("employee", sm.findEmployee());
         if (startPosition != null) {
             findAllQuery.setFirstResult(startPosition);
         }

@@ -24,6 +24,7 @@ public interface RC {
 			interface addMultiResult {
 				String GEOFENCE_EVENT = "com.realdolmen.timeregistration.geofencing.ADD_MULTI_RESULT.GEOFENCE_EVENT";
 				String TIME_DETECTED = "com.realdolmen.timeregistration.geofencing.ADD_MULTI_RESULT.TIME_DETECTED";
+				String BEACON_EVENT = "com.realdolmen.timeregistration.geofencing.ADD_MULTI_RESULT.BEACON_EVENT";
 			}
 
 			interface removeSingleResult {
@@ -33,6 +34,8 @@ public interface RC {
 
 			interface removeMultiResult {
 				String GEOFENCE_EVENT = "com.realdolmen.timeregistration.geofencing.REMOVE_MULTI_RESULT.GEOFENCE_EVENT";
+				String BEACON_EVENT = "com.realdolmen.timeregistration.geofencing.REMOVE_MULTI_RESULT.BEACON_EVENT";
+				String TIME_DETECTED = "com.realdolmen.timeregistration.geofencing.REMOVE_MULTI_RESULT.TIME_DETECTED";
 			}
 		}
 
@@ -50,6 +53,9 @@ public interface RC {
 	interface resultCodes {
 		interface addOccupation {
 			int ADD_RESULT_CODE = 1, EDIT_RESULT_CODE = 2;
+		}
+		interface bluetooth {
+			int ENABLE_REQUEST_RESULT = 3;
 		}
 	}
 
@@ -79,7 +85,7 @@ public interface RC {
 
 	interface backend {
 
-		String HOST = "http://10.16.26.85";
+		String HOST = "http://10.16.26.134";
 
 		interface urls {
 			String API_LOGIN_URI = HOST + "/api/user/login",
@@ -90,13 +96,15 @@ public interface RC {
 					API_GET_OCCUPATIONS = HOST + "/api/occupations/available",
 					API_GET_REGISTERED_OCCUPATIONS_RANGE = HOST + "/api/occupations/registration/range?date=%d&count=%d",
 					API_REMOVE_REGISTERED_OCCUPATION = HOST + "/api/occupations/registration/%d",
-					API_GET_BEACONS = HOST + "/api/beacons",
+					API_GET_BEACONS = HOST + "/api/beacons/me",
 					API_GET_BEACON_BY_ID = HOST + "/api/beacons/%s";
 		}
 	}
 
 	interface beacon {
 
+		String UUID = "906bbd3df3264669b1466c225a04d935";
+		boolean MEASURE_RANGE = false;
 	}
 
 	interface dtypes {

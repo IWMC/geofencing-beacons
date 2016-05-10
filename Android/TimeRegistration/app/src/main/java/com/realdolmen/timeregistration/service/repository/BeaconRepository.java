@@ -1,28 +1,146 @@
 package com.realdolmen.timeregistration.service.repository;
 
 import android.content.Context;
+import android.os.RemoteException;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.util.Log;
 
-import com.realdolmen.timeregistration.model.Beacon;
+import com.realdolmen.timeregistration.RC;
+import com.realdolmen.timeregistration.model.BeaconAction;
 import com.realdolmen.timeregistration.service.ResultCallback;
+import com.realdolmen.timeregistration.service.location.beacon.BeaconListener;
 
+import org.altbeacon.beacon.BeaconConsumer;
+import org.altbeacon.beacon.BeaconManager;
+import org.altbeacon.beacon.BeaconParser;
+import org.altbeacon.beacon.Identifier;
+import org.altbeacon.beacon.Region;
 import org.jdeferred.Deferred;
 import org.jdeferred.DoneCallback;
 import org.jdeferred.FailCallback;
 import org.jdeferred.Promise;
 import org.jdeferred.impl.DeferredObject;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.UUID;
 
-public class BeaconRepository extends DataRepository<Beacon, Beacon, Beacon> {
+public class BeaconRepository extends DataRepository<BeaconAction, BeaconAction, BeaconAction> {
 
-	public BeaconRepository(Context context, final LoadCallback callback) {
+	private static final String TAG = BeaconRepository.class.getSimpleName();
+
+	private BeaconManager beaconManager;
+
+	private Region realDolmenRegion;
+
+	private List<BeaconListener> observers = new ArrayList<>();
+
+	private Map<Region, BeaconAction> regionMap = new HashMap<>();
+
+	private BeaconConsumer consumer;
+
+	private BeaconListener defaultListener = new BeaconListener() {
+		@Override
+		public void didEnterRegion(Region region) {
+			onEnterEvent(region);
+		}
+
+		@Override
+		public void didExitRegion(Region region) {
+			onExitEvent(region);
+		}
+
+		@Override
+		public void didRangeBeaconsInRegion(Collection<org.altbeacon.beacon.Beacon> collection, Region region) {
+			onRangeEvent(region, collection);
+		}
+	};
+
+	private void initializeBeacons() {
+		for (BeaconAction beaconAction : data) {
+			Region region = new Region(UUID.randomUUID().toString(), Identifier.parse(RC.beacon.UUID), Identifier.parse(beaconAction.getId().toString()), null);
+			regionMap.put(region, beaconAction);
+		}
+	}
+
+	public BeaconManager getBeaconManager() {
+		return beaconManager;
+	}
+
+	public void subscribe(BeaconListener listener) {
+		if (!observers.contains(listener))
+			observers.add(listener);
+	}
+
+	public void unsubscribe(BeaconListener listener) {
+		if (observers.contains(listener))
+			observers.remove(listener);
+	}
+
+	@Override
+	protected void setup(Context context) {
+		beaconManager = BeaconManager.getInstanceForApplication(context);
+		realDolmenRegion = new Region(UUID.randomUUID().toString(), Identifier.parse(RC.beacon.UUID), null, null);
+		beaconManager.getBeaconParsers().add(new BeaconParser().setBeaconLayout("m:0-3=4c000215,i:4-19,i:20-21,i:22-23,p:24-24"));
+		initializeBeacons();
+	}
+
+	public Region getRegion() {
+		return realDolmenRegion;
+	}
+
+	public void bind(BeaconConsumer consumer) {
+		this.consumer = consumer;
+		beaconManager.bind(consumer);
+		Log.d(TAG, "bind: binding consumer");
+	}
+
+	public void unbind(BeaconConsumer consumer) {
+		beaconManager.unbind(consumer);
+	}
+
+	public void bindAndStart(BeaconConsumer consumer) throws RemoteException {
+		bind(consumer);
+		startMonitor();
+	}
+
+	public void unbindAndStop(BeaconConsumer consumer) throws RemoteException {
+		stopMonitor();
+		beaconManager.unbind(consumer);
+	}
+
+	public void startMonitor() throws RemoteException {
+		Log.d(TAG, "startMonitor: starting beacon monitor");
+		beaconManager.setMonitorNotifier(defaultListener);
+		beaconManager.setRangeNotifier(defaultListener);
+		for(Region r : regionMap.keySet()) {
+			beaconManager.startRangingBeaconsInRegion(r);
+			beaconManager.startMonitoringBeaconsInRegion(r);
+		}
+
+	}
+
+	public void stopMonitor() throws RemoteException {
+		Log.d(TAG, "stopMonitor: stopping beacon monitor");
+		for(Region r : regionMap.keySet()) {
+			beaconManager.stopRangingBeaconsInRegion(r);
+			beaconManager.stopMonitoringBeaconsInRegion(r);
+		}
+	}
+
+	public BeaconRepository(final Context context, final LoadCallback callback) {
+		super(context);
 		reload(context).done(new DoneCallback<BeaconRepository>() {
 			@Override
 			public void onDone(BeaconRepository result) {
+				setup(context);
 				if (callback != null)
 					callback.onResult(LoadCallback.Result.SUCCESS, null);
+
 			}
 		}).fail(new FailCallback<Throwable>() {
 			@Override
@@ -36,23 +154,67 @@ public class BeaconRepository extends DataRepository<Beacon, Beacon, Beacon> {
 	}
 
 	@Override
-	public void save(@NonNull Context context, @NonNull Beacon element, @Nullable ResultCallback<Beacon> callback) {
+	public void save(@NonNull Context context, @NonNull BeaconAction element, @Nullable ResultCallback<BeaconAction> callback) {
 
 	}
 
 	@Override
-	public void remove(@NonNull Context context, @NonNull Beacon element, @Nullable ResultCallback<Beacon> callback) {
+	public void remove(@NonNull Context context, @NonNull BeaconAction element, @Nullable ResultCallback<BeaconAction> callback) {
 
+	}
+
+	@Override
+	public void clear() {
+		super.clear();
+	}
+
+
+	public Promise onEnterEvent(Region region) {
+		final Deferred def = new DeferredObject<>();
+		for (BeaconListener l : observers) {
+			l.didEnterRegion(region);
+		}
+		if (regionMap.containsKey(region)) {
+			BeaconAction beaconAction = regionMap.get(region);
+			for (BeaconListener l : observers) {
+				l.onEnterOccupation(new ArrayList<>(beaconAction.getOccupations()));
+			}
+		}
+		return def.promise();
+	}
+
+	public Promise onExitEvent(Region region) {
+		final Deferred def = new DeferredObject<>();
+		for (BeaconListener l : observers) {
+			l.didExitRegion(region);
+		}
+
+		if (regionMap.containsKey(region)) {
+			BeaconAction beaconAction = regionMap.get(region);
+			for (BeaconListener l : observers) {
+				l.onExitOccupation(new ArrayList<>(beaconAction.getOccupations()));
+			}
+		}
+		return def.promise();
+	}
+
+	public Promise onRangeEvent(Region r, Collection<org.altbeacon.beacon.Beacon> beacons) {
+		final Deferred def = new DeferredObject<>();
+		for (BeaconListener l : observers) {
+			l.didRangeBeaconsInRegion(beacons, r);
+		}
+		return def.promise();
 	}
 
 	@Override
 	public Promise<BeaconRepository, Throwable, Object> reload(Context context) {
 		final Deferred<BeaconRepository, Throwable, Object> def = new DeferredObject<>();
-		BackendService.with(context).getBeacons().done(new DoneCallback<List<Beacon>>() {
+		BackendService.with(context).getBeacons().done(new DoneCallback<List<BeaconAction>>() {
 			@Override
-			public void onDone(List<Beacon> result) {
-				data.clear();
+			public void onDone(List<BeaconAction> result) {
+				clear();
 				data.addAll(result);
+				setLoaded(true, null);
 				def.resolve(BeaconRepository.this);
 			}
 		}).fail(new FailCallback<Throwable>() {
@@ -65,13 +227,17 @@ public class BeaconRepository extends DataRepository<Beacon, Beacon, Beacon> {
 	}
 
 	@Override
-	public Beacon getById(long id) {
-		for (Beacon beacon : data) {
-			if(beacon.getId() == id) {
-				return beacon;
+	public BeaconAction getById(long id) {
+		for (BeaconAction beaconAction : data) {
+			if (beaconAction.getId() == id) {
+				return beaconAction;
 			}
 		}
 
 		return null;
+	}
+
+	public BeaconAction getByRegion(Region region) {
+		return regionMap.get(region);
 	}
 }

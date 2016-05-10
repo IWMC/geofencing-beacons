@@ -26,6 +26,7 @@
         </activity>
 
         <service android:name=".service.location.geofence.GeoService" />
+        <service android:name=".service.location.beacon.BeaconDwellManager" />
 
         <receiver android:name=".service.location.geofence.GeofencingBroadcastReceiver" android:exported="false">
             <intent-filter>
