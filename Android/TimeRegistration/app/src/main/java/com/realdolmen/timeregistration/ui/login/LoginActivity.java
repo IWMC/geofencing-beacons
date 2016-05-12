@@ -18,7 +18,7 @@ import com.realdolmen.timeregistration.R;
 import com.realdolmen.timeregistration.RC;
 import com.realdolmen.timeregistration.service.GenericVolleyError;
 import com.realdolmen.timeregistration.service.data.UserManager;
-import com.realdolmen.timeregistration.service.location.beacon.BeaconDwellService2;
+import com.realdolmen.timeregistration.service.location.beacon.BeaconDwellService;
 import com.realdolmen.timeregistration.ui.dayregistration.DayRegistrationActivity;
 
 import org.jdeferred.DoneCallback;
@@ -45,7 +45,7 @@ public class LoginActivity extends AppCompatActivity implements ServiceConnectio
 	private boolean loggingIn;
 	private boolean ignoreDismiss = false;
 
-	private BeaconDwellService2 dwellManager;
+	private BeaconDwellService dwellManager;
 	private boolean canNotifyService;
 
 	@Override
@@ -107,7 +107,7 @@ public class LoginActivity extends AppCompatActivity implements ServiceConnectio
 		Log.d(TAG, "onSuccessfulLogin: Login successful");
 		finish();
 		if(getIntent() != null && getIntent().getAction() != null && getIntent().getAction().equals(RC.action.login.RE_AUTHENTICATION)) {
-			bindService(new Intent(this, BeaconDwellService2.class), this, 0);
+			bindService(new Intent(this, BeaconDwellService.class), this, 0);
 			canNotifyService = true;
 		} else {
 			startActivity(new Intent(getApplicationContext(), DayRegistrationActivity.class));
@@ -216,8 +216,8 @@ public class LoginActivity extends AppCompatActivity implements ServiceConnectio
 
 	@Override
 	public void onServiceConnected(ComponentName name, IBinder service) {
-		if (service instanceof BeaconDwellService2.Binder) {
-			dwellManager = ((BeaconDwellService2.Binder) service).getService();
+		if (service instanceof BeaconDwellService.Binder) {
+			dwellManager = ((BeaconDwellService.Binder) service).getService();
 		}
 
 		if(canNotifyService) {

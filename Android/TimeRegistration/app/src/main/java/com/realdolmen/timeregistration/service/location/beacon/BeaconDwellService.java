@@ -1,43 +1,82 @@
 package com.realdolmen.timeregistration.service.location.beacon;
 
-import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Intent;
 import android.os.Handler;
 import android.os.IBinder;
 import android.support.annotation.Nullable;
-import android.support.v4.app.NotificationCompat;
+import android.util.Log;
 
-import com.realdolmen.timeregistration.R;
 import com.realdolmen.timeregistration.RC;
-import com.realdolmen.timeregistration.model.Occupation;
+import com.realdolmen.timeregistration.service.data.UserManager;
+import com.realdolmen.timeregistration.service.repository.BeaconRepository;
+import com.realdolmen.timeregistration.service.repository.RegisteredOccupationRepository;
 import com.realdolmen.timeregistration.service.repository.Repositories;
-import com.realdolmen.timeregistration.ui.dayregistration.DayRegistrationActivity;
-import com.realdolmen.timeregistration.util.Util;
+import com.realdolmen.timeregistration.ui.login.LoginActivity;
+import com.realdolmen.timeregistration.util.exception.MissingTokenException;
 
-import org.altbeacon.beacon.Beacon;
-import org.joda.time.DateTime;
-import org.joda.time.DateTimeZone;
-import org.joda.time.Seconds;
+import org.altbeacon.beacon.BeaconConsumer;
+import org.altbeacon.beacon.BeaconManager;
+import org.altbeacon.beacon.BeaconParser;
+import org.altbeacon.beacon.Region;
+import org.altbeacon.beacon.powersave.BackgroundPowerSaver;
+import org.jdeferred.Deferred;
+import org.jdeferred.DoneCallback;
+import org.jdeferred.FailCallback;
+import org.jdeferred.Promise;
+import org.jdeferred.impl.DeferredObject;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
-public class BeaconDwellService extends Service implements Runnable {
+public class BeaconDwellService extends Service implements Runnable, BeaconConsumer {
 
 	private static final String TAG = BeaconDwellService.class.getSimpleName();
 
-	private Handler timerHandler = new Handler();
-	private Map<BeaconEvent, DateTime> registeredEvents = new HashMap<>();
-	private Map<BeaconEvent, Double> recordedDistances = new HashMap<>();
+	private BackgroundPowerSaver beaconPowerSaver;
+	private static final BeaconParser parser = new BeaconParser().setBeaconLayout("m:0-3=4c000215,i:4-19,i:20-21,i:22-23,p:24-24");
 
+	private Handler timerHandler = new Handler();
 	private android.os.Binder binder = new Binder();
+	private BeaconEventHandler eventHandler;
+	private BeaconListener listener;
+	private BeaconManager beaconManager;
+	private boolean initialized = false;
+
+	private static final int PROCESS_DELAY = 2000;
+	private int failedLogins = 0;
 
 	@Override
 	public int onStartCommand(Intent intent, int flags, int startId) {
 		return START_STICKY;
+	}
+
+	@Override
+	public void run() {
+		eventHandler.process();
+		timerHandler.postDelayed(BeaconDwellService.this, PROCESS_DELAY);
+	}
+
+	@Override
+	public void onBeaconServiceConnect() {
+		beaconManager.setMonitorNotifier(listener);
+		beaconManager.setRangeNotifier(listener);
+		try {
+			for (Region r : repo().getRegionMap().keySet()) {
+				beaconManager.stopMonitoringBeaconsInRegion(r);
+				beaconManager.stopRangingBeaconsInRegion(r);
+
+				beaconManager.startRangingBeaconsInRegion(r);
+				beaconManager.startMonitoringBeaconsInRegion(r);
+			}
+		} catch (Exception e) {
+			Log.e(TAG, "onBeaconServiceConnect: error when trying to add regions to monitors", e);
+		}
+	}
+
+	private BeaconRepository repo() {
+		return Repositories.beaconRepository();
+	}
+
+	public void positiveLoginResult() {
+		init();
 	}
 
 	public class Binder extends android.os.Binder {
@@ -46,155 +85,106 @@ public class BeaconDwellService extends Service implements Runnable {
 		}
 	}
 
-	public BeaconDwellService() {
-		timerHandler.postDelayed(this, 1000);
-	}
-
 	@Nullable
 	@Override
 	public IBinder onBind(Intent intent) {
 		return binder;
 	}
 
-	public void registerEvent(BeaconEvent event) {
-		if (event.getType() == BeaconEvent.BeaconEventType.EXIT) {
-			BeaconEvent matching = getMatchingEnterEvent(event);
-			if (matching != null) {
-				if (recordedDistances.containsKey(matching)) {
-					if (recordedDistances.get(matching) > matching.getAction().getMode().getMeters()) {
-						//ignore
-					} else {
-						registeredEvents.remove(matching);
-					}
-				} else {
-					registeredEvents.remove(matching);
-				}
-			} else {
-				registeredEvents.put(event, new DateTime());
-			}
-		} else if (event.getType() == BeaconEvent.BeaconEventType.ENTER) {
-			registeredEvents.put(event, new DateTime());
-		} else if (event.getType() == BeaconEvent.BeaconEventType.RANGE) {
-			//find enter event for region
-			if (!RC.beacon.MEASURE_RANGE) {
-				return;
-			}
-			BeaconEvent enterEvent = getMatchingEnterEvent(event);
-			if (enterEvent != null) {
-				//set last recorded distance
-				if (enterEvent.getAction().getMode().isRangeMode()) {
-					List<Beacon> beacons = ((RangeBeaconEvent) event).getBeacons();
-					if (beacons.size() > 0)
-						recordedDistances.put(enterEvent, beacons.get(0).getDistance());
-				}
-			}
+	@Override
+	public void onCreate() {
+		super.onCreate();
+		if (RC.beacon.SAVE_POWER) {
+			beaconPowerSaver = new BackgroundPowerSaver(getApplicationContext());
+			Log.d(TAG, "onCreate: Enabling power saving...");
 		}
+		init();
 	}
 
-	private BeaconEvent getMatchingEnterEvent(BeaconEvent source) {
-		BeaconEvent match = null;
-		for (BeaconEvent event : registeredEvents.keySet()) {
-			if (event.getType() == BeaconEvent.BeaconEventType.ENTER && event.getRegion().equals(source.getRegion())) {
-				match = event;
-				break;
-			}
+	public void init() {
+		if (initialized || failedLogins >= 3) {
+			return;
 		}
-		return match;
+		Log.d(TAG, "init: Loading beacon repo");
+		loadRepo().done(new DoneCallback<BeaconRepository>() {
+			@Override
+			public void onDone(BeaconRepository result) {
+				failedLogins = 0;
+				initialized = true;
+				eventHandler = new BeaconEventHandler(getApplicationContext());
+				listener = new RDBeaconListener(eventHandler);
+				Log.d(TAG, "onDone: Starting beacon monitor");
+				beaconManager = BeaconManager.getInstanceForApplication(getApplicationContext());
+				beaconManager.bind(BeaconDwellService.this);
+				if (!beaconManager.getBeaconParsers().contains(parser)) {
+					beaconManager.getBeaconParsers().add(parser);
+				}
+				timerHandler.postDelayed(BeaconDwellService.this, PROCESS_DELAY);
+			}
+		}).fail(new FailCallback<Throwable>() {
+			@Override
+			public void onFail(Throwable result) {
+				if (result instanceof MissingTokenException) {
+					failedLogins += 1;
+					tryResolve();
+				}
+			}
+		});
+	}
+
+	private void tryResolve() {
+		Intent intent = new Intent(getApplicationContext(), LoginActivity.class);
+		intent.setAction(RC.action.login.RE_AUTHENTICATION);
+		startActivity(intent);
 	}
 
 	@Override
-	public void run() {
+	public void onDestroy() {
+		if (beaconManager != null && beaconManager.isAnyConsumerBound()) {
+			beaconManager.unbind(this);
+		}
 
-		List<BeaconEvent> triggeredEvents = new ArrayList<>();
-		List<BeaconEvent> silentRemove = new ArrayList<>();
+		if (eventHandler != null) {
+			eventHandler.onDestroy();
+		}
+		super.onDestroy();
+	}
 
-		for (Map.Entry<BeaconEvent, DateTime> entry : registeredEvents.entrySet()) {
-			int tresholdInSeconds = entry.getKey().getAgeTreshold();
-			int secondsDifference = Seconds.secondsBetween(entry.getValue(), new DateTime()).getSeconds();
-
-			if (secondsDifference >= tresholdInSeconds) {
-				if (recordedDistances.containsKey(entry.getKey())) {
-					if (entry.getKey().getAction().getMode().getMeters() >= recordedDistances.get(entry.getKey())) {
-						triggeredEvents.add(entry.getKey());
-					} else {
-						//distance greater
-						if (entry.getKey().getType() == BeaconEvent.BeaconEventType.ENTER) {
-							triggeredEvents.add(new BeaconEvent(BeaconEvent.BeaconEventType.EXIT, entry.getKey().getAction(), entry.getKey().getRegion()));
-							silentRemove.add(entry.getKey());
-						}
+	public Promise<BeaconRepository, Throwable, Void> loadRepo() {
+		final Deferred<BeaconRepository, Throwable, Void> def = new DeferredObject<>();
+		UserManager.with(getApplicationContext()).checkLocalLogin().done(new DoneCallback<Void>() {
+			@Override
+			public void onDone(Void result) {
+				Repositories.loadBeaconRepository(getApplicationContext()).done(new DoneCallback<BeaconRepository>() {
+					@Override
+					public void onDone(final BeaconRepository result) {
+						Repositories.loadRegisteredOccupationRepository(getApplicationContext()).done(new DoneCallback<RegisteredOccupationRepository>() {
+							@Override
+							public void onDone(RegisteredOccupationRepository r2) {
+								def.resolve(result);
+							}
+						}).fail(new FailCallback<Object>() {
+							@Override
+							public void onFail(Object result) {
+								def.reject(new IllegalStateException("Could not load registered occupations!"));
+							}
+						});
 					}
-				} else {
-					triggeredEvents.add(entry.getKey());
-				}
+				}).fail(new FailCallback<Throwable>() {
+					@Override
+					public void onFail(Throwable result) {
+						def.reject(result);
+					}
+				});
 			}
-		}
-
-		for (BeaconEvent event : triggeredEvents) {
-			DateTime time = registeredEvents.remove(event);
-			trigger(event, time);
-		}
-
-		for (BeaconEvent silent : silentRemove) {
-			registeredEvents.remove(silent);
-			recordedDistances.remove(silent);
-		}
-
-		timerHandler.postDelayed(this, 1000);
+		}).fail(new FailCallback<Throwable>() {
+			@Override
+			public void onFail(Throwable result) {
+				def.reject(result);
+			}
+		});
+		return def.promise();
 	}
 
-	private void trigger(BeaconEvent event, DateTime time) {
-
-		Intent intent = new Intent(getApplicationContext(), DayRegistrationActivity.class);
-		if (event.getAction().getOccupations().size() == 1 && event.getType() == BeaconEvent.BeaconEventType.ENTER) {
-			Occupation o = (Occupation) event.getAction().getOccupations().toArray()[0];
-			if (Repositories.registeredOccupationRepository().isAlreadyOngoing(o, time.withZone(DateTimeZone.UTC))) {
-				return;
-			}
-			intent.setAction(RC.action.fromNotification.ADD_SINGLE_RESULT);
-			intent.putExtra(RC.actionExtras.fromNotifications.addSingleResult.OCCUPATION_ID, o.getId());
-			intent.putExtra(RC.actionExtras.fromNotifications.addSingleResult.TIME_DETECTED, time);
-		}
-
-		if (event.getAction().getOccupations().size() == 1 && event.getType() == BeaconEvent.BeaconEventType.EXIT) {
-			Occupation o = (Occupation) event.getAction().getOccupations().toArray()[0];
-			if (!Repositories.registeredOccupationRepository().isAlreadyOngoing(o, time.withZone(DateTimeZone.UTC))) {
-				return;
-			}
-			intent.setAction(RC.action.fromNotification.REMOVE_SINGLE_RESULT);
-			intent.putExtra(RC.actionExtras.fromNotifications.removeSingleResult.OCCUPATION_ID, o.getId());
-			intent.putExtra(RC.actionExtras.fromNotifications.removeSingleResult.TIME_DETECTED, time);
-		}
-
-		if (event.getAction().getOccupations().size() > 1 && event.getType() == BeaconEvent.BeaconEventType.ENTER) {
-			intent.setAction(RC.action.fromNotification.ADD_MULTI_RESULT);
-			intent.putExtra(RC.actionExtras.fromNotifications.addMultiResult.BEACON_EVENT, event);
-			intent.putExtra(RC.actionExtras.fromNotifications.addMultiResult.TIME_DETECTED, time);
-		}
-
-		if (event.getAction().getOccupations().size() > 1 && event.getType() == BeaconEvent.BeaconEventType.ENTER) {
-			intent.setAction(RC.action.fromNotification.REMOVE_MULTI_RESULT);
-			intent.putExtra(RC.actionExtras.fromNotifications.removeMultiResult.BEACON_EVENT, event);
-			intent.putExtra(RC.actionExtras.fromNotifications.removeMultiResult.TIME_DETECTED, time);
-		}
-
-		intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
-
-		PendingIntent pendingIntent = PendingIntent.getActivity(getApplicationContext(), 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
-		String content = "";
-		if (event.getType() == BeaconEvent.BeaconEventType.ENTER) {
-			if (event.getAction().getOccupations().size() == 1) {
-				content = getString(R.string.notification_beacon_add_single_result, event.getAction().getOccupations().toArray()[0]);
-			} else if (event.getAction().getOccupations().size() > 1) {
-				content = getString(R.string.notification_beacon_add_multiple_results);
-			}
-		} else {
-			if (event.getAction().getOccupations().size() == 1) {
-				content = getString(R.string.notification_beacon_remove_single_result, event.getAction().getOccupations().toArray()[0]);
-			} else if (event.getAction().getOccupations().size() > 1) {
-				content = getString(R.string.notification_beacon_remove_multiple_results);
-			}
-		}
-		NotificationCompat.Builder builder = Util.newNotification(getApplicationContext(), getString(R.string.notification_title), content, pendingIntent);
-		Util.notifyUser(getApplicationContext(), event.getRegion().getId2().toInt(), builder);
-	}
 }
+

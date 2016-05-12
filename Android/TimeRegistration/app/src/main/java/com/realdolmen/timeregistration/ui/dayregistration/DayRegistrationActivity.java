@@ -2,14 +2,11 @@ package com.realdolmen.timeregistration.ui.dayregistration;
 
 import android.bluetooth.BluetoothAdapter;
 import android.content.BroadcastReceiver;
-import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.content.ServiceConnection;
 import android.os.Bundle;
 import android.os.Handler;
-import android.os.IBinder;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.design.widget.Snackbar;
@@ -35,7 +32,7 @@ import com.realdolmen.timeregistration.model.Occupation;
 import com.realdolmen.timeregistration.model.Project;
 import com.realdolmen.timeregistration.model.RegisteredOccupation;
 import com.realdolmen.timeregistration.service.ResultCallback;
-import com.realdolmen.timeregistration.service.location.beacon.BeaconDwellService2;
+import com.realdolmen.timeregistration.service.location.beacon.BeaconDwellService;
 import com.realdolmen.timeregistration.service.location.geofence.GeoService;
 import com.realdolmen.timeregistration.service.location.geofence.GeofenceRequester;
 import com.realdolmen.timeregistration.service.repository.LoadCallback;
@@ -75,7 +72,8 @@ import static com.realdolmen.timeregistration.RC.resultCodes.addOccupation.ADD_R
 import static com.realdolmen.timeregistration.RC.resultCodes.addOccupation.EDIT_RESULT_CODE;
 
 
-public class DayRegistrationActivity extends AppCompatActivity implements ServiceConnection {
+@SuppressWarnings("ConstantConditions")
+public class DayRegistrationActivity extends AppCompatActivity {
 
 	private static final String LOG_TAG = DayRegistrationActivity.class.getSimpleName();
 
@@ -98,7 +96,7 @@ public class DayRegistrationActivity extends AppCompatActivity implements Servic
 	//endregion
 
 	private boolean doubleBack;
-	private DayRegistrationFragmentPagerAdapter pagerAdapter;
+	@SuppressWarnings("FieldCanBeLocal") private DayRegistrationFragmentPagerAdapter pagerAdapter;
 	private List<DateTime> dates = new ArrayList<>();
 	public static final String SELECTED_DAY = "SELECTED_DAY";
 	private GeofenceRequester geofenceRequester;
@@ -175,11 +173,12 @@ public class DayRegistrationActivity extends AppCompatActivity implements Servic
 	}
 
 	private void initBeacons() {
-		Intent beaconDwellManagerService2 = new Intent(this, BeaconDwellService2.class);
+		Intent beaconDwellManagerService2 = new Intent(this, BeaconDwellService.class);
 		startService(beaconDwellManagerService2);
-		bindService(beaconDwellManagerService2, this, 0);
+//		bindService(beaconDwellManagerService2, this, 0);
 	}
 
+	@SuppressWarnings("ConstantConditions")
 	private void initSupportActionBar() {
 		setSupportActionBar(bar);
 		getSupportActionBar().setTitle(R.string.day_registration_title);
@@ -190,7 +189,7 @@ public class DayRegistrationActivity extends AppCompatActivity implements Servic
 
 	private void initViewPager() {
 		viewPager.setSwipePagingEnabled(false);
-		viewPager.setOnPageChangeListener(new ViewPager.OnPageChangeListener() {
+		viewPager.addOnPageChangeListener(new ViewPager.OnPageChangeListener() {
 			@Override
 			public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
 
@@ -228,6 +227,7 @@ public class DayRegistrationActivity extends AppCompatActivity implements Servic
 		return true;
 	}
 
+	@SuppressWarnings("ConstantConditions")
 	@Override
 	public void onBackPressed() {
 		if (doubleBack) {
@@ -530,7 +530,7 @@ public class DayRegistrationActivity extends AppCompatActivity implements Servic
 
 	@Override
 	protected void onDestroy() {
-		unbindService(this);
+//		unbindService(this);
 		super.onDestroy();
 	}
 
@@ -576,16 +576,5 @@ public class DayRegistrationActivity extends AppCompatActivity implements Servic
 		viewPager.setCurrentItem(savedInstanceState.getInt(SELECTED_DAY));
 	}
 
-	@Override
-	public void onServiceConnected(ComponentName name, IBinder service) {
-		if (service instanceof BeaconDwellService2.Binder) {
-			BeaconDwellService2 dwellManager = ((BeaconDwellService2.Binder) service).getService();
-		}
-	}
-
-	@Override
-	public void onServiceDisconnected(ComponentName name) {
-
-	}
 	//endregion
 }
