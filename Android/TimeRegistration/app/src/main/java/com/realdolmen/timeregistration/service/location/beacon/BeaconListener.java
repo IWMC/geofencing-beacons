@@ -11,7 +11,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.UUID;
 
-public class BeaconListener implements RangeNotifier, MonitorNotifier {
+public abstract class BeaconListener implements RangeNotifier, MonitorNotifier {
 
 	private String id;
 

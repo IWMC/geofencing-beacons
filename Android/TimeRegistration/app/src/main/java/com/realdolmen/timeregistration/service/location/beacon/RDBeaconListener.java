@@ -10,31 +10,31 @@ import java.util.Collection;
 
 public class RDBeaconListener extends BeaconListener {
 
-	private BeaconDwellManager dwellManager;
+	private BeaconEventHandler eventHandler;
 
-	public RDBeaconListener(BeaconDwellManager dwellManager) {
-		super("rdbeaconlistener");
-		this.dwellManager = dwellManager;
+	public RDBeaconListener(BeaconEventHandler eventHandler) {
+		super("com.realdolmen.timeregistration.beacon.listener");
+		this.eventHandler = eventHandler;
 	}
 
 	@Override
 	public void didEnterRegion(Region region) {
 		BeaconAction action = Repositories.beaconRepository().getByRegion(region);
-		if (action != null && dwellManager != null)
-			dwellManager.registerEvent(new BeaconEvent(BeaconEvent.BeaconEventType.ENTER, action, region));
+		if (action != null && eventHandler != null)
+			eventHandler.registerEvent(new BeaconEvent(BeaconEvent.BeaconEventType.ENTER, action, region));
 	}
 
 	@Override
 	public void didExitRegion(Region region) {
 		BeaconAction action = Repositories.beaconRepository().getByRegion(region);
-		if (action != null && dwellManager != null)
-			dwellManager.registerEvent(new BeaconEvent(BeaconEvent.BeaconEventType.EXIT, action, region));
+		if (action != null && eventHandler != null)
+			eventHandler.registerEvent(new BeaconEvent(BeaconEvent.BeaconEventType.EXIT, action, region));
 	}
 
 	@Override
 	public void didRangeBeaconsInRegion(Collection<Beacon> collection, Region region) {
 		BeaconAction action = Repositories.beaconRepository().getByRegion(region);
-		if (action != null && dwellManager != null)
-			dwellManager.registerEvent(new RangeBeaconEvent(BeaconEvent.BeaconEventType.RANGE, action, region, collection));
+		if (action != null && eventHandler != null)
+			eventHandler.registerEvent(new RangeBeaconEvent(BeaconEvent.BeaconEventType.RANGE, action, region, collection));
 	}
 }

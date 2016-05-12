@@ -33,8 +33,6 @@ public class BeaconRepository extends DataRepository<BeaconAction, BeaconAction,
 
 	private static final String TAG = BeaconRepository.class.getSimpleName();
 
-	private BeaconManager beaconManager;
-
 	private Region realDolmenRegion;
 
 	private List<BeaconListener> observers = new ArrayList<>();
@@ -42,6 +40,7 @@ public class BeaconRepository extends DataRepository<BeaconAction, BeaconAction,
 	private Map<Region, BeaconAction> regionMap = new HashMap<>();
 
 	private BeaconConsumer consumer;
+	private Context context;
 
 	private BeaconListener defaultListener = new BeaconListener() {
 		@Override
@@ -67,8 +66,12 @@ public class BeaconRepository extends DataRepository<BeaconAction, BeaconAction,
 		}
 	}
 
+	public Map<Region, BeaconAction> getRegionMap() {
+		return regionMap;
+	}
+
 	public BeaconManager getBeaconManager() {
-		return beaconManager;
+		return BeaconManager.getInstanceForApplication(context);
 	}
 
 	public void subscribe(BeaconListener listener) {
@@ -83,9 +86,9 @@ public class BeaconRepository extends DataRepository<BeaconAction, BeaconAction,
 
 	@Override
 	protected void setup(Context context) {
-		beaconManager = BeaconManager.getInstanceForApplication(context);
+		this.context = context;
 		realDolmenRegion = new Region(UUID.randomUUID().toString(), Identifier.parse(RC.beacon.UUID), null, null);
-		beaconManager.getBeaconParsers().add(new BeaconParser().setBeaconLayout("m:0-3=4c000215,i:4-19,i:20-21,i:22-23,p:24-24"));
+		getBeaconManager().getBeaconParsers().add(new BeaconParser().setBeaconLayout("m:0-3=4c000215,i:4-19,i:20-21,i:22-23,p:24-24"));
 		initializeBeacons();
 	}
 
@@ -93,33 +96,13 @@ public class BeaconRepository extends DataRepository<BeaconAction, BeaconAction,
 		return realDolmenRegion;
 	}
 
-	public void bind(BeaconConsumer consumer) {
-		this.consumer = consumer;
-		beaconManager.bind(consumer);
-		Log.d(TAG, "bind: binding consumer");
-	}
-
-	public void unbind(BeaconConsumer consumer) {
-		beaconManager.unbind(consumer);
-	}
-
-	public void bindAndStart(BeaconConsumer consumer) throws RemoteException {
-		bind(consumer);
-		startMonitor();
-	}
-
-	public void unbindAndStop(BeaconConsumer consumer) throws RemoteException {
-		stopMonitor();
-		beaconManager.unbind(consumer);
-	}
-
 	public void startMonitor() throws RemoteException {
 		Log.d(TAG, "startMonitor: starting beacon monitor");
-		beaconManager.setMonitorNotifier(defaultListener);
-		beaconManager.setRangeNotifier(defaultListener);
+		getBeaconManager().setMonitorNotifier(defaultListener);
+		getBeaconManager().setRangeNotifier(defaultListener);
 		for(Region r : regionMap.keySet()) {
-			beaconManager.startRangingBeaconsInRegion(r);
-			beaconManager.startMonitoringBeaconsInRegion(r);
+			getBeaconManager().startRangingBeaconsInRegion(r);
+			getBeaconManager().startMonitoringBeaconsInRegion(r);
 		}
 
 	}
@@ -127,8 +110,8 @@ public class BeaconRepository extends DataRepository<BeaconAction, BeaconAction,
 	public void stopMonitor() throws RemoteException {
 		Log.d(TAG, "stopMonitor: stopping beacon monitor");
 		for(Region r : regionMap.keySet()) {
-			beaconManager.stopRangingBeaconsInRegion(r);
-			beaconManager.stopMonitoringBeaconsInRegion(r);
+			getBeaconManager().stopRangingBeaconsInRegion(r);
+			getBeaconManager().stopMonitoringBeaconsInRegion(r);
 		}
 	}
 

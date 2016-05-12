@@ -36,7 +36,7 @@ import com.realdolmen.timeregistration.model.Occupation;
 import com.realdolmen.timeregistration.model.Project;
 import com.realdolmen.timeregistration.model.RegisteredOccupation;
 import com.realdolmen.timeregistration.service.ResultCallback;
-import com.realdolmen.timeregistration.service.location.beacon.BeaconDwellManager;
+import com.realdolmen.timeregistration.service.location.beacon.BeaconDwellService;
 import com.realdolmen.timeregistration.service.location.beacon.RDBeaconListener;
 import com.realdolmen.timeregistration.service.location.geofence.GeoService;
 import com.realdolmen.timeregistration.service.location.geofence.GeofenceRequester;
@@ -109,8 +109,6 @@ public class DayRegistrationActivity extends AppCompatActivity implements Beacon
 	private GeofenceRequester geofenceRequester;
 	private SuggestionDialogs suggestionDialogs = new SuggestionDialogs(this);
 
-	private RDBeaconListener rdBeaconListener;
-
 	private BroadcastReceiver geofenceReceiver = new BroadcastReceiver() {
 		@Override
 		public void onReceive(Context context, Intent intent) {
@@ -182,7 +180,7 @@ public class DayRegistrationActivity extends AppCompatActivity implements Beacon
 	}
 
 	private void initBeacons() {
-		Intent beaconDwellManagerService = new Intent(this, BeaconDwellManager.class);
+		Intent beaconDwellManagerService = new Intent(this, BeaconDwellService.class);
 		startService(beaconDwellManagerService);
 		bindService(beaconDwellManagerService, this, 0);
 		Repositories.loadBeaconRepository(this).done(new DoneCallback<BeaconRepository>() {
@@ -553,6 +551,10 @@ public class DayRegistrationActivity extends AppCompatActivity implements Beacon
 	protected void onDestroy() {
 		try {
 			Repositories.beaconRepository().unbindAndStop(this);
+			if(rdBeaconListener != null) {
+				Repositories.beaconRepository().unsubscribe(rdBeaconListener);
+				rdBeaconListener = null;
+			}
 		} catch (RemoteException e) {
 			e.printStackTrace();
 		} catch (IllegalStateException ise) {
@@ -560,10 +562,6 @@ public class DayRegistrationActivity extends AppCompatActivity implements Beacon
 		}
 
 		unbindService(this);
-		if(rdBeaconListener != null) {
-			Repositories.beaconRepository().unsubscribe(rdBeaconListener);
-			rdBeaconListener = null;
-		}
 		super.onDestroy();
 	}
 
@@ -622,8 +620,8 @@ public class DayRegistrationActivity extends AppCompatActivity implements Beacon
 
 	@Override
 	public void onServiceConnected(ComponentName name, IBinder service) {
-		if (service instanceof BeaconDwellManager.Binder) {
-			BeaconDwellManager dwellManager = ((BeaconDwellManager.Binder) service).getService();
+		if (service instanceof BeaconDwellService.Binder) {
+			BeaconDwellService dwellManager = ((BeaconDwellService.Binder) service).getService();
 			rdBeaconListener = new RDBeaconListener(dwellManager);
 		}
 	}
@@ -632,6 +630,5 @@ public class DayRegistrationActivity extends AppCompatActivity implements Beacon
 	public void onServiceDisconnected(ComponentName name) {
 
 	}
-
 	//endregion
 }

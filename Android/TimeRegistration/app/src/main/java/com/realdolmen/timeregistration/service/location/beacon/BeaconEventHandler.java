@@ -1,11 +1,8 @@
 package com.realdolmen.timeregistration.service.location.beacon;
 
 import android.app.PendingIntent;
-import android.app.Service;
+import android.content.Context;
 import android.content.Intent;
-import android.os.Handler;
-import android.os.IBinder;
-import android.support.annotation.Nullable;
 import android.support.v4.app.NotificationCompat;
 
 import com.realdolmen.timeregistration.R;
@@ -25,30 +22,15 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class BeaconDwellManager extends Service implements Runnable {
+public class BeaconEventHandler {
 
-	private static final String TAG = BeaconDwellManager.class.getSimpleName();
-
-	private Handler timerHandler = new Handler();
 	private Map<BeaconEvent, DateTime> registeredEvents = new HashMap<>();
 	private Map<BeaconEvent, Double> recordedDistances = new HashMap<>();
 
-	private android.os.Binder binder = new Binder();
+	private Context context;
 
-	public class Binder extends android.os.Binder {
-		public BeaconDwellManager getService() {
-			return BeaconDwellManager.this;
-		}
-	}
-
-	public BeaconDwellManager() {
-		timerHandler.postDelayed(this, 1000);
-	}
-
-	@Nullable
-	@Override
-	public IBinder onBind(Intent intent) {
-		return binder;
+	public BeaconEventHandler(Context context) {
+		this.context = context;
 	}
 
 	public void registerEvent(BeaconEvent event) {
@@ -97,9 +79,8 @@ public class BeaconDwellManager extends Service implements Runnable {
 		return match;
 	}
 
-	@Override
-	public void run() {
 
+	public void process() {
 		List<BeaconEvent> triggeredEvents = new ArrayList<>();
 		List<BeaconEvent> silentRemove = new ArrayList<>();
 
@@ -133,13 +114,15 @@ public class BeaconDwellManager extends Service implements Runnable {
 			registeredEvents.remove(silent);
 			recordedDistances.remove(silent);
 		}
+	}
 
-		timerHandler.postDelayed(this, 1000);
+	public void onDestroy() {
+
 	}
 
 	private void trigger(BeaconEvent event, DateTime time) {
 
-		Intent intent = new Intent(getApplicationContext(), DayRegistrationActivity.class);
+		Intent intent = new Intent(context, DayRegistrationActivity.class);
 		if (event.getAction().getOccupations().size() == 1 && event.getType() == BeaconEvent.BeaconEventType.ENTER) {
 			Occupation o = (Occupation) event.getAction().getOccupations().toArray()[0];
 			if (Repositories.registeredOccupationRepository().isAlreadyOngoing(o, time.withZone(DateTimeZone.UTC))) {
@@ -174,22 +157,22 @@ public class BeaconDwellManager extends Service implements Runnable {
 
 		intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
 
-		PendingIntent pendingIntent = PendingIntent.getActivity(getApplicationContext(), 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
+		PendingIntent pendingIntent = PendingIntent.getActivity(context, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
 		String content = "";
 		if (event.getType() == BeaconEvent.BeaconEventType.ENTER) {
 			if (event.getAction().getOccupations().size() == 1) {
-				content = getString(R.string.notification_beacon_add_single_result, event.getAction().getOccupations().toArray()[0]);
+				content = context.getString(R.string.notification_beacon_add_single_result, event.getAction().getOccupations().toArray()[0]);
 			} else if (event.getAction().getOccupations().size() > 1) {
-				content = getString(R.string.notification_beacon_add_multiple_results);
+				content = context.getString(R.string.notification_beacon_add_multiple_results);
 			}
 		} else {
 			if (event.getAction().getOccupations().size() == 1) {
-				content = getString(R.string.notification_beacon_remove_single_result, event.getAction().getOccupations().toArray()[0]);
+				content = context.getString(R.string.notification_beacon_remove_single_result, event.getAction().getOccupations().toArray()[0]);
 			} else if (event.getAction().getOccupations().size() > 1) {
-				content = getString(R.string.notification_beacon_remove_multiple_results);
+				content = context.getString(R.string.notification_beacon_remove_multiple_results);
 			}
 		}
-		NotificationCompat.Builder builder = Util.newNotification(getApplicationContext(), getString(R.string.notification_title), content, pendingIntent);
-		Util.notifyUser(getApplicationContext(), event.getRegion().getId2().toInt(), builder);
+		NotificationCompat.Builder builder = Util.newNotification(context, context.getString(R.string.notification_title), content, pendingIntent);
+		Util.notifyUser(context, event.getRegion().getId2().toInt(), builder);
 	}
 }
