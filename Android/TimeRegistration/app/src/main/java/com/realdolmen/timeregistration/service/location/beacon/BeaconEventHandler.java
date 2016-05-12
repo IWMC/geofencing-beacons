@@ -4,6 +4,7 @@ import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 import android.support.v4.app.NotificationCompat;
+import android.util.Log;
 
 import com.realdolmen.timeregistration.R;
 import com.realdolmen.timeregistration.RC;
@@ -24,6 +25,8 @@ import java.util.Map;
 
 public class BeaconEventHandler {
 
+	private static final String TAG = BeaconEventHandler.class.getSimpleName();
+
 	private Map<BeaconEvent, DateTime> registeredEvents = new HashMap<>();
 	private Map<BeaconEvent, Double> recordedDistances = new HashMap<>();
 
@@ -34,6 +37,9 @@ public class BeaconEventHandler {
 	}
 
 	public void registerEvent(BeaconEvent event) {
+		if(event.getType() != BeaconEvent.BeaconEventType.RANGE) {
+			Log.d(TAG, "Receiving event: " + event);
+		}
 		if (event.getType() == BeaconEvent.BeaconEventType.EXIT) {
 			BeaconEvent matching = getMatchingEnterEvent(event);
 			if (matching != null) {

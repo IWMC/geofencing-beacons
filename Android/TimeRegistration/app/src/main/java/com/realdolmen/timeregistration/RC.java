@@ -12,6 +12,10 @@ public interface RC {
 		interface addOccupation {
 			String ACTION_ADD = "com.realdolmen.occupation.add", ACTION_EDIT = "com.realdolmen.occupation.edit";
 		}
+
+		interface login {
+			String RE_AUTHENTICATION = "com.realdolmen.timeregistration.login.reauth";
+		}
 	}
 
 	interface actionExtras {
@@ -102,9 +106,9 @@ public interface RC {
 	}
 
 	interface beacon {
-
 		String UUID = "906bbd3df3264669b1466c225a04d935";
 		boolean MEASURE_RANGE = false;
+		boolean SAVE_POWER = false;
 	}
 
 	interface dtypes {

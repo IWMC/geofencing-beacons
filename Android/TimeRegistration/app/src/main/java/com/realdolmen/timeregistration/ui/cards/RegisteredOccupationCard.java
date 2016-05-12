@@ -1,6 +1,7 @@
 package com.realdolmen.timeregistration.ui.cards;
 
 import android.content.Context;
+import android.util.Log;
 import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.ViewGroup;
@@ -87,10 +88,14 @@ public class RegisteredOccupationCard extends OccupationCard<RegisteredOccupatio
 				editButton.setVisibility(INVISIBLE);
 			}
 		} else {
-			if (isEditable()) {
-				editButton.setVisibility(VISIBLE);
+			if(editButton != null) {
+				if (isEditable()) {
+					editButton.setVisibility(VISIBLE);
+				} else {
+					editButton.setVisibility(INVISIBLE);
+				}
 			} else {
-				editButton.setVisibility(INVISIBLE);
+				Log.e(this.getClass().getSimpleName(), "updateViewState: edit button is null!");
 			}
 		}
 	}

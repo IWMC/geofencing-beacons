@@ -10,7 +10,6 @@ import android.content.ServiceConnection;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
-import android.os.RemoteException;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.design.widget.Snackbar;
@@ -36,11 +35,9 @@ import com.realdolmen.timeregistration.model.Occupation;
 import com.realdolmen.timeregistration.model.Project;
 import com.realdolmen.timeregistration.model.RegisteredOccupation;
 import com.realdolmen.timeregistration.service.ResultCallback;
-import com.realdolmen.timeregistration.service.location.beacon.BeaconDwellService;
-import com.realdolmen.timeregistration.service.location.beacon.RDBeaconListener;
+import com.realdolmen.timeregistration.service.location.beacon.BeaconDwellService2;
 import com.realdolmen.timeregistration.service.location.geofence.GeoService;
 import com.realdolmen.timeregistration.service.location.geofence.GeofenceRequester;
-import com.realdolmen.timeregistration.service.repository.BeaconRepository;
 import com.realdolmen.timeregistration.service.repository.LoadCallback;
 import com.realdolmen.timeregistration.service.repository.OccupationRepository;
 import com.realdolmen.timeregistration.service.repository.RegisteredOccupationRepository;
@@ -51,7 +48,6 @@ import com.realdolmen.timeregistration.util.UTC;
 import com.realdolmen.timeregistration.util.Util;
 import com.realdolmen.timeregistration.util.adapters.dayregistration.DayRegistrationFragmentPagerAdapter;
 
-import org.altbeacon.beacon.BeaconConsumer;
 import org.jdeferred.AlwaysCallback;
 import org.jdeferred.Deferred;
 import org.jdeferred.DoneCallback;
@@ -62,10 +58,9 @@ import org.jdeferred.impl.DeferredObject;
 import org.joda.time.DateTime;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
-import butterknife.Bind;
+import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
 
@@ -80,25 +75,25 @@ import static com.realdolmen.timeregistration.RC.resultCodes.addOccupation.ADD_R
 import static com.realdolmen.timeregistration.RC.resultCodes.addOccupation.EDIT_RESULT_CODE;
 
 
-public class DayRegistrationActivity extends AppCompatActivity implements BeaconConsumer, ServiceConnection {
+public class DayRegistrationActivity extends AppCompatActivity implements ServiceConnection {
 
 	private static final String LOG_TAG = DayRegistrationActivity.class.getSimpleName();
 
 	//region UI fields
 
-	@Bind(R.id.day_registration_toolbar)
+	@BindView(R.id.day_registration_toolbar)
 	Toolbar bar;
 
-	@Bind(R.id.day_registration_tabbar)
+	@BindView(R.id.day_registration_tabbar)
 	TabLayout tabLayout;
 
-	@Bind(R.id.day_registration_viewpager)
+	@BindView(R.id.day_registration_viewpager)
 	CustomViewPager viewPager;
 
-	@Bind(R.id.day_registration_confirm_fab)
+	@BindView(R.id.day_registration_confirm_fab)
 	FloatingActionButton confirmFab;
 
-	@Bind(R.id.day_registration_fab_menu)
+	@BindView(R.id.day_registration_fab_menu)
 	FloatingActionMenu fabMenu;
 	//endregion
 
@@ -180,23 +175,9 @@ public class DayRegistrationActivity extends AppCompatActivity implements Beacon
 	}
 
 	private void initBeacons() {
-		Intent beaconDwellManagerService = new Intent(this, BeaconDwellService.class);
-		startService(beaconDwellManagerService);
-		bindService(beaconDwellManagerService, this, 0);
-		Repositories.loadBeaconRepository(this).done(new DoneCallback<BeaconRepository>() {
-			@Override
-			public void onDone(BeaconRepository result) {
-				Log.d(LOG_TAG, "onDone: " + Arrays.toString(result.getAll().toArray()));
-				result.bind(DayRegistrationActivity.this);
-			}
-		}).fail(new FailCallback<Throwable>() {
-			@Override
-			public void onFail(Throwable result) {
-				Log.d(LOG_TAG, "onFail: Getting beacons failed", result);
-			}
-		});
-
-
+		Intent beaconDwellManagerService2 = new Intent(this, BeaconDwellService2.class);
+		startService(beaconDwellManagerService2);
+		bindService(beaconDwellManagerService2, this, 0);
 	}
 
 	private void initSupportActionBar() {
@@ -549,18 +530,6 @@ public class DayRegistrationActivity extends AppCompatActivity implements Beacon
 
 	@Override
 	protected void onDestroy() {
-		try {
-			Repositories.beaconRepository().unbindAndStop(this);
-			if(rdBeaconListener != null) {
-				Repositories.beaconRepository().unsubscribe(rdBeaconListener);
-				rdBeaconListener = null;
-			}
-		} catch (RemoteException e) {
-			e.printStackTrace();
-		} catch (IllegalStateException ise) {
-			//Repository was not loaded
-		}
-
 		unbindService(this);
 		super.onDestroy();
 	}
@@ -608,21 +577,9 @@ public class DayRegistrationActivity extends AppCompatActivity implements Beacon
 	}
 
 	@Override
-	public void onBeaconServiceConnect() {
-		Log.d(LOG_TAG, "onBeaconServiceConnect: starting beacon service");
-		Repositories.beaconRepository().subscribe(rdBeaconListener);
-		try {
-			Repositories.beaconRepository().startMonitor();
-		} catch (RemoteException e) {
-			Log.d(LOG_TAG, "onBeaconServiceConnect: ", e);
-		}
-	}
-
-	@Override
 	public void onServiceConnected(ComponentName name, IBinder service) {
-		if (service instanceof BeaconDwellService.Binder) {
-			BeaconDwellService dwellManager = ((BeaconDwellService.Binder) service).getService();
-			rdBeaconListener = new RDBeaconListener(dwellManager);
+		if (service instanceof BeaconDwellService2.Binder) {
+			BeaconDwellService2 dwellManager = ((BeaconDwellService2.Binder) service).getService();
 		}
 	}
 

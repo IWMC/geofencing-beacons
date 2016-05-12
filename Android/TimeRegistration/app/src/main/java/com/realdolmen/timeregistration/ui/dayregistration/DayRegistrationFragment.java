@@ -36,7 +36,7 @@ import org.joda.time.DateTime;
 
 import java.util.List;
 
-import butterknife.Bind;
+import butterknife.BindView;
 import butterknife.ButterKnife;
 
 /**
@@ -46,10 +46,10 @@ public class DayRegistrationFragment extends Fragment {
 
 	public static final String TAG = "DayRegistration";
 
-	@Bind(R.id.day_registration_card_recycler)
+	@BindView(R.id.day_registration_card_recycler)
 	RecyclerView recyclerView;
 
-	@Bind(R.id.day_registration_emptyState)
+	@BindView(R.id.day_registration_emptyState)
 	LinearLayout emptyStateLabel;
 
 	private DayRegistrationActivity parent;

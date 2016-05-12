@@ -10,17 +10,17 @@ import com.andexert.library.RippleView;
 import com.realdolmen.timeregistration.R;
 import com.realdolmen.timeregistration.util.adapters.dayregistration.Adaptable;
 
-import butterknife.Bind;
+import butterknife.BindView;
 
 public abstract class OccupationCard<E> extends FrameLayout implements Adaptable<E> {
 
-	@Bind(R.id.occupation_card_title)
+	@BindView(R.id.occupation_card_title)
 	TextView title;
 
-	@Bind(R.id.occupation_card_description)
+	@BindView(R.id.occupation_card_description)
 	TextView description;
 
-	@Bind(R.id.occupation_card_edit)
+	@BindView(R.id.occupation_card_edit)
 	RippleView editButton;
 
 	FrameLayout frame;

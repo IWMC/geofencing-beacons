@@ -1,6 +1,7 @@
 package com.realdolmen.timeregistration.util.adapters.dayregistration;
 
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.ViewGroup;
 
 import com.realdolmen.timeregistration.model.RegisteredOccupation;
@@ -36,16 +37,19 @@ public class RegisteredOccupationRecyclerAdapter extends RecyclerView.Adapter<Re
 
 	@Override
 	public RegisteredOccupationViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+		Log.d("RORA", "onCreateViewHolder: creating viewholder");
 		RegisteredOccupationCard regOccView = new RegisteredOccupationCard(parent);
 		regOccView.setEditable(true);
 		regOccView.setOnEditClickListener(onEditClickListener);
 		RegisteredOccupationViewHolder rovh = new RegisteredOccupationViewHolder(regOccView);
 		viewHolders.add(rovh);
+		Log.d("RORA", "onCreateViewHolder: created viewholder");
 		return rovh;
 	}
 
 	@Override
 	public void onBindViewHolder(RegisteredOccupationViewHolder holder, int position) {
+		Log.d("RORA", "onBindViewHolder: binding viewholder");
 		holder.setData(Repositories.registeredOccupationRepository().getAll(date).get(position));
 	}
 

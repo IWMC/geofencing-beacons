@@ -1,8 +1,11 @@
 package com.realdolmen.timeregistration.ui.login;
 
 import android.app.ProgressDialog;
+import android.content.ComponentName;
 import android.content.Intent;
+import android.content.ServiceConnection;
 import android.os.Bundle;
+import android.os.IBinder;
 import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
@@ -12,32 +15,38 @@ import android.widget.EditText;
 
 import com.android.volley.VolleyError;
 import com.realdolmen.timeregistration.R;
+import com.realdolmen.timeregistration.RC;
 import com.realdolmen.timeregistration.service.GenericVolleyError;
 import com.realdolmen.timeregistration.service.data.UserManager;
+import com.realdolmen.timeregistration.service.location.beacon.BeaconDwellService2;
 import com.realdolmen.timeregistration.ui.dayregistration.DayRegistrationActivity;
 
 import org.jdeferred.DoneCallback;
 import org.jdeferred.FailCallback;
 
-import butterknife.Bind;
+import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
 
-public class LoginActivity extends AppCompatActivity {
+public class LoginActivity extends AppCompatActivity implements ServiceConnection {
 
 	private static final String TAG = "LOGIN";
 	private static final boolean DEBUG = true;
-	@Bind(R.id.login_username)
+
+	@BindView(R.id.login_username)
 	EditText username;
 
-	@Bind(R.id.login_password)
+	@BindView(R.id.login_password)
 	EditText password;
 
-	@Bind(R.id.login_login_button)
+	@BindView(R.id.login_login_button)
 	Button loginButton;
 
 	private boolean loggingIn;
 	private boolean ignoreDismiss = false;
+
+	private BeaconDwellService2 dwellManager;
+	private boolean canNotifyService;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -97,7 +106,12 @@ public class LoginActivity extends AppCompatActivity {
 	private void onSuccessfulLogin() {
 		Log.d(TAG, "onSuccessfulLogin: Login successful");
 		finish();
-		startActivity(new Intent(getApplicationContext(), DayRegistrationActivity.class));
+		if(getIntent() != null && getIntent().getAction() != null && getIntent().getAction().equals(RC.action.login.RE_AUTHENTICATION)) {
+			bindService(new Intent(this, BeaconDwellService2.class), this, 0);
+			canNotifyService = true;
+		} else {
+			startActivity(new Intent(getApplicationContext(), DayRegistrationActivity.class));
+		}
 	}
 
 	@Override
@@ -198,5 +212,21 @@ public class LoginActivity extends AppCompatActivity {
 		}
 
 		return valid && !loggingIn;
+	}
+
+	@Override
+	public void onServiceConnected(ComponentName name, IBinder service) {
+		if (service instanceof BeaconDwellService2.Binder) {
+			dwellManager = ((BeaconDwellService2.Binder) service).getService();
+		}
+
+		if(canNotifyService) {
+			dwellManager.positiveLoginResult();
+		}
+	}
+
+	@Override
+	public void onServiceDisconnected(ComponentName name) {
+
 	}
 }
