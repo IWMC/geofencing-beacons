@@ -1,9 +1,13 @@
 package com.realdolmen.service;
 
 import com.realdolmen.annotations.Simplified;
+import org.joda.time.DateTime;
+import org.joda.time.format.DateTimeFormat;
 
 import javax.annotation.PostConstruct;
 import javax.ejb.Stateless;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.ResourceBundle;
 
 /**
@@ -13,8 +17,7 @@ import java.util.ResourceBundle;
 @Simplified
 public class SimplifiedReportsQueryBuilder extends ReportsQueryBuilder {
 
-    private static final String FIELD_REGEXP = "([a-zA-Z]+-?[a-zA-Z]+|[^a-zA-Z]+)";
-    private static final String TOKEN_REGEXP = "(\\w+|[^\\w]+)";
+    private static final String TOKEN_REGEXP = "([a-z\\-A-Z]+(?= ?[<=!>]{1,2})|[=!<>]{1,2} ?\"?[0-9\\- a-zA-Z ]+\"?.?|\\|)";
 
     private ResourceBundle queryBundle;
 
@@ -25,16 +28,20 @@ public class SimplifiedReportsQueryBuilder extends ReportsQueryBuilder {
 
     @Override
     public ReportsQueryBuilder where(String selection) {
-        String translated = getParser().tokenStream(selection, TOKEN_REGEXP)
-                .map(this::tryTranslation)
-                .reduce(new StringBuilder(""), StringBuilder::append, StringBuilder::append).toString();
-        translated = getParser().tokenStream(translated, FIELD_REGEXP)
-                .map(this::convertSimplifiedField)
-                .reduce(new StringBuilder(""), StringBuilder::append, StringBuilder::append).toString();
+        String translated = selection != null && selection.matches("^[a-zA-Z ]+$") ?
+                trySpecialTranslation(selection) :
+                getParser().tokenStream(selection, TOKEN_REGEXP)
+                        .map(this::tryTranslation)
+                        .map(this::convertSimplifiedField)
+                        .reduce(new StringBuilder(""), StringBuilder::append, StringBuilder::append).toString();
         return super.where(translated);
     }
 
     private String convertSimplifiedField(String field) {
+        if (!field.matches("[a-zA-Z\\-]+")) {
+            return field;
+        }
+
         String[] tokens = field.split("-");
         if (tokens.length > 1) {
             StringBuilder builder = new StringBuilder();
@@ -49,7 +56,24 @@ public class SimplifiedReportsQueryBuilder extends ReportsQueryBuilder {
     }
 
     private String tryTranslation(String fieldName) {
-        return getQueryBundle().containsKey(fieldName) ? getQueryBundle().getString(fieldName) : fieldName;
+        fieldName = fieldName.toLowerCase();
+        return getQueryBundle().containsKey(fieldName.trim()) ? getQueryBundle().getString(fieldName.trim()) : fieldName;
+    }
+
+    private String trySpecialTranslation(String fieldName) {
+        fieldName = fieldName.toLowerCase();
+        Map<String, String> replacements = new HashMap<>();
+        replacements.put("today", DateTime.now().toString(DateTimeFormat.forPattern("dd-MM-yyyy")));
+        replacements.put("month_start", DateTime.now().withDayOfMonth(1).toString(DateTimeFormat.forPattern("dd-MM-yyyy")));
+        replacements.put("month_end", DateTime.now().plusMonths(1).withDayOfMonth(1).minusDays(1).toString(DateTimeFormat.forPattern("dd-MM-yyyy")));
+
+        String value = getQueryBundle().containsKey(fieldName.trim()) ? getQueryBundle().getString(fieldName.trim()) : fieldName;
+
+        for (Map.Entry<String, String> entry : replacements.entrySet()) {
+            value = value.replace("{" + entry.getKey() + "}", entry.getValue());
+        }
+
+        return value;
     }
 
     private ResourceBundle getQueryBundle() {

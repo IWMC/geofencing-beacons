@@ -1,10 +1,14 @@
 package com.realdolmen.jsf;
 
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.realdolmen.MiscProperties;
 import com.realdolmen.annotations.Simplified;
 import com.realdolmen.entity.*;
 import com.realdolmen.service.ReportsQueryBuilder;
 import org.eclipse.persistence.jaxb.MarshallerProperties;
 
+import javax.annotation.PostConstruct;
 import javax.faces.view.ViewScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
@@ -18,6 +22,8 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -31,7 +37,12 @@ public class ReportsController extends Controller implements Serializable {
     @Simplified
     private transient ReportsQueryBuilder queryBuilder;
 
-    private ArrayList<?> records = new ArrayList<>();
+    @Inject
+    private MiscProperties properties;
+
+    private ArrayList<? extends Object> records = new ArrayList<>();
+
+    private ArrayList<ObjectNode> tableRecords = new ArrayList<>();
 
     private String filter;
 
@@ -41,15 +52,29 @@ public class ReportsController extends Controller implements Serializable {
         createReport(0, 10);
     }
 
+    @PostConstruct
+    public void init() {
+        generateTableRecords();
+    }
+
     @Transactional
     public void createReport(Integer firstResult, Integer maxResults) {
+        createReports(firstResult, maxResults, ReportsQueryBuilder.SELECT_ALL);
+    }
+
+    @Transactional
+    public void createReports(Integer firstResult, Integer maxResults, String selectedColumns) {
         Object result = queryBuilder
                 .with(selectedEntity)
-                .select(ReportsQueryBuilder.SELECT_ALL)
+                .select(selectedColumns)
                 .where(filter).build(firstResult, maxResults);
 
         if (result instanceof List) {
-            records = new ArrayList((List) result);
+            records = new ArrayList<>((List<?>) result);
+        } else if (result instanceof ArrayNode) {
+            ArrayList<ObjectNode> list = new ArrayList<>();
+            ((ArrayNode) result).forEach(n -> list.add((ObjectNode) n));
+            tableRecords = list;
         }
     }
 
@@ -70,7 +95,8 @@ public class ReportsController extends Controller implements Serializable {
 
         response.reset();
         response.setContentType(mediaType);
-        response.setHeader("Content-Disposition", "attachment; filename=\"" + "records" + fileExtension + "\"");
+        final String fileName = selectedEntity.getSimpleName() + "s - " + new Date().toString();
+        response.setHeader("Content-Disposition", "attachment; filename=\"" + fileName + fileExtension + "\"");
 
         OutputStream output = response.getOutputStream();
         Marshaller marshaller = JAXBContext.newInstance(JAXBList.class, selectedEntity).createMarshaller();
@@ -94,22 +120,44 @@ public class ReportsController extends Controller implements Serializable {
 
     public void selectEmployees() {
         selectedEntity = Employee.class;
+        generateTableRecords();
     }
 
     public void selectRegisteredOccupations() {
         selectedEntity = RegisteredOccupation.class;
+        generateTableRecords();
     }
 
     public void selectProject() {
         selectedEntity = Project.class;
+        generateTableRecords();
     }
 
     public void selectOccupations() {
         selectedEntity = Occupation.class;
+        generateTableRecords();
     }
 
     public void selectTasks() {
         selectedEntity = Task.class;
+        generateTableRecords();
+    }
+
+    public void generateTableRecords() {
+        createReports(0, 10, properties.getString(selectedEntity.getSimpleName() + ".basicColumns"));
+    }
+
+    public List<ObjectNode> getTableRecords() {
+        return tableRecords;
+    }
+
+    public List<String> getTableFieldList() {
+        return Arrays.asList(properties.getString(selectedEntity.getSimpleName() + ".basicColumns").split(","));
+    }
+
+    public List<String> getPrettyTableFieldList() {
+        String columns = properties.getString(selectedEntity.getSimpleName() + ".basicColumns.pretty");
+        return Arrays.asList(columns.split(","));
     }
 
     @XmlRootElement(name = "list")
@@ -118,8 +166,7 @@ public class ReportsController extends Controller implements Serializable {
 
         private List<E> list = new ArrayList<>();
 
-        public JAXBList() {
-        }
+        public JAXBList() {}
 
         public JAXBList(List<E> list) {
             this.list = list;

@@ -5,14 +5,18 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.realdolmen.MiscProperties;
 import com.realdolmen.TestMode;
 import com.realdolmen.entity.Employee;
 import com.realdolmen.entity.Initializable;
 import com.realdolmen.entity.PersistenceUnit;
 import org.jetbrains.annotations.TestOnly;
+import org.joda.time.DateTime;
+import org.joda.time.format.DateTimeFormat;
 
 import javax.ejb.Stateless;
 import javax.enterprise.inject.Default;
+import javax.inject.Inject;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
@@ -20,9 +24,7 @@ import javax.persistence.criteria.*;
 import javax.transaction.Transactional;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Response;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
+import java.util.*;
 import java.util.function.Function;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -41,6 +43,9 @@ public class ReportsQueryBuilder {
 
     @PersistenceContext(unitName = PersistenceUnit.PRODUCTION)
     private EntityManager em;
+
+    @Inject
+    private MiscProperties properties;
 
     private ReportsQueryParser parser = new ReportsQueryParser();
 
@@ -77,7 +82,7 @@ public class ReportsQueryBuilder {
         if (fieldList.isEmpty()) {
             query.select(root);
         } else {
-            query.multiselect(fieldList.stream().map(s -> parser.createExpressionFromFieldString(s))
+            query.multiselect(fieldList.stream().map(parser::createExpressionFromFieldString)
                     .collect(Collectors.toList()));
         }
 
@@ -271,7 +276,7 @@ public class ReportsQueryBuilder {
          * @return a stream of tokens matching the pattern with the specified operator
          */
         private Stream<String> tokenStreamFromFields(String text, String regexp) {
-            return tokenStream(text, FIELD_REGEXP + regexp + "\\w+");
+            return tokenStream(text, FIELD_REGEXP + " ?" + regexp + " ?(\\\"[\\w -]+\\\"|[\\w-]+)").map(t -> t.replace("\"", ""));
         }
 
         /**
@@ -321,16 +326,28 @@ public class ReportsQueryBuilder {
             Stream.Builder<Predicate> streamBuilder = Stream.builder();
             createPredicatesByQueryOperator(selection, "=", pair -> {
                 try {
-                    return em.getCriteriaBuilder().equal(createExpressionFromFieldString(pair.getKey()), pair.getValue());
+                    Expression expression = createExpressionFromFieldString(pair.getKey());
+                    if (Date.class.isAssignableFrom(expression.getJavaType())) {
+                        return em.getCriteriaBuilder().equal(expression, tryParse(pair.getValue()));
+                    } else if (String.class.isAssignableFrom(expression.getJavaType())) {
+                        return em.getCriteriaBuilder().like(expression, "%" + pair.getValue() + "%");
+                    } else {
+                        return em.getCriteriaBuilder().equal(expression, pair.getValue());
+                    }
                 } catch (IllegalArgumentException iaex) {
                     return null;
                 }
-            }).forEach(streamBuilder::add);
+            }).forEach(p -> streamBuilder.add((Predicate) p));
 
             createPredicatesByQueryOperator(selection, "!=", pair -> {
                 try {
                     if (TestMode.isTestMode() || !Collection.class.isAssignableFrom(root.get(pair.getKey()).type().getJavaType())) {
-                        return em.getCriteriaBuilder().notEqual(createExpressionFromFieldString(pair.getKey()), pair.getValue());
+                        Expression expression = createExpressionFromFieldString(pair.getKey());
+                        if (Date.class.isAssignableFrom(expression.getJavaType())) {
+                            return em.getCriteriaBuilder().notEqual(expression, tryParse(pair.getValue()));
+                        } else {
+                            return em.getCriteriaBuilder().notEqual(createExpressionFromFieldString(pair.getKey()), pair.getValue());
+                        }
                     } else {
                         return null;
                     }
@@ -341,8 +358,13 @@ public class ReportsQueryBuilder {
 
             createPredicatesByQueryOperator(selection, "<", pair -> {
                 try {
-                    return em.getCriteriaBuilder().lt((Expression<Number>) createExpressionFromFieldString(pair.getKey()),
-                            Double.parseDouble(pair.getValue()));
+                    Expression expression = createExpressionFromFieldString(pair.getKey());
+                    if (Date.class.isAssignableFrom(expression.getJavaType())) {
+                        return em.getCriteriaBuilder().lessThan(expression, tryParse(pair.getValue()));
+                    } else {
+                        return em.getCriteriaBuilder().lt((Expression<Number>) createExpressionFromFieldString(pair.getKey()),
+                                Double.parseDouble(pair.getValue()));
+                    }
                 } catch (ClassCastException | IllegalArgumentException iaex) {
                     return null;
                 }
@@ -350,9 +372,14 @@ public class ReportsQueryBuilder {
 
             createPredicatesByQueryOperator(selection, "<=", pair -> {
                 try {
-                    return em.getCriteriaBuilder()
-                            .lessThanOrEqualTo((Expression<Double>) createExpressionFromFieldString(pair.getKey()),
-                                    Double.parseDouble(pair.getValue()));
+                    Expression expression = createExpressionFromFieldString(pair.getKey());
+                    if (Date.class.isAssignableFrom(expression.getJavaType())) {
+                        return em.getCriteriaBuilder().lessThanOrEqualTo(expression, tryParse(pair.getValue()));
+                    } else {
+                        return em.getCriteriaBuilder()
+                                .lessThanOrEqualTo((Expression<Double>) createExpressionFromFieldString(pair.getKey()),
+                                        Double.parseDouble(pair.getValue()));
+                    }
                 } catch (ClassCastException | IllegalArgumentException iaex) {
                     return null;
                 }
@@ -360,9 +387,14 @@ public class ReportsQueryBuilder {
 
             createPredicatesByQueryOperator(selection, ">", pair -> {
                 try {
-                    return em.getCriteriaBuilder()
-                            .gt((Expression<Number>) createExpressionFromFieldString(pair.getKey()),
-                                    Double.parseDouble(pair.getValue()));
+                    Expression expression = createExpressionFromFieldString(pair.getKey());
+                    if (Date.class.isAssignableFrom(expression.getJavaType())) {
+                        return em.getCriteriaBuilder().greaterThan(expression, tryParse(pair.getValue()));
+                    } else {
+                        return em.getCriteriaBuilder()
+                                .gt((Expression<Number>) createExpressionFromFieldString(pair.getKey()),
+                                        Double.parseDouble(pair.getValue()));
+                    }
                 } catch (ClassCastException | IllegalArgumentException iaex) {
                     return null;
                 }
@@ -370,9 +402,14 @@ public class ReportsQueryBuilder {
 
             createPredicatesByQueryOperator(selection, ">=", pair -> {
                 try {
-                    return em.getCriteriaBuilder()
-                            .greaterThanOrEqualTo((Expression<Double>) createExpressionFromFieldString(pair.getKey()),
-                                    Double.parseDouble(pair.getValue()));
+                    Expression expression = createExpressionFromFieldString(pair.getKey());
+                    if (Date.class.isAssignableFrom(expression.getJavaType())) {
+                        return em.getCriteriaBuilder().greaterThanOrEqualTo(expression, tryParse(pair.getValue()));
+                    } else {
+                        return em.getCriteriaBuilder()
+                                .greaterThanOrEqualTo((Expression<Double>) createExpressionFromFieldString(pair.getKey()),
+                                        Double.parseDouble(pair.getValue()));
+                    }
                 } catch (ClassCastException | IllegalArgumentException iaex) {
                     return null;
                 }
@@ -392,11 +429,16 @@ public class ReportsQueryBuilder {
                 List<String> sides = tokenList(expression, "[a-zA-Z]+");
                 if (sides.size() == 2) {
                     try {
-                        try {
-                            SetJoin join = root.joinSet(sides.get(0));
-                            return createQueryFunctions(join.get(sides.get(0)), sides.get(1));
-                        } catch (IllegalArgumentException iaex) {
-                            return createQueryFunctions(root.get(sides.get(0)), sides.get(1));
+                        Path<?> path = root.get(sides.get(0));
+                        if (Collection.class.isAssignableFrom(path.getJavaType())) {
+                            return createQueryFunctions(path, sides.get(1));
+                        } else {
+                            try {
+                                SetJoin join = root.joinSet(sides.get(0));
+                                return createQueryFunctions(join.get(sides.get(0)), sides.get(1));
+                            } catch (IllegalArgumentException iaex) {
+                                return createQueryFunctions(path, sides.get(1));
+                            }
                         }
                     } catch (IllegalArgumentException iaex) {
                         throw new WebApplicationException(Response.status(Response.Status.BAD_REQUEST)
@@ -443,11 +485,10 @@ public class ReportsQueryBuilder {
                 return em.getCriteriaBuilder().min(expression);
             } else if (functionName.equals("count")) {
                 return em.getCriteriaBuilder().count(expression);
+            } else if (expression instanceof Path){
+                return ((Path) expression).get(functionName);
             } else {
-                throw new WebApplicationException(Response.status(Response.Status.BAD_REQUEST)
-                        .entity(errorMessageAsJson(String.format("Unkown property '%s' at column '%s'",
-                                expression.toString(), functionName)))
-                        .build());
+                return expression;
             }
         }
 
@@ -472,9 +513,39 @@ public class ReportsQueryBuilder {
             return "{\"message\": \"" + message + "\"}";
         }
 
-        private class Pair<K, V> {
+        private Date tryParse(String dateString) {
+            for (String pattern : properties.getString("DateFormats").split(";")) {
+                try {
+                    DateTime dateTime = DateTime.parse(dateString, DateTimeFormat.forPattern(pattern).withLocale(Locale.forLanguageTag("nl")));
+                    if (dateTime != null) {
+                        return dateTime.toDate();
+                    }
+                } catch (IllegalArgumentException iaex) {
+                }
 
+                try {
+                    DateTime dateTime = DateTime.parse(dateString, DateTimeFormat.forPattern(pattern).withLocale(Locale.FRENCH));
+                    if (dateTime != null) {
+                        return dateTime.toDate();
+                    }
+                } catch (IllegalArgumentException iaex) {
+                }
+
+                try {
+                    DateTime dateTime = DateTime.parse(dateString, DateTimeFormat.forPattern(pattern));
+                    if (dateTime != null) {
+                        return dateTime.toDate();
+                    }
+                } catch (IllegalArgumentException iaex) {
+                }
+            }
+
+            return null;
+        }
+
+        private class Pair<K, V> {
             private K key;
+
             private V value;
 
             public Pair(K key, V value) {
@@ -497,6 +568,7 @@ public class ReportsQueryBuilder {
             public void setValue(V value) {
                 this.value = value;
             }
+
         }
     }
 }

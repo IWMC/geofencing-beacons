@@ -1,6 +1,7 @@
 package com.realdolmen.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
@@ -14,7 +15,7 @@ import java.util.Date;
 @XmlRootElement
 @NamedQueries({
         @NamedQuery(name = "RegisteredOccupation.findOccupationsInRange",
-                query = "SELECT r FROM RegisteredOccupation r WHERE YEAR(r.registeredStart) = :year AND DAY(r.registeredStart) = :day AND MONTH(r.registeredStart) = :month AND r.registrar.id = :employeeId ORDER BY r.registeredStart")
+                query = "SELECT r FROM RegisteredOccupation r WHERE YEAR(r.startDate) = :year AND DAY(r.endDate) = :day AND MONTH(r.startDate) = :month AND r.registrar.id = :employeeId ORDER BY r.startDate")
         , @NamedQuery(name = "RegisteredOccupation.findOccupationByIdAndUser", query = "SELECT ro FROM RegisteredOccupation ro WHERE ro.registrar.id = :userId AND ro.id = :regId")
 })
 public class RegisteredOccupation implements Initializable {
@@ -23,12 +24,14 @@ public class RegisteredOccupation implements Initializable {
     @NotNull(message = "occupation.empty")
     private Occupation occupation;
 
-    @NotNull(message = "registeredStart.empty")
+    @NotNull(message = "startDate.empty")
     @Temporal(TemporalType.TIMESTAMP)
-    private Date registeredStart;
+    @JsonProperty("startDate")
+    private Date startDate;
 
     @Temporal(TemporalType.TIMESTAMP)
-    private Date registeredEnd;
+    @JsonProperty("endDate")
+    private Date endDate;
 
     public static void initialize(RegisteredOccupation o) {
         Occupation.initialize(o.occupation);
@@ -52,11 +55,11 @@ public class RegisteredOccupation implements Initializable {
     }
 
     public Date getRegisteredStart() {
-        return registeredStart;
+        return startDate;
     }
 
     public Date getRegisteredEnd() {
-        return registeredEnd;
+        return endDate;
     }
 
     public Employee getRegistrar() {
@@ -67,12 +70,12 @@ public class RegisteredOccupation implements Initializable {
         this.occupation = occupation;
     }
 
-    public void setRegisteredStart(Date registeredStart) {
-        this.registeredStart = registeredStart;
+    public void setRegisteredStart(Date startDate) {
+        this.startDate = startDate;
     }
 
-    public void setRegisteredEnd(Date registeredEnd) {
-        this.registeredEnd = registeredEnd;
+    public void setRegisteredEnd(Date endDate) {
+        this.endDate = endDate;
     }
 
     public void setRegistrar(Employee registrar) {
