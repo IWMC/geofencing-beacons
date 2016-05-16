@@ -108,7 +108,8 @@ public interface RC {
 	interface beacon {
 		String UUID = "906bbd3df3264669b1466c225a04d935";
 		boolean MEASURE_RANGE = false;
-		boolean SAVE_POWER = false;
+		boolean SAVE_POWER = true;
+		int PROCESS_DELAY = 2000;
 	}
 
 	interface dtypes {

@@ -25,6 +25,7 @@ import org.jdeferred.DoneCallback;
 import org.jdeferred.FailCallback;
 import org.jdeferred.Promise;
 import org.jdeferred.impl.DeferredObject;
+import org.jetbrains.annotations.TestOnly;
 
 public class BeaconDwellService extends Service implements Runnable, BeaconConsumer {
 
@@ -40,8 +41,9 @@ public class BeaconDwellService extends Service implements Runnable, BeaconConsu
 	private BeaconManager beaconManager;
 	private boolean initialized = false;
 
-	private static final int PROCESS_DELAY = 2000;
 	private int failedLogins = 0;
+
+	public final Testing testing = new Testing();
 
 	@Override
 	public int onStartCommand(Intent intent, int flags, int startId) {
@@ -51,11 +53,46 @@ public class BeaconDwellService extends Service implements Runnable, BeaconConsu
 	@Override
 	public void run() {
 		eventHandler.process();
-		timerHandler.postDelayed(BeaconDwellService.this, PROCESS_DELAY);
+		timerHandler.postDelayed(BeaconDwellService.this, RC.beacon.PROCESS_DELAY);
+	}
+
+	class Testing {
+
+		BeaconRepository repository;
+
+		@TestOnly
+		public void setBeaconRepository(BeaconRepository repo) {
+			repository = repo;
+		}
+		@TestOnly
+		public void setEventHandler(BeaconEventHandler handler) {
+			eventHandler = handler;
+		}
+
+		@TestOnly
+		public void setListener(BeaconListener listener) {
+			BeaconDwellService.this.listener = listener;
+		}
+
+		@TestOnly
+		public void setBeaconManager(BeaconManager m) {
+			beaconManager = m;
+		}
+
+		@TestOnly
+		public void setInitialized(boolean flag) {
+			initialized = flag;
+		}
+
+		@TestOnly public boolean isPowersaving() {
+			return beaconPowerSaver != null;
+		}
 	}
 
 	@Override
 	public void onBeaconServiceConnect() {
+		if(beaconManager == null || listener == null)
+			throw new IllegalStateException("BeaconManager and/or Listener cannot be null!");
 		beaconManager.setMonitorNotifier(listener);
 		beaconManager.setRangeNotifier(listener);
 		try {
@@ -72,7 +109,7 @@ public class BeaconDwellService extends Service implements Runnable, BeaconConsu
 	}
 
 	private BeaconRepository repo() {
-		return Repositories.beaconRepository();
+		return testing.repository == null ? Repositories.beaconRepository() : testing.repository;
 	}
 
 	public void positiveLoginResult() {
@@ -93,7 +130,6 @@ public class BeaconDwellService extends Service implements Runnable, BeaconConsu
 
 	@Override
 	public void onCreate() {
-		super.onCreate();
 		if (RC.beacon.SAVE_POWER) {
 			beaconPowerSaver = new BackgroundPowerSaver(getApplicationContext());
 			Log.d(TAG, "onCreate: Enabling power saving...");
@@ -119,7 +155,7 @@ public class BeaconDwellService extends Service implements Runnable, BeaconConsu
 				if (!beaconManager.getBeaconParsers().contains(parser)) {
 					beaconManager.getBeaconParsers().add(parser);
 				}
-				timerHandler.postDelayed(BeaconDwellService.this, PROCESS_DELAY);
+				timerHandler.postDelayed(BeaconDwellService.this, RC.beacon.PROCESS_DELAY);
 			}
 		}).fail(new FailCallback<Throwable>() {
 			@Override
