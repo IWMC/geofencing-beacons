@@ -94,7 +94,8 @@ public class TaskAddControllerTest {
         when(sm.findEmployee()).thenReturn(employee);
         when(sm.isManagement()).thenReturn(true);
         when(sm.isProjectManager()).thenReturn(true);
-        when(taskDao.isManagingProjectManager(task, employee)).thenReturn(true);
+        task.setProjectId(126l);
+        when(taskDao.isManagingProjectManager(task.getProjectId(), employee)).thenReturn(true);
         controller.setEntity(task);
 
         controller.saveTask();
