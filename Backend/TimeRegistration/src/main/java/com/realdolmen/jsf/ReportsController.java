@@ -1,10 +1,12 @@
 package com.realdolmen.jsf;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.realdolmen.MiscProperties;
 import com.realdolmen.annotations.Simplified;
 import com.realdolmen.entity.*;
+import com.realdolmen.messages.Language;
 import com.realdolmen.service.ReportsQueryBuilder;
 import org.eclipse.persistence.jaxb.MarshallerProperties;
 
@@ -40,9 +42,26 @@ public class ReportsController extends Controller implements Serializable {
     @Inject
     private MiscProperties properties;
 
+    @Inject
+    private Language language;
+
     private ArrayList<? extends Object> records = new ArrayList<>();
 
     private ArrayList<ObjectNode> tableRecords = new ArrayList<>();
+
+    private long querySize;
+
+    public long getQuerySize() {
+        return querySize;
+    }
+
+    public long getTableSize() {
+        return Math.min(querySize, 10);
+    }
+
+    public void setQuerySize(long querySize) {
+        this.querySize = querySize;
+    }
 
     private String filter;
 
@@ -64,10 +83,13 @@ public class ReportsController extends Controller implements Serializable {
 
     @Transactional
     public void createReports(Integer firstResult, Integer maxResults, String selectedColumns) {
-        Object result = queryBuilder
+        queryBuilder = queryBuilder
                 .with(selectedEntity)
                 .select(selectedColumns)
-                .where(filter).build(firstResult, maxResults);
+                .where(filter);
+
+        setQuerySize(queryBuilder.getSize());
+        Object result = queryBuilder.build(firstResult, maxResults);
 
         if (result instanceof List) {
             records = new ArrayList<>((List<?>) result);
@@ -120,26 +142,31 @@ public class ReportsController extends Controller implements Serializable {
 
     public void selectEmployees() {
         selectedEntity = Employee.class;
+        filter = "";
         generateTableRecords();
     }
 
     public void selectRegisteredOccupations() {
         selectedEntity = RegisteredOccupation.class;
+        filter = "";
         generateTableRecords();
     }
 
     public void selectProject() {
         selectedEntity = Project.class;
+        filter = "";
         generateTableRecords();
     }
 
     public void selectOccupations() {
         selectedEntity = Occupation.class;
+        filter = "";
         generateTableRecords();
     }
 
     public void selectTasks() {
         selectedEntity = Task.class;
+        filter = "";
         generateTableRecords();
     }
 
@@ -158,6 +185,20 @@ public class ReportsController extends Controller implements Serializable {
     public List<String> getPrettyTableFieldList() {
         String columns = properties.getString(selectedEntity.getSimpleName() + ".basicColumns.pretty");
         return Arrays.asList(columns.split(","));
+    }
+
+    public String translateValues(JsonNode value) {
+        if (value.toString().equalsIgnoreCase("false")) {
+            return language.getString("no");
+        } else if (value.toString().equalsIgnoreCase("true")) {
+            return language.getString("yes");
+        }
+
+        return value.toString();
+    }
+
+    public String getLimitedPreviewMessage() {
+        return language.getString("reports.showing_limited_size", getTableSize(), getQuerySize());
     }
 
     @XmlRootElement(name = "list")

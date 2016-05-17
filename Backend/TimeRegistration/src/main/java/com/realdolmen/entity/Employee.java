@@ -120,7 +120,7 @@ public class Employee implements Serializable, Initializable {
     @JsonInclude(JsonInclude.Include.NON_DEFAULT)
     private Set<Project> memberProjects = new HashSet<>();
 
-    @OneToMany(mappedBy = "registrar")
+    @OneToMany(mappedBy = "employee")
     @JsonInclude(JsonInclude.Include.NON_DEFAULT)
     private Set<RegisteredOccupation> registeredOccupations = new HashSet<>();
 

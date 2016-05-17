@@ -32,7 +32,6 @@ public class SimplifiedReportsQueryBuilder extends ReportsQueryBuilder {
                 trySpecialTranslation(selection) :
                 getParser().tokenStream(selection, TOKEN_REGEXP)
                         .map(this::tryTranslation)
-                        .map(this::convertSimplifiedField)
                         .reduce(new StringBuilder(""), StringBuilder::append, StringBuilder::append).toString();
         return super.where(translated);
     }
@@ -66,6 +65,8 @@ public class SimplifiedReportsQueryBuilder extends ReportsQueryBuilder {
         replacements.put("today", DateTime.now().toString(DateTimeFormat.forPattern("dd-MM-yyyy")));
         replacements.put("month_start", DateTime.now().withDayOfMonth(1).toString(DateTimeFormat.forPattern("dd-MM-yyyy")));
         replacements.put("month_end", DateTime.now().plusMonths(1).withDayOfMonth(1).minusDays(1).toString(DateTimeFormat.forPattern("dd-MM-yyyy")));
+        replacements.put("prev_month_start", DateTime.now().withDayOfMonth(1).minusMonths(1).toString(DateTimeFormat.forPattern("dd-MM-yyyy")));
+        replacements.put("prev_month_end", DateTime.now().plusMonths(1).withDayOfMonth(1).minusDays(1).minusMonths(1).toString(DateTimeFormat.forPattern("dd-MM-yyyy")));
 
         String value = getQueryBundle().containsKey(fieldName.trim()) ? getQueryBundle().getString(fieldName.trim()) : fieldName;
 

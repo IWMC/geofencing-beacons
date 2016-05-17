@@ -75,6 +75,7 @@ public class ReportsQueryBuilder {
     }
 
     public ReportsQueryBuilder select(String projection) {
+        projection = projection.replaceAll("(salt|hash)", "");
         this.select = projection;
         fieldList = projection == null ? new ArrayList<>() :
                 parser.tokenList(projection, parser.FIELD_REGEXP);
@@ -105,6 +106,16 @@ public class ReportsQueryBuilder {
 
     public ReportsQueryBuilder orderBy(String ordering) {
         return this;
+    }
+
+    /**
+     * @return The amount of rows the query would return
+     */
+    public long getSize() {
+        final String select = this.select;
+        Query query = em.createQuery(this.query.multiselect(em.getCriteriaBuilder().count(root)));
+        this.select(select);
+        return (long) query.getSingleResult();
     }
 
     public Query buildQuery(Integer firstResult, Integer maxResults) {
@@ -294,7 +305,8 @@ public class ReportsQueryBuilder {
             return tokenStreamFromFields(selection, operator).map(kv -> {
                 String[] split = kv.split(operator);
                 return new Pair<>(split[0].trim(), split[1].trim());
-            }).map(criteriaMap::apply).filter(p -> p != null);
+            }).filter(p -> !p.getKey().equals("salt") && !p.getKey().equals("hash"))
+                    .map(criteriaMap::apply).filter(p -> p != null);
         }
 
         /**
@@ -331,6 +343,8 @@ public class ReportsQueryBuilder {
                         return em.getCriteriaBuilder().equal(expression, tryParse(pair.getValue()));
                     } else if (String.class.isAssignableFrom(expression.getJavaType())) {
                         return em.getCriteriaBuilder().like(expression, "%" + pair.getValue() + "%");
+                    } else if (expression.getJavaType().getSimpleName().equalsIgnoreCase("boolean")) {
+                        return em.getCriteriaBuilder().equal(expression, Boolean.parseBoolean(pair.getValue()));
                     } else {
                         return em.getCriteriaBuilder().equal(expression, pair.getValue());
                     }
@@ -485,7 +499,7 @@ public class ReportsQueryBuilder {
                 return em.getCriteriaBuilder().min(expression);
             } else if (functionName.equals("count")) {
                 return em.getCriteriaBuilder().count(expression);
-            } else if (expression instanceof Path){
+            } else if (expression instanceof Path) {
                 return ((Path) expression).get(functionName);
             } else {
                 return expression;

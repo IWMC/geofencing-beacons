@@ -53,7 +53,7 @@ public class RegisteredOccupationBodyReader implements MessageBodyReader<Registe
         try (JsonReader reader = Json.createReader(entityStream)) {
             JsonObject root = reader.readObject();
             Employee existingEmployee = sm.findEmployee();
-            ro.setRegistrar(existingEmployee);
+            ro.setEmployee(existingEmployee);
             if (root.containsKey("registeredStart")) {
                 String start = root.getString("registeredStart");
                 DateTime unconfirmedStart = ISODateTimeFormat.dateTime().parseDateTime(start).toDateTime(DateTimeZone.UTC);

@@ -14,6 +14,7 @@ import javax.persistence.PersistenceContext;
 import javax.transaction.Transactional;
 import java.security.NoSuchAlgorithmException;
 import java.util.Date;
+import java.util.List;
 import java.util.Random;
 
 /**
@@ -101,12 +102,29 @@ public class JPAImportConfig {
             project.setEndDate(date.plusMonths(random.nextInt(20)).toDate());
             entityManager.persist(project);
             final int taskCount = random.nextInt(4);
+            final List<Employee> employeeList = entityManager.createNamedQuery("Employee.findAll", Employee.class).getResultList();
 
             for (int j = 0; j < taskCount; j++) {
                 final String name = "Opdracht " + project.getProjectNr() + " - " + (j + 1);
                 Task task = new Task(name, "Omschrijving van " + name, random.nextDouble() * 6, project);
                 project.getTasks().add(task);
                 entityManager.persist(task);
+
+                final int registrationCount = random.nextInt(3);
+                for (int r = 0; r < registrationCount; r++) {
+                    RegisteredOccupation occupation = new RegisteredOccupation();
+                    occupation.setOccupation(task);
+                    final DateTime registeredOccupationDate = DateTime.now().withDayOfYear(random.nextInt(365) + 1);
+                    occupation.setRegisteredStart(registeredOccupationDate.toDate());
+                    occupation.setRegisteredEnd(registeredOccupationDate.plusDays(random.nextInt(5)).toDate());
+                    occupation.setEmployee(employeeList.get(random.nextInt(employeeList.size())));
+
+                    if (random.nextBoolean()) {
+                        occupation.confirm();
+                    }
+
+                    entityManager.persist(occupation);
+                }
             }
         }
     }
