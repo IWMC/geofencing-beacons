@@ -1,5 +1,7 @@
 package com.realdolmen.timeregistration.model;
 
+import com.j256.ormlite.field.DatabaseField;
+import com.j256.ormlite.table.DatabaseTable;
 import com.realdolmen.timeregistration.util.DateUtil;
 import com.realdolmen.timeregistration.util.UTC;
 
@@ -10,18 +12,24 @@ import java.io.Serializable;
 /**
  * An entity class that represents a single time registration about an {@link Occupation} for a single Employee.
  */
+@DatabaseTable
 public class RegisteredOccupation implements Serializable {
 
+	@DatabaseField(foreign = true)
 	private Occupation occupation;
 
 	@UTC
+	@DatabaseField
 	private DateTime registeredStart;
 
 	@UTC
+	@DatabaseField
 	private DateTime registeredEnd;
 
+	@DatabaseField
 	private boolean confirmed = false;
 
+	@DatabaseField
 	private long id;
 
 	public long getId() {
@@ -32,9 +40,8 @@ public class RegisteredOccupation implements Serializable {
 		return occupation;
 	}
 
-	public
 	@UTC
-	DateTime getRegisteredStart() {
+	public DateTime getRegisteredStart() {
 		DateUtil.enforceUTC(registeredStart);
 		return registeredStart;
 	}

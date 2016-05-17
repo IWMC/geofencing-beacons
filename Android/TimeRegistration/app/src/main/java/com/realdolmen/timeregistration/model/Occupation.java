@@ -21,6 +21,9 @@ public class Occupation implements Serializable {
 	@DatabaseField(id = true)
 	private long id;
 
+	@DatabaseField
+	private User owner;
+
 	public Occupation(String name, String description) {
 		this(name);
 		this.description = description;

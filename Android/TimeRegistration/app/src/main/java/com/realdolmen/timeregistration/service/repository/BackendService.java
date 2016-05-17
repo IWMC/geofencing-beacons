@@ -20,7 +20,6 @@ import com.realdolmen.timeregistration.model.BeaconAction;
 import com.realdolmen.timeregistration.model.LoginRequest;
 import com.realdolmen.timeregistration.model.Occupation;
 import com.realdolmen.timeregistration.model.RegisteredOccupation;
-import com.realdolmen.timeregistration.model.Session;
 import com.realdolmen.timeregistration.service.GenericVolleyError;
 import com.realdolmen.timeregistration.service.ResultCallback;
 import com.realdolmen.timeregistration.service.data.UserManager;
@@ -171,7 +170,7 @@ public class BackendService {
 	}
 
 	/**
-	 * Sends a login request to the backend. The {@link Session} is converted to JSON using {@link Gson}.
+	 * Sends a login request to the backend. The {@link LoginRequest} is converted to JSON using {@link Gson}.
 	 */
 	public Promise<LoginRequest, Throwable, Void> login(@NonNull final LoginRequest loginRequest) {
 		final Deferred<LoginRequest, Throwable, Void> def = new DeferredObject<>();
