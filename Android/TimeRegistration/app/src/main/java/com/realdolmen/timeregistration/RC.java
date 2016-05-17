@@ -12,6 +12,10 @@ public interface RC {
 		interface addOccupation {
 			String ACTION_ADD = "com.realdolmen.occupation.add", ACTION_EDIT = "com.realdolmen.occupation.edit";
 		}
+
+		interface login {
+			String RE_AUTHENTICATION = "com.realdolmen.timeregistration.login.reauth";
+		}
 	}
 
 	interface actionExtras {
@@ -24,6 +28,7 @@ public interface RC {
 			interface addMultiResult {
 				String GEOFENCE_EVENT = "com.realdolmen.timeregistration.geofencing.ADD_MULTI_RESULT.GEOFENCE_EVENT";
 				String TIME_DETECTED = "com.realdolmen.timeregistration.geofencing.ADD_MULTI_RESULT.TIME_DETECTED";
+				String BEACON_EVENT = "com.realdolmen.timeregistration.geofencing.ADD_MULTI_RESULT.BEACON_EVENT";
 			}
 
 			interface removeSingleResult {
@@ -33,6 +38,8 @@ public interface RC {
 
 			interface removeMultiResult {
 				String GEOFENCE_EVENT = "com.realdolmen.timeregistration.geofencing.REMOVE_MULTI_RESULT.GEOFENCE_EVENT";
+				String BEACON_EVENT = "com.realdolmen.timeregistration.geofencing.REMOVE_MULTI_RESULT.BEACON_EVENT";
+				String TIME_DETECTED = "com.realdolmen.timeregistration.geofencing.REMOVE_MULTI_RESULT.TIME_DETECTED";
 			}
 		}
 
@@ -50,6 +57,9 @@ public interface RC {
 	interface resultCodes {
 		interface addOccupation {
 			int ADD_RESULT_CODE = 1, EDIT_RESULT_CODE = 2;
+		}
+		interface bluetooth {
+			int ENABLE_REQUEST_RESULT = 3;
 		}
 	}
 
@@ -79,22 +89,37 @@ public interface RC {
 
 	interface backend {
 
-		String HOST = "http://10.16.27.4";
+		String HOST = "http://10.16.26.134";
 
 		interface urls {
 			String API_LOGIN_URI = HOST + "/api/user/login",
+					API_VALIDATE_TOKEN = HOST + "/api/user/validate/%s",
 					API_GET_REGISTERED_OCCUPATIONS = HOST + "/api/occupations/registration/?date=%d",
 					API_CONFIRM_OCCUPATIONS = HOST + "/api/occupations/registration/%d/confirm",
 					API_ADD_OCCUPATION_REGISTRATION = HOST + "/api/occupations/registration",
 					API_GET_OCCUPATIONS = HOST + "/api/occupations/available",
 					API_GET_REGISTERED_OCCUPATIONS_RANGE = HOST + "/api/occupations/registration/range?date=%d&count=%d",
-					API_REMOVE_REGISTERED_OCCUPATION = HOST + "/api/occupations/registration/%d";
+					API_REMOVE_REGISTERED_OCCUPATION = HOST + "/api/occupations/registration/%d",
+					API_GET_BEACONS = HOST + "/api/beacons/me",
+					API_GET_BEACON_BY_ID = HOST + "/api/beacons/%s";
 		}
+	}
+
+	interface beacon {
+		String UUID = "906bbd3df3264669b1466c225a04d935";
+		boolean MEASURE_RANGE = false;
+		boolean SAVE_POWER = true;
+		int PROCESS_DELAY = 2000;
 	}
 
 	interface dtypes {
 		int OCCUPATION_DTYPE = 1;
 		int PROJECT_DTYPE = 2;
+	}
+
+	interface pref {
+		String SHARED_PREFERENCES = "com.realdolmen.timeregistration.preferences";
+		String KEY_LAST_LOGGED_IN = "lli";
 	}
 
 	interface other {

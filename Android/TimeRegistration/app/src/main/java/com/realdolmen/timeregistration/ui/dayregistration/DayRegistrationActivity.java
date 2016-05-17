@@ -1,5 +1,6 @@
 package com.realdolmen.timeregistration.ui.dayregistration;
 
+import android.bluetooth.BluetoothAdapter;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -31,9 +32,9 @@ import com.realdolmen.timeregistration.model.Occupation;
 import com.realdolmen.timeregistration.model.Project;
 import com.realdolmen.timeregistration.model.RegisteredOccupation;
 import com.realdolmen.timeregistration.service.ResultCallback;
+import com.realdolmen.timeregistration.service.location.beacon.BeaconDwellService;
 import com.realdolmen.timeregistration.service.location.geofence.GeoService;
 import com.realdolmen.timeregistration.service.location.geofence.GeofenceRequester;
-import com.realdolmen.timeregistration.service.repository.BackendService;
 import com.realdolmen.timeregistration.service.repository.LoadCallback;
 import com.realdolmen.timeregistration.service.repository.OccupationRepository;
 import com.realdolmen.timeregistration.service.repository.RegisteredOccupationRepository;
@@ -41,6 +42,7 @@ import com.realdolmen.timeregistration.service.repository.Repositories;
 import com.realdolmen.timeregistration.ui.login.LoginActivity;
 import com.realdolmen.timeregistration.util.DateUtil;
 import com.realdolmen.timeregistration.util.UTC;
+import com.realdolmen.timeregistration.util.Util;
 import com.realdolmen.timeregistration.util.adapters.dayregistration.DayRegistrationFragmentPagerAdapter;
 
 import org.jdeferred.AlwaysCallback;
@@ -55,7 +57,7 @@ import org.joda.time.DateTime;
 import java.util.ArrayList;
 import java.util.List;
 
-import butterknife.Bind;
+import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
 
@@ -70,30 +72,31 @@ import static com.realdolmen.timeregistration.RC.resultCodes.addOccupation.ADD_R
 import static com.realdolmen.timeregistration.RC.resultCodes.addOccupation.EDIT_RESULT_CODE;
 
 
+@SuppressWarnings("ConstantConditions")
 public class DayRegistrationActivity extends AppCompatActivity {
 
 	private static final String LOG_TAG = DayRegistrationActivity.class.getSimpleName();
 
 	//region UI fields
 
-	@Bind(R.id.day_registration_toolbar)
+	@BindView(R.id.day_registration_toolbar)
 	Toolbar bar;
 
-	@Bind(R.id.day_registration_tabbar)
+	@BindView(R.id.day_registration_tabbar)
 	TabLayout tabLayout;
 
-	@Bind(R.id.day_registration_viewpager)
+	@BindView(R.id.day_registration_viewpager)
 	CustomViewPager viewPager;
 
-	@Bind(R.id.day_registration_confirm_fab)
+	@BindView(R.id.day_registration_confirm_fab)
 	FloatingActionButton confirmFab;
 
-	@Bind(R.id.day_registration_fab_menu)
+	@BindView(R.id.day_registration_fab_menu)
 	FloatingActionMenu fabMenu;
 	//endregion
 
 	private boolean doubleBack;
-	private DayRegistrationFragmentPagerAdapter pagerAdapter;
+	@SuppressWarnings("FieldCanBeLocal") private DayRegistrationFragmentPagerAdapter pagerAdapter;
 	private List<DateTime> dates = new ArrayList<>();
 	public static final String SELECTED_DAY = "SELECTED_DAY";
 	private GeofenceRequester geofenceRequester;
@@ -147,6 +150,7 @@ public class DayRegistrationActivity extends AppCompatActivity {
 		super.onResume();
 	}
 
+
 	@Override
 	protected void onPause() {
 		unregisterReceiver(geofenceReceiver);
@@ -157,8 +161,24 @@ public class DayRegistrationActivity extends AppCompatActivity {
 		startService(new Intent(this, GeoService.class));
 		geofenceRequester = new GeofenceRequester(this);
 		refreshGeofences(false);
+
+		Util.BluetoothState state = Util.getBluetoothState();
+
+		if (state == Util.BluetoothState.ON) {
+			initBeacons();
+		} else if (state == Util.BluetoothState.OFF) {
+			Intent enableBtIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
+			startActivityForResult(enableBtIntent, RC.resultCodes.bluetooth.ENABLE_REQUEST_RESULT);
+		}
 	}
 
+	private void initBeacons() {
+		Intent beaconDwellManagerService2 = new Intent(this, BeaconDwellService.class);
+		startService(beaconDwellManagerService2);
+//		bindService(beaconDwellManagerService2, this, 0);
+	}
+
+	@SuppressWarnings("ConstantConditions")
 	private void initSupportActionBar() {
 		setSupportActionBar(bar);
 		getSupportActionBar().setTitle(R.string.day_registration_title);
@@ -169,7 +189,7 @@ public class DayRegistrationActivity extends AppCompatActivity {
 
 	private void initViewPager() {
 		viewPager.setSwipePagingEnabled(false);
-		viewPager.setOnPageChangeListener(new ViewPager.OnPageChangeListener() {
+		viewPager.addOnPageChangeListener(new ViewPager.OnPageChangeListener() {
 			@Override
 			public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
 
@@ -207,6 +227,7 @@ public class DayRegistrationActivity extends AppCompatActivity {
 		return true;
 	}
 
+	@SuppressWarnings("ConstantConditions")
 	@Override
 	public void onBackPressed() {
 		if (doubleBack) {
@@ -370,7 +391,12 @@ public class DayRegistrationActivity extends AppCompatActivity {
 		});
 		//endregion
 
-		Repositories.occupationRepository().reload(this);
+		Repositories.loadOccupationRepository(this).done(new DoneCallback<OccupationRepository>() {
+			@Override
+			public void onDone(OccupationRepository result) {
+				Repositories.occupationRepository().reload(DayRegistrationActivity.this);
+			}
+		});
 	}
 
 	@Override
@@ -387,6 +413,10 @@ public class DayRegistrationActivity extends AppCompatActivity {
 		} else if (requestCode == EDIT_RESULT_CODE) {
 			if (resultCode == RESULT_OK) {
 				handleUpdatedRegisteredOccupation((RegisteredOccupation) data.getSerializableExtra(EDITING_OCCUPATION));
+			}
+		} else if (requestCode == RC.resultCodes.bluetooth.ENABLE_REQUEST_RESULT) {
+			if (resultCode == RESULT_OK) {
+				initBeacons();
 			}
 		}
 	}
@@ -435,6 +465,7 @@ public class DayRegistrationActivity extends AppCompatActivity {
 	public void refreshTabIcons() {
 		for (int i = 0; i < tabLayout.getTabCount(); i++) {
 			final TabLayout.Tab tab = tabLayout.getTabAt(i);
+			tab.setIcon(R.drawable.ic_assignment_late_24dp);
 			getStateIcon(dates.get(i)).done(new DoneCallback<Integer>() {
 				@Override
 				public void onDone(Integer result) {
@@ -496,6 +527,13 @@ public class DayRegistrationActivity extends AppCompatActivity {
 
 	//endregion
 
+
+	@Override
+	protected void onDestroy() {
+//		unbindService(this);
+		super.onDestroy();
+	}
+
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
 		if (item.getItemId() == R.id.menu_refresh) {
@@ -504,7 +542,8 @@ public class DayRegistrationActivity extends AppCompatActivity {
 			return true;
 		} else if (item.getItemId() == R.id.menu_logout) {
 			finish();
-			BackendService.getCurrentSession().setJwtToken("");
+			geofenceRequester.disconnect();
+			Repositories.logout(this);
 			startActivity(new Intent(this, LoginActivity.class));
 			return true;
 		}
@@ -536,5 +575,6 @@ public class DayRegistrationActivity extends AppCompatActivity {
 		super.onRestoreInstanceState(savedInstanceState);
 		viewPager.setCurrentItem(savedInstanceState.getInt(SELECTED_DAY));
 	}
+
 	//endregion
 }

@@ -119,7 +119,7 @@ public class OccupationEndpoint {
 
 
         LocalDateTime startDate = new DateTime(date, DateTimeZone.UTC).withHourOfDay(0).withMinuteOfHour(0).toLocalDateTime();
-        System.out.println(startDate + " in zone: " + startDate.toDateTime().getZone());
+//        System.out.println(startDate + " in zone: " + startDate.toDateTime().getZone());
         if (sm.findEmployee() == null || sm.findEmployee().getId() == null || sm.findEmployee().getId() == 0) {
             return Response.status(400).build();
         }
@@ -127,7 +127,7 @@ public class OccupationEndpoint {
         //TODO: take into account timezone differences with the phone and the server
 
         TypedQuery<RegisteredOccupation> query = em.createNamedQuery("RegisteredOccupation.findOccupationsInRange", RegisteredOccupation.class);
-        System.out.printf("Performing query: Start time: %d -> %s, employee id: %d%n", startDate.toDateTime().getMillis(), startDate.toDateTime().toString(), sm.findEmployee().getId());
+//        System.out.printf("Performing query: Start time: %d -> %s, employee id: %d%n", startDate.toDateTime().getMillis(), startDate.toDateTime().toString(), sm.findEmployee().getId());
         query
                 .setParameter("employeeId", sm.findEmployee().getId())
                 .setParameter("year", startDate.get(year()))
@@ -140,10 +140,10 @@ public class OccupationEndpoint {
                     DateUtil.toUTC(new DateTime(ro.getRegisteredStart())).toDate()
             );
 
-            if(ro.getRegisteredEnd() != null)
-            ro.setRegisteredEnd(
-                    DateUtil.toUTC(new DateTime(ro.getRegisteredEnd())).toDate()
-            );
+            if (ro.getRegisteredEnd() != null)
+                ro.setRegisteredEnd(
+                        DateUtil.toUTC(new DateTime(ro.getRegisteredEnd())).toDate()
+                );
         });
 
         occupations.forEach(Initializable::initialize);
@@ -212,7 +212,7 @@ public class OccupationEndpoint {
     @Produces(MediaType.APPLICATION_JSON)
     @Transactional
     public Response getAvailableOccupations() {
-        TypedQuery<Occupation> query = em.createNamedQuery("Occupation.findOnlyOccupations" , Occupation.class);
+        TypedQuery<Occupation> query = em.createNamedQuery("Occupation.findOnlyOccupations", Occupation.class);
         List<Occupation> occupations = query.getResultList();
         occupations.forEach(Initializable::initialize);
         Employee e = sm.findEmployee();
@@ -233,7 +233,9 @@ public class OccupationEndpoint {
             count = 1;
         }
         for (int i = 0; i <= count; i++) {
-            occupations.addAll((List<RegisteredOccupation>) getRegisteredOccupations(time.minusDays(i).getMillis()).getEntity());
+            Response response = getRegisteredOccupations(time.minusDays(i).getMillis());
+            if (response.getEntity() != null)
+                occupations.addAll((List<RegisteredOccupation>) response.getEntity());
         }
         return Response.ok(occupations).build();
     }

@@ -10,7 +10,6 @@ import com.android.volley.RequestQueue;
 import com.android.volley.VolleyError;
 import com.realdolmen.timeregistration.BuildConfig;
 import com.realdolmen.timeregistration.model.RegisteredOccupation;
-import com.realdolmen.timeregistration.model.Session;
 import com.realdolmen.timeregistration.service.ResultCallback;
 import com.realdolmen.timeregistration.service.repository.BackendService;
 import com.realdolmen.timeregistration.ui.login.LoginActivity;
@@ -55,8 +54,6 @@ public class BackendServiceTest {
 
 	@InjectMocks
 	private BackendService backend;
-
-	private Session session = new Session("test", "password");
 
 	private final ObjectWrapper<Request> requestWrapper = new ObjectWrapper<>();
 

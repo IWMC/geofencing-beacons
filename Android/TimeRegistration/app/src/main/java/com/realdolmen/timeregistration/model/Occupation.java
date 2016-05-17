@@ -1,16 +1,28 @@
 package com.realdolmen.timeregistration.model;
 
+import com.j256.ormlite.field.DatabaseField;
+import com.j256.ormlite.table.DatabaseTable;
 import com.realdolmen.timeregistration.RC;
 
 import java.io.Serializable;
 
+@DatabaseTable(tableName = "Occupation")
 public class Occupation implements Serializable {
 
-	private String name = "";
-
+	private transient final int DTYPE = RC.dtypes.OCCUPATION_DTYPE;
 	private int version;
 
+	@DatabaseField
+	private String name = "";
+
+	@DatabaseField
 	private String description = "";
+
+	@DatabaseField(id = true)
+	private long id;
+
+	@DatabaseField
+	private User owner;
 
 	public Occupation(String name, String description) {
 		this(name);
@@ -33,7 +45,21 @@ public class Occupation implements Serializable {
 		this.description = description;
 	}
 
-	private transient final int DTYPE = RC.dtypes.OCCUPATION_DTYPE;
+	public long getId() {
+		return id;
+	}
+
+	public void setId(long id) {
+		this.id = id;
+	}
+
+	public int getVersion() {
+		return version;
+	}
+
+	public void setVersion(int version) {
+		this.version = version;
+	}
 
 	public Occupation(String name) {
 		this.name = name;
@@ -70,23 +96,5 @@ public class Occupation implements Serializable {
 		result = 31 * result + (description != null ? description.hashCode() : 0);
 		result = 31 * result + (int) (id ^ (id >>> 32));
 		return result;
-	}
-
-	private long id;
-
-	public long getId() {
-		return id;
-	}
-
-	public void setId(long id) {
-		this.id = id;
-	}
-
-	public int getVersion() {
-		return version;
-	}
-
-	public void setVersion(int version) {
-		this.version = version;
 	}
 }

@@ -53,6 +53,7 @@ public class JPAImportConfig {
         Project project = new Project();
         project.setProjectNr(8);
         project.setStartDate(new Date());
+
         project.setName("Project X");
         project.setDescription("The super secret project no one can know about");
         project.setEndDate(DateUtils.addMonths(new Date(), 3));
@@ -72,8 +73,13 @@ public class JPAImportConfig {
             entityManager.persist(oo);
         }
 
+        Beacon b = new Beacon();
+        b.getOccupations().add(project);
+        b.setMode(new BeaconMode(true, 1));
+
         entityManager.persist(o);
         entityManager.persist(project);
+        entityManager.persist(b);
         entityManager.persist(otherProject);
 
         createAndPersistOccupations();

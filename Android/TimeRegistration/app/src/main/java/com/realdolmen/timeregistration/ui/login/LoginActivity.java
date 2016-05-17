@@ -1,10 +1,11 @@
 package com.realdolmen.timeregistration.ui.login;
 
 import android.app.ProgressDialog;
+import android.content.ComponentName;
 import android.content.Intent;
+import android.content.ServiceConnection;
 import android.os.Bundle;
-import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
+import android.os.IBinder;
 import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
@@ -14,42 +15,103 @@ import android.widget.EditText;
 
 import com.android.volley.VolleyError;
 import com.realdolmen.timeregistration.R;
-import com.realdolmen.timeregistration.model.Session;
+import com.realdolmen.timeregistration.RC;
 import com.realdolmen.timeregistration.service.GenericVolleyError;
-import com.realdolmen.timeregistration.service.ResultCallback;
-import com.realdolmen.timeregistration.service.repository.BackendService;
+import com.realdolmen.timeregistration.service.data.UserManager;
+import com.realdolmen.timeregistration.service.location.beacon.BeaconDwellService;
 import com.realdolmen.timeregistration.ui.dayregistration.DayRegistrationActivity;
 
-import butterknife.Bind;
+import org.jdeferred.DoneCallback;
+import org.jdeferred.FailCallback;
+
+import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
 
-public class LoginActivity extends AppCompatActivity {
+public class LoginActivity extends AppCompatActivity implements ServiceConnection {
 
 	private static final String TAG = "LOGIN";
 	private static final boolean DEBUG = true;
-	@Bind(R.id.login_username)
+
+	@BindView(R.id.login_username)
 	EditText username;
 
-	@Bind(R.id.login_password)
+	@BindView(R.id.login_password)
 	EditText password;
 
-	@Bind(R.id.login_login_button)
+	@BindView(R.id.login_login_button)
 	Button loginButton;
 
 	private boolean loggingIn;
 	private boolean ignoreDismiss = false;
 
+	private BeaconDwellService dwellManager;
+	private boolean canNotifyService;
+
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		setContentView(R.layout.activity_login);
-		ButterKnife.bind(this);
-		if (DEBUG) {
-			username.setText("brentc");
-			password.setText("Bla123");
-		}
 
+		final ProgressDialog loginProgress = new ProgressDialog(this);
+		loginProgress.setIndeterminate(true);
+		loginProgress.setMessage(getString(R.string.login_logging_in));
+		loginProgress.show();
+		loginProgress.setCanceledOnTouchOutside(false);
+		loginProgress.setCancelable(false);
+		UserManager.with(this).checkLocalLogin().done(new DoneCallback<Void>() {
+			@Override
+			public void onDone(Void result) {
+				runOnUiThread(new Runnable() {
+					@Override
+					public void run() {
+						if (!ignoreDismiss)
+							loginProgress.dismiss();
+					}
+				});
+				loggingIn = false;
+				onSuccessfulLogin();
+			}
+		}).fail(new FailCallback<Throwable>() {
+			@Override
+			public void onFail(Throwable result) {
+				runOnUiThread(new Runnable() {
+					@Override
+					public void run() {
+						if (!ignoreDismiss)
+							loginProgress.dismiss();
+					}
+				});
+				loggingIn = false;
+				if (result instanceof IllegalStateException) {
+					//Proceed with regular login procedure
+					runOnUiThread(new Runnable() {
+						@Override
+						public void run() {
+							setContentView(R.layout.activity_login);
+							ButterKnife.bind(LoginActivity.this);
+							if (DEBUG) {
+								username.setText("brentc");
+								password.setText("Bla123");
+							}
+						}
+					});
+				} else {
+					//Network unavailable
+					Snackbar.make(findViewById(R.id.day_registration_root_view), "Network exception", Snackbar.LENGTH_LONG).show();
+				}
+			}
+		});
+	}
+
+	private void onSuccessfulLogin() {
+		Log.d(TAG, "onSuccessfulLogin: Login successful");
+		finish();
+		if(getIntent() != null && getIntent().getAction() != null && getIntent().getAction().equals(RC.action.login.RE_AUTHENTICATION)) {
+			bindService(new Intent(this, BeaconDwellService.class), this, 0);
+			canNotifyService = true;
+		} else {
+			startActivity(new Intent(getApplicationContext(), DayRegistrationActivity.class));
+		}
 	}
 
 	@Override
@@ -60,67 +122,81 @@ public class LoginActivity extends AppCompatActivity {
 
 	@OnClick(R.id.login_login_button)
 	public void doLogin() {
+		if (loggingIn) {
+			return;
+		}
 		if (validate()) {
 			loggingIn = true;
-			final ProgressDialog loginProgress = new ProgressDialog(this);
-			loginProgress.setIndeterminate(true);
-			loginProgress.setMessage(getString(R.string.login_logging_in));
-			loginProgress.show();
-			loginProgress.setCanceledOnTouchOutside(false);
-			loginProgress.setCancelable(false);
-			BackendService.with(this).login(new Session(username.getText().toString(), password.getText().toString()), new ResultCallback<Session>() {
-				@Override
-				public void onResult(@NonNull Result result, @Nullable Session data, @Nullable VolleyError error) {
-					Log.i(TAG, result.name());
-					if (result == Result.SUCCESS) {
-						runOnUiThread(new Runnable() {
-							@Override
-							public void run() {
-								if (!ignoreDismiss)
-									loginProgress.dismiss();
-							}
-						});
-						loggingIn = false;
-						finish();
-						startActivity(new Intent(getApplicationContext(), DayRegistrationActivity.class));
-					} else if (error.networkResponse != null) {
+			doLoginStep2();
+		}
+	}
+
+	private void doLoginStep2() {
+		final ProgressDialog loginProgress = new ProgressDialog(this);
+		loginProgress.setIndeterminate(true);
+		loginProgress.setMessage(getString(R.string.login_logging_in));
+		loginProgress.show();
+		loginProgress.setCanceledOnTouchOutside(false);
+		loginProgress.setCancelable(false);
+
+		UserManager.with(this).doLogin(username.getText().toString(), password.getText().toString()).done(new DoneCallback<Void>() {
+			@Override
+			public void onDone(Void result) {
+				runOnUiThread(new Runnable() {
+					@Override
+					public void run() {
+						if (!ignoreDismiss)
+							loginProgress.dismiss();
+					}
+				});
+				loggingIn = false;
+				onSuccessfulLogin();
+			}
+		}).fail(new FailCallback<Throwable>() {
+			@Override
+			public void onFail(Throwable result) {
+
+				if (result instanceof GenericVolleyError) {
+					final Snackbar bar = Snackbar.make(findViewById(android.R.id.content), R.string.login_server_unreachable, Snackbar.LENGTH_INDEFINITE);
+					bar.setAction(R.string.login_retry, new View.OnClickListener() {
+						@Override
+						public void onClick(View v) {
+							bar.dismiss();
+							doLogin();
+						}
+					}).show();
+
+					new android.os.Handler().postDelayed(new Runnable() {
+						@Override
+						public void run() {
+							bar.dismiss();
+						}
+					}, 10000);
+				} else if (result instanceof VolleyError) {
+					VolleyError error = (VolleyError) result;
+					if (error.networkResponse != null) {
 						if (error.networkResponse.statusCode == 400) {
 							Snackbar.make(findViewById(android.R.id.content), R.string.login_incorrect_credentials, Snackbar.LENGTH_LONG).show();
 						} else {
 							Snackbar.make(findViewById(android.R.id.content), R.string.login_generic_error, Snackbar.LENGTH_LONG).show();
 						}
 					} else {
-						if (error instanceof GenericVolleyError) {
-							Log.e(TAG, "onError: " + error.getMessage());
-						}
-						final Snackbar bar = Snackbar.make(findViewById(android.R.id.content), R.string.login_server_unreachable, Snackbar.LENGTH_INDEFINITE);
-						bar.setAction(R.string.login_retry, new View.OnClickListener() {
-							@Override
-							public void onClick(View v) {
-								bar.dismiss();
-								doLogin();
-							}
-						}).show();
-
-						new android.os.Handler().postDelayed(new Runnable() {
-							@Override
-							public void run() {
-								bar.dismiss();
-							}
-						}, 10000);
+						Snackbar.make(findViewById(android.R.id.content), R.string.login_generic_error, Snackbar.LENGTH_LONG).show();
 					}
-
-					runOnUiThread(new Runnable() {
-						@Override
-						public void run() {
-							if (!ignoreDismiss)
-								loginProgress.dismiss();
-						}
-					});
-					loggingIn = false;
+				} else {
+					Snackbar.make(findViewById(R.id.day_registration_root_view), "An error occured.", Snackbar.LENGTH_LONG).show();
 				}
-			});
-		}
+
+				runOnUiThread(new Runnable() {
+					@Override
+					public void run() {
+						if (!ignoreDismiss)
+							loginProgress.dismiss();
+					}
+				});
+				loggingIn = false;
+			}
+		});
 	}
 
 	private boolean validate() {
@@ -136,5 +212,21 @@ public class LoginActivity extends AppCompatActivity {
 		}
 
 		return valid && !loggingIn;
+	}
+
+	@Override
+	public void onServiceConnected(ComponentName name, IBinder service) {
+		if (service instanceof BeaconDwellService.Binder) {
+			dwellManager = ((BeaconDwellService.Binder) service).getService();
+		}
+
+		if(canNotifyService) {
+			dwellManager.positiveLoginResult();
+		}
+	}
+
+	@Override
+	public void onServiceDisconnected(ComponentName name) {
+
 	}
 }

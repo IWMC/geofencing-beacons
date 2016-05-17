@@ -32,7 +32,7 @@ import com.realdolmen.timeregistration.util.adapters.dayregistration.OccupationR
 
 import org.joda.time.DateTime;
 
-import butterknife.Bind;
+import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
 
@@ -49,19 +49,19 @@ public class AddOccupationActivity extends AppCompatActivity {
 
 	private static final String LOG_TAG = AddOccupationActivity.class.getSimpleName();
 
-	@Bind(R.id.add_occupation_toolbar)
+	@BindView(R.id.add_occupation_toolbar)
 	Toolbar bar;
 
-	@Bind(R.id.add_occupation_recycler)
+	@BindView(R.id.add_occupation_recycler)
 	RecyclerView recycler;
 
-	@Bind(R.id.add_occupation_date_title)
+	@BindView(R.id.add_occupation_date_title)
 	TextView title;
 
-	@Bind(R.id.add_occupation_startTime)
+	@BindView(R.id.add_occupation_startTime)
 	Button startButton;
 
-	@Bind(R.id.add_occupation_endTime)
+	@BindView(R.id.add_occupation_endTime)
 	Button endButton;
 
 	private boolean initializing;
@@ -73,7 +73,7 @@ public class AddOccupationActivity extends AppCompatActivity {
 	@UTC
 	private DateTime startDate, endDate, baseDate;
 
-	@Bind(R.id.add_occupation_date_title_container)
+	@BindView(R.id.add_occupation_date_title_container)
 	TableRow titleContainer;
 
 	private RegisteredOccupation registeredOccupationToBeEdited;

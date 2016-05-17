@@ -35,6 +35,7 @@ public class RegisteredOccupation implements Initializable {
     }
 
     @ManyToOne
+    @JsonIgnore
     private Employee registrar;
 
     private boolean confirmed = false;

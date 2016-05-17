@@ -3,6 +3,9 @@ package com.realdolmen.timeregistration.model;
 import android.location.Location;
 
 import com.google.android.gms.location.Geofence;
+import com.j256.ormlite.field.DatabaseField;
+import com.j256.ormlite.field.ForeignCollectionField;
+import com.j256.ormlite.table.DatabaseTable;
 import com.realdolmen.timeregistration.RC;
 
 import org.joda.time.DateTime;
@@ -14,16 +17,21 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
+@DatabaseTable
 public class Project extends Occupation implements Serializable {
 
+	@DatabaseField
 	private DateTime startDate;
 
+	@DatabaseField
 	private DateTime endDate;
 
+	@DatabaseField
 	private int projectNr;
 
 	private final transient int DTYPE = RC.dtypes.PROJECT_DTYPE;
 
+	@ForeignCollectionField // TODO: 16/05/2016 Check if sets work in the database
 	private Set<Project> subProjects = new HashSet<>();
 
 	private transient Map<Location, Geofence> geofenceMap = new HashMap<>();

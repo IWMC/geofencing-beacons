@@ -1,23 +1,13 @@
 package com.realdolmen.timeregistration.model;
 
-public class Session {
-
+public class LoginRequest {
 	private String username;
 	private String password;
+	private String token;
 
-	private String jwtToken;
-
-	public Session(String username, String password) {
+	public LoginRequest(String username, String password) {
 		this.username = username;
 		this.password = password;
-	}
-
-	public String getJwtToken() {
-		return jwtToken;
-	}
-
-	public void setJwtToken(String jwtToken) {
-		this.jwtToken = jwtToken;
 	}
 
 	public String getUsername() {
@@ -34,5 +24,17 @@ public class Session {
 
 	public void setPassword(String password) {
 		this.password = password;
+	}
+
+	public String getToken() {
+		return token;
+	}
+
+	public void setToken(String token) {
+		this.token = token;
+	}
+
+	public User toUser() {
+		return new User(username, token);
 	}
 }

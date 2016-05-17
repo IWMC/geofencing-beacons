@@ -41,6 +41,7 @@ public class RegisteredOccupationRepository extends DataRepository<RegisteredOcc
 	 * @param callback The optional {@link LoadCallback} to be used when data loading is complete.
 	 */
 	RegisteredOccupationRepository(@NonNull Context context, @Nullable final LoadCallback callback) {
+		super(context);
 		reload(context).done(new DoneCallback<RegisteredOccupationRepository>() {
 			@Override
 			public void onDone(RegisteredOccupationRepository result) {
@@ -57,6 +58,8 @@ public class RegisteredOccupationRepository extends DataRepository<RegisteredOcc
 			}
 		});
 	}
+
+
 
 	/**
 	 * Saves a {@link RegisteredOccupation} to the backend. If the {@code RegisteredOccupation} does
@@ -246,5 +249,11 @@ public class RegisteredOccupationRepository extends DataRepository<RegisteredOcc
 				isConfirmed = false;
 		}
 		return isConfirmed;
+	}
+
+	@Override
+	public void clear() {
+		super.clear();
+		invalidateData();
 	}
 }

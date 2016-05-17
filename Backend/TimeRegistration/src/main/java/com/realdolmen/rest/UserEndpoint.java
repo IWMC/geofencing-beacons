@@ -5,6 +5,7 @@ import com.realdolmen.annotations.UserGroup;
 import com.realdolmen.entity.Employee;
 import com.realdolmen.entity.PersistenceUnit;
 import com.realdolmen.entity.validation.New;
+import com.realdolmen.json.JsonWebToken;
 import com.realdolmen.service.SecurityManager;
 import com.realdolmen.validation.ValidationResult;
 import com.realdolmen.validation.Validator;
@@ -18,10 +19,7 @@ import javax.persistence.EntityManager;
 import javax.persistence.NoResultException;
 import javax.persistence.PersistenceContext;
 import javax.validation.constraints.NotNull;
-import javax.ws.rs.Consumes;
-import javax.ws.rs.POST;
-import javax.ws.rs.Path;
-import javax.ws.rs.Produces;
+import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriBuilder;
@@ -103,6 +101,16 @@ public class UserEndpoint {
         }
 
         return Response.ok().entity(securityManager.generateToken(dbEmployee)).build();
+    }
+
+    @GET
+    @Path("validate/{token}")
+    public Response validateLoginToken(@PathParam("token") String token) {
+        if (securityManager.isValidToken(new JsonWebToken(token))) {
+            return Response.noContent().build();
+        }
+
+        return Response.status(Response.Status.BAD_REQUEST).build();
     }
 
     @Nullable

@@ -29,6 +29,7 @@ public class OccupationRepository extends DataRepository<Occupation, Occupation,
 	 * @param callback The optional {@link LoadCallback} to be used when data loading is complete.
 	 */
 	OccupationRepository(@NonNull Context context, final @Nullable LoadCallback callback) {
+		super(context);
 		reload(context).done(new DoneCallback<OccupationRepository>() {
 			@Override
 			public void onDone(OccupationRepository result) {
