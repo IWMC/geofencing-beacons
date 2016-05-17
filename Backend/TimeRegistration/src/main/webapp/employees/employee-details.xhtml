@@ -13,7 +13,8 @@
     </f:metadata>
     <ui:composition template="../page-template.xhtml">
         <ui:define name="toolbar-after-logo">
-            <h5 class="col s12 hide-on-med-and-down" id="subtitle"><h:outputText value="#{msg['employee.details.title']}"/>
+            <h5 class="col s12 hide-on-med-and-down" id="subtitle"><h:outputText
+                    value="#{msg['employee.details.title']}"/>
             </h5>
         </ui:define>
         <ui:define name="additional-toolbar-full">
@@ -39,7 +40,7 @@
                             <h4 class="thin"><h:outputText value="#{msg['employee.no_project']}"/></h4>
                         </h:panelGroup>
                         <h:panelGroup rendered="#{employeeDetails.employee.memberProjects.size() > 0}">
-                            <h4 class="thin"><h:outputText value="#{msg['employee.projects_present']}" /></h4>
+                            <h4 class="thin"><h:outputText value="#{msg['employee.projects_present']}"/></h4>
                             <div class="collection small-collection center-block">
                                 <ui:repeat value="#{of:setToList(employeeDetails.employee.memberProjects)}"
                                            var="project">
@@ -49,29 +50,32 @@
                             </div>
                         </h:panelGroup>
                     </div>
-                    <div class="card-action">
-                        <h:link outcome="#{pages.editEmployee().param('id', employeeDetails.userId).asLinkOutcome()}" styleClass="waves-effect waves-orange card-action-flat" value="Wijzigen" />
-                        <a class="red-text text-lighten-1 right modal-trigger waves-effect waves-red card-action-flat"
-                           href="#remove-warning"><h:outputText value="#{msg['remove']}"/></a>
-                        <div id="remove-warning" class="modal">
-                            <div class="modal-content">
-                                <h4><h:outputText value="#{msg['employee.remove_warning.title']}"/></h4>
-                                <p><h:outputText value="#{msg['employee.remove_warning.description']}"/></p>
-                            </div>
-                            <div class="modal-footer">
-                                <h:form>
-                                    <a href="#"
-                                       class="green-text modal-action modal-close waves-effect waves-green btn-flat">
-                                        <h:outputText value="#{msg['no']}"/>
-                                    </a>
-                                    <h:commandLink
-                                            styleClass="red-text modal-action modal-close waves-effect waves-red btn-flat"
-                                            value="#{msg['yes']}"
-                                            action="#{employeeDetails.removeUser()}"/>
-                                </h:form>
+                    <h:panelGroup rendered="#{userContext.isManagementEmployee}">
+                        <div class="card-action">
+                            <h:link outcome="#{pages.editEmployee().param('id', employeeDetails.userId).asLinkOutcome()}"
+                                    styleClass="waves-effect waves-orange card-action-flat" value="Wijzigen"/>
+                            <a class="red-text text-lighten-1 right modal-trigger waves-effect waves-red card-action-flat"
+                               href="#remove-warning"><h:outputText value="#{msg['remove']}"/></a>
+                            <div id="remove-warning" class="modal">
+                                <div class="modal-content">
+                                    <h4><h:outputText value="#{msg['employee.remove_warning.title']}"/></h4>
+                                    <p><h:outputText value="#{msg['employee.remove_warning.description']}"/></p>
+                                </div>
+                                <div class="modal-footer">
+                                    <h:form>
+                                        <a href="#"
+                                           class="green-text modal-action modal-close waves-effect waves-green btn-flat">
+                                            <h:outputText value="#{msg['no']}"/>
+                                        </a>
+                                        <h:commandLink
+                                                styleClass="red-text modal-action modal-close waves-effect waves-red btn-flat"
+                                                value="#{msg['yes']}"
+                                                action="#{employeeDetails.removeUser()}"/>
+                                    </h:form>
+                                </div>
                             </div>
                         </div>
-                    </div>
+                    </h:panelGroup>
                 </div>
             </div>
         </ui:define>

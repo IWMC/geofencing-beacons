@@ -3,6 +3,7 @@ package com.realdolmen.json;
 
 import com.realdolmen.entity.Employee;
 
+import javax.json.Json;
 import javax.json.*;
 import javax.json.Json;
 import javax.ws.rs.Produces;

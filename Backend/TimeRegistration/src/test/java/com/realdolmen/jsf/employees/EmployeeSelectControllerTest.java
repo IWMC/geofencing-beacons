@@ -64,7 +64,7 @@ public class EmployeeSelectControllerTest {
     public void testControllerRedirectsWhenNoOccupationId() throws Exception {
         ExternalContext externalContext = mock(ExternalContext.class);
         when(facesContext.getExternalContext()).thenReturn(externalContext);
-        controller.onOccupationId();
+        controller.onParentId();
         verify(externalContext, atLeastOnce()).redirect(Pages.searchOccupation().asLocationRedirect());
     }
 
@@ -74,7 +74,7 @@ public class EmployeeSelectControllerTest {
         when(facesContext.getExternalContext()).thenReturn(externalContext);
         when(occupationEndpoint.findById(project.getId())).thenReturn(Response.ok(project).build());
         controller.setOccupationId(String.valueOf(project.getId()));
-        controller.onOccupationId();
+        controller.onParentId();
         assertEquals("controller should set the correct active occupation", project, controller.getProject());
         verify(externalContext, never()).redirect(any());
     }
@@ -85,7 +85,7 @@ public class EmployeeSelectControllerTest {
         when(facesContext.getExternalContext()).thenReturn(externalContext);
         when(occupationEndpoint.findById(project.getId())).thenReturn(Response.status(Response.Status.NOT_FOUND).build());
         controller.setOccupationId(String.valueOf(project.getId()));
-        controller.onOccupationId();
+        controller.onParentId();
         verify(externalContext, atLeastOnce()).redirect(Pages.searchOccupation().asLocationRedirect());
     }
 
@@ -109,7 +109,7 @@ public class EmployeeSelectControllerTest {
         controller.setProject(project);
         controller.setOccupationId(String.valueOf(project.getId()));
 
-        controller.addEmployeeToProject(employee);
+        controller.addEmployeeToParent(employee);
         assertEquals("project should contain 1 employee", 1, project.getEmployees().size());
         assertEquals("project should contain the correct employee", employee, project.getEmployees().iterator().next());
     }
@@ -120,7 +120,7 @@ public class EmployeeSelectControllerTest {
         employee.setId(10l);
         controller.setProject(project);
         controller.setOccupationId(String.valueOf(project.getId()));
-        controller.addEmployeeToProject(employee);
+        controller.addEmployeeToParent(employee);
         verify(em, atLeastOnce()).merge(project);
     }
 
@@ -130,7 +130,7 @@ public class EmployeeSelectControllerTest {
         employee.setId(10l);
         controller.setProject(project);
         controller.setOccupationId(String.valueOf(project.getId()));
-        controller.addEmployeeToProject(employee);
+        controller.addEmployeeToParent(employee);
         verify(em, atLeastOnce()).merge(employee);
     }
 
@@ -140,7 +140,7 @@ public class EmployeeSelectControllerTest {
         employee.setId(10l);
         controller.setProject(project);
         controller.setOccupationId(String.valueOf(project.getId()));
-        String response = controller.addEmployeeToProject(employee);
+        String response = controller.addEmployeeToParent(employee);
         assertEquals("response should be the correct redirection string",
                 Pages.editProject().param("id", String.valueOf(project.getId())).asRedirect(), response);
     }

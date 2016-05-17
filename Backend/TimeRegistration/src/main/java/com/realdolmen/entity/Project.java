@@ -25,7 +25,8 @@ import java.util.Set;
 @XmlRootElement
 @Indexed
 @NamedQueries({
-        @NamedQuery(name = "Project.findAll", query = "SELECT p FROM Project p")
+        @NamedQuery(name = "Project.findAll", query = "SELECT p FROM Project p"),
+        @NamedQuery(name = "Project.findProjectWithEmployeesById", query = "SELECT p FROM Project p JOIN FETCH p.employees where p.id=:id")
 })
 public class Project extends Occupation implements Serializable {
 
@@ -84,7 +85,7 @@ public class Project extends Occupation implements Serializable {
     @JsonInclude(JsonInclude.Include.NON_DEFAULT)
     private Set<Location> locations = new HashSet<>();
 
-    @OneToMany(mappedBy = "project")
+    @OneToMany(mappedBy = "project", cascade = CascadeType.REMOVE)
     @JsonInclude(JsonInclude.Include.NON_DEFAULT)
     private Set<Task> tasks = new HashSet<>();
 

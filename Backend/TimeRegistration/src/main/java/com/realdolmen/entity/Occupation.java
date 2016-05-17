@@ -20,7 +20,7 @@ import java.io.Serializable;
 @Inheritance(strategy = InheritanceType.JOINED)
 @NamedQueries({
         @NamedQuery(name = "Occupation.findOnlyOccupations", query = "SELECT o FROM Occupation o WHERE TYPE(o) IN (Occupation) ORDER BY o.name"),
-        @NamedQuery(name = "Occupation.findAll", query = "SELECT o FROM Occupation o"),
+        @NamedQuery(name = "Occupation.findAll", query = "SELECT o FROM Occupation o WHERE TYPE(o) IN (Occupation, Project)"),
         @NamedQuery(name = "Occupation.removeById", query = "DELETE FROM Occupation o WHERE o.id = :id")
 })
 @Indexed
@@ -39,11 +39,12 @@ public class Occupation implements Serializable, Initializable {
         }
 
         if (occupation instanceof Task) {
-            Hibernate.initialize(occupation);
+            Hibernate.initialize(((Task) occupation).getEmployees());
+            Project.initialize(((Task) occupation).getProject());
         }
     }
 
-    @Column(unique = true)
+    @Column
     @NotNull(message = "name.empty")
     @Size(min = 1, message = "name.empty")
     @Field
@@ -105,8 +106,7 @@ public class Occupation implements Serializable, Initializable {
         if (version != that.version) return false;
         if (id != that.id) return false;
         if (!name.equals(that.name)) return false;
-        return description.equals(that.description);
-
+        return description == null && that.description == null || description.equals(that.description);
     }
 
     @Override

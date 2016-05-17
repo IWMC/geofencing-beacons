@@ -1,8 +1,9 @@
 package com.realdolmen.rest;
 
 import com.realdolmen.entity.*;
+import com.realdolmen.entity.dao.TaskDao;
 import com.realdolmen.entity.validation.Existing;
-import com.realdolmen.jsf.Session;
+import com.realdolmen.jsf.UserContext;
 import com.realdolmen.service.SecurityManager;
 import com.realdolmen.validation.ValidationResult;
 import com.realdolmen.validation.Validator;
@@ -28,9 +29,9 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
-import java.util.function.Supplier;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
 import static org.mockito.Mockito.*;
 
 public class OccupationEndpointTest {
@@ -41,39 +42,38 @@ public class OccupationEndpointTest {
     @Mock
     private SecurityManager sm;
 
-    private Session session = new Session();
-
     @Mock
     private Validator<Occupation> occupationValidator;
 
     @Mock
     private UserTransaction utx;
 
+    @Mock
+    private TaskDao taskDao;
+
     @InjectMocks
     private OccupationEndpoint endpoint;
 
+    private UserContext userContext = new UserContext();
+
     private RollbackException existingOccupationException;
 
-    private Supplier rollbackExceptionSupplier = () -> {
-        try {
-            utx.commit();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
-        return null;
-    };
-
     private List<RegisteredOccupation> occupations;
+    private Location location = new Location(10d, 11d);
+    private JsonObjectBuilder point = Json.createObjectBuilder().add("long", String.valueOf(location.getLongitude()))
+            .add("lat", String.valueOf(location.getLatitude()));
+    private Occupation occupationUpdate = new Occupation("occupation name", "occupation description");
+    private Project project = new Project();
 
     @Before
     public void setUp() throws Exception {
         endpoint = new OccupationEndpoint();
+        project.setId(10l);
         MockitoAnnotations.initMocks(this);
         when(sm.isValidToken(any())).thenReturn(true);
-        session.setEmployee(new ManagementEmployee());
-        session.getEmployee().setId(1L);
-        when(sm.findByJwt(any())).thenReturn(session.getEmployee());
+        userContext.setEmployee(new ManagementEmployee());
+        userContext.getUser().setId(1L);
+        when(sm.findByJwt(any())).thenReturn(userContext.getUser());
         Occupation oc1 = new Occupation();
         oc1.setName("Lunch");
         Occupation oc2 = new Occupation();
@@ -91,7 +91,7 @@ public class OccupationEndpointTest {
 
     @Test
     public void testGetOccupationsWithStartDateOnlyReturnsAllOccupationsOfThatDay() {
-        when(sm.findEmployee()).thenReturn(session.getEmployee());
+        when(sm.findEmployee()).thenReturn(userContext.getUser());
         TypedQuery<RegisteredOccupation> query = when(mock(TypedQuery.class).getResultList()).thenReturn(occupations).getMock();
         when(query.setParameter(anyString(), any())).thenReturn(query);
         when(em.createNamedQuery("RegisteredOccupation.findOccupationsInRange", RegisteredOccupation.class))
@@ -104,7 +104,7 @@ public class OccupationEndpointTest {
 
     @Test
     public void testGetOccupationsWithEndDateOnlyReturnsBadRequest() {
-        when(sm.findEmployee()).thenReturn(session.getEmployee());
+        when(sm.findEmployee()).thenReturn(userContext.getUser());
         Response response = endpoint.getRegisteredOccupations(0);
         assertEquals("Response should be 400 because there is no start time: " + response.getEntity(), 400, response.getStatus());
     }
@@ -114,7 +114,7 @@ public class OccupationEndpointTest {
         List<Occupation> allOccupations = new ArrayList<>(Arrays.asList(new Occupation[]{
                 new Occupation("Occupation", "Occupation description"), new Project("Project", "Project description", 5, new Date(), new Date())
         }));
-        when(sm.findEmployee()).thenReturn(session.getEmployee());
+        when(sm.findEmployee()).thenReturn(userContext.getUser());
         TypedQuery<Occupation> query = when(mock(TypedQuery.class).getResultList()).thenReturn(allOccupations).getMock();
         when(query.setParameter(anyString(), any())).thenReturn(query);
         when(em.createNamedQuery("Occupation.findAll", Occupation.class))
@@ -130,7 +130,7 @@ public class OccupationEndpointTest {
         List<Occupation> allOccupations = new ArrayList<>(Arrays.asList(new Occupation[]{
                 new Occupation("Occupation", "Occupation description"), new Project("Project", "Project description", 5, new Date(), new Date())
         }));
-        when(sm.findEmployee()).thenReturn(session.getEmployee());
+        when(sm.findEmployee()).thenReturn(userContext.getUser());
         TypedQuery<Occupation> query = when(mock(TypedQuery.class).getResultList()).thenReturn(allOccupations).getMock();
         when(query.setParameter(anyString(), any())).thenReturn(query);
         when(em.createNamedQuery("Occupation.findAll", Occupation.class))
@@ -145,7 +145,7 @@ public class OccupationEndpointTest {
 
     @Test
     public void testGetOccupationsWithStartAndEndDateReturnsList() {
-        when(sm.findEmployee()).thenReturn(session.getEmployee());
+        when(sm.findEmployee()).thenReturn(userContext.getUser());
         TypedQuery<RegisteredOccupation> query = when(mock(TypedQuery.class).getResultList()).thenReturn(occupations).getMock();
         when(query.setParameter(anyString(), any())).thenReturn(query);
         when(em.createNamedQuery("RegisteredOccupation.findOccupationsInRange", RegisteredOccupation.class))
@@ -158,15 +158,11 @@ public class OccupationEndpointTest {
 
     @Test
     public void testGetOccupationsWithInvalidUserReturnsBadRequest() {
-        session.getEmployee().setId(0L);
-        when(sm.findEmployee()).thenReturn(session.getEmployee());
+        userContext.getUser().setId(0L);
+        when(sm.findEmployee()).thenReturn(userContext.getUser());
         Response response = endpoint.getRegisteredOccupations(new Date().getTime());
         assertEquals("Response should be 400 because the user is invalid (but somehow passed authentication): " + response.getEntity(), 400, response.getStatus());
     }
-    private Location location = new Location(10d, 11d);
-
-    private JsonObjectBuilder point = Json.createObjectBuilder().add("long", String.valueOf(location.getLongitude()))
-            .add("lat", String.valueOf(location.getLatitude()));
 
     @Test
     public void testAddLocationPointReturns404OnInvalidId() throws Exception {
@@ -216,7 +212,7 @@ public class OccupationEndpointTest {
 
     @Test
     public void testRemoveOccupationWithValidIdResultsIn204() throws Exception {
-        when(sm.findEmployee()).thenReturn(session.getEmployee());
+        when(sm.findEmployee()).thenReturn(userContext.getUser());
         RegisteredOccupation ro = new RegisteredOccupation();
         ro.setId(25);
         ro.setOccupation(new Occupation());
@@ -234,7 +230,7 @@ public class OccupationEndpointTest {
 
     @Test
     public void testRemoveOccupationWithInvalidIdResultsInNotModified() throws Exception {
-        when(sm.findEmployee()).thenReturn(session.getEmployee());
+        when(sm.findEmployee()).thenReturn(userContext.getUser());
         RegisteredOccupation ro = new RegisteredOccupation();
         ro.setId(27);
         ro.setOccupation(new Occupation());
@@ -292,7 +288,7 @@ public class OccupationEndpointTest {
     @Test
     public void testSaveOccupationReturns400OnExistingInvalidOccupation() throws Exception {
         Occupation occupation = new Occupation("", "Occupation description");
-        when(rollbackExceptionSupplier.get()).thenThrow(existingOccupationException);
+        doThrow(existingOccupationException).when(utx).commit();
         when(occupationValidator.validate(eq(occupation), anyVararg())).thenReturn(new ValidationResult(false));
         Response response = endpoint.addOccupation(occupation);
         assertEquals("response should have 400 status code", Response.Status.BAD_REQUEST.getStatusCode(), response.getStatus());
@@ -302,13 +298,11 @@ public class OccupationEndpointTest {
     @Test
     public void testSaveOccupationReturns400OnExistingValidOccupation() throws Exception {
         Occupation occupation = new Occupation("Occupation name", "Occupation description");
-        when(rollbackExceptionSupplier.get()).thenThrow(existingOccupationException);
+        doThrow(existingOccupationException).when(utx).commit();
         when(occupationValidator.validate(eq(occupation), anyVararg())).thenReturn(new ValidationResult(true));
         Response response = endpoint.addOccupation(occupation);
         assertEquals("response should have 409 status code", Response.Status.CONFLICT.getStatusCode(), response.getStatus());
     }
-
-    private Occupation occupationUpdate = new Occupation("occupation name", "occupation description");
 
     @Test
     public void testUpdateUpdatesOnSuccessfulValidationResult() throws Exception {
@@ -336,7 +330,7 @@ public class OccupationEndpointTest {
     @Test
     public void testUpdateReturnsConflictResponseOnUniqueConstraintViolation() throws Exception {
         when(occupationValidator.validate(occupationUpdate, Existing.class)).thenReturn(new ValidationResult(true));
-        when(rollbackExceptionSupplier.get()).thenThrow(existingOccupationException);
+        doThrow(existingOccupationException).when(utx).commit();
         Response response = endpoint.update(occupationUpdate.getId(), occupationUpdate);
         assertEquals("response should have CONFLICT status code", Response.Status.CONFLICT.getStatusCode(), response.getStatus());
     }
@@ -391,5 +385,59 @@ public class OccupationEndpointTest {
         when(em.find(Occupation.class, project.getId())).thenReturn(project);
         endpoint.removeOccupation(project.getId());
         assertEquals("employee member project list should be empty", 0, employee.getMemberProjects().size());
+    }
+
+    @Test
+    public void testUpdateFailsWhenProjectManagerIsNotManagingProjectManagerIfUpdatingProject() throws Exception {
+        ProjectManager manager = new ProjectManager();
+        ValidationResult result = new ValidationResult(true);
+        when(taskDao.isManagingProjectManager(project.getId(), manager)).thenReturn(false);
+        when(sm.findEmployee()).thenReturn(manager);
+        when(sm.isProjectManager()).thenReturn(true);
+        when(sm.isManagement()).thenReturn(true);
+        when(occupationValidator.validate(project, Existing.class)).thenReturn(result);
+        Response response = endpoint.update(project.getId(), project);
+        assertEquals("response should be FORBIDDEN", Response.Status.FORBIDDEN.getStatusCode(), response.getStatus());
+    }
+
+    @Test
+    public void testUpdatePassesWhenProjectManagerIsManagingProjectManagerIfUpdatingProject() throws Exception {
+        ProjectManager manager = new ProjectManager();
+        ValidationResult result = new ValidationResult(true);
+        when(taskDao.isManagingProjectManager(project.getId(), manager)).thenReturn(true);
+        when(sm.findEmployee()).thenReturn(manager);
+        when(sm.isProjectManager()).thenReturn(true);
+        when(sm.isManagement()).thenReturn(true);
+        when(occupationValidator.validate(project, Existing.class)).thenReturn(result);
+        Response response = endpoint.update(project.getId(), project);
+        assertNotEquals("response should not be FORBIDDEN", Response.Status.FORBIDDEN.getStatusCode(), response.getStatus());
+    }
+
+    @Test
+    public void testUpdateFailsWhenProjectManagerIsNotUpdatingProject() throws Exception {
+        ProjectManager manager = new ProjectManager();
+        Occupation occupation = new Occupation();
+        occupation.setId(4);
+        ValidationResult result = new ValidationResult(true);
+        when(taskDao.isManagingProjectManager(project.getId(), manager)).thenReturn(true);
+        when(sm.findEmployee()).thenReturn(manager);
+        when(sm.isProjectManager()).thenReturn(true);
+        when(sm.isManagement()).thenReturn(true);
+        when(occupationValidator.validate(occupation, Existing.class)).thenReturn(result);
+        Response response = endpoint.update(occupation.getId(), occupation);
+        assertEquals("response should be FORBIDDEN", Response.Status.FORBIDDEN.getStatusCode(), response.getStatus());
+    }
+
+    @Test
+    public void testUpdateFailsWhenManagementEmployeeUpdatingProject() throws Exception {
+        ManagementEmployee employee = new ManagementEmployee();
+        ValidationResult result = new ValidationResult(true);
+        when(taskDao.isManagingProjectManager(project.getId(), employee)).thenReturn(false);
+        when(sm.findEmployee()).thenReturn(employee);
+        when(sm.isProjectManager()).thenReturn(true);
+        when(sm.isManagement()).thenReturn(true);
+        when(occupationValidator.validate(project, Existing.class)).thenReturn(result);
+        Response response = endpoint.update(project.getId(), project);
+        assertEquals("response should be FORBIDDEN", Response.Status.FORBIDDEN.getStatusCode(), response.getStatus());
     }
 }

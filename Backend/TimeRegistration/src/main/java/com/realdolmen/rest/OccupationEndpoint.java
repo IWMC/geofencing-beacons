@@ -3,6 +3,7 @@ package com.realdolmen.rest;
 import com.realdolmen.annotations.Authorized;
 import com.realdolmen.annotations.UserGroup;
 import com.realdolmen.entity.*;
+import com.realdolmen.entity.dao.TaskDao;
 import com.realdolmen.entity.validation.Existing;
 import com.realdolmen.entity.validation.New;
 import com.realdolmen.service.SecurityManager;
@@ -63,6 +64,9 @@ public class OccupationEndpoint {
 
     @Inject
     private Validator<Occupation> occupationValidator;
+
+    @Inject
+    private TaskDao taskDao;
 
     @GET
     @Authorized(UserGroup.MANAGEMENT)
@@ -368,6 +372,20 @@ public class OccupationEndpoint {
         ValidationResult validationResult = occupationValidator.validate(occupation, Existing.class);
         if (!validationResult.isValid()) {
             return Response.status(Response.Status.BAD_REQUEST).entity(validationResult).build();
+        }
+
+        if (sm.isProjectManager()) {
+            if (occupation instanceof Project) {
+                if (!taskDao.isManagingProjectManager(occupation.getId(), sm.findEmployee())) {
+                    return Response.status(Response.Status.FORBIDDEN)
+                            .entity(com.realdolmen.json.Json.error("Project with id " + occupation.getId() + " is not from this project manager"))
+                            .build();
+                }
+            } else {
+                return Response.status(Response.Status.FORBIDDEN)
+                        .entity(com.realdolmen.json.Json.error("A project manager can only edit his own projects"))
+                        .build();
+            }
         }
 
         return runAsTransaction(() -> em.merge(occupation),

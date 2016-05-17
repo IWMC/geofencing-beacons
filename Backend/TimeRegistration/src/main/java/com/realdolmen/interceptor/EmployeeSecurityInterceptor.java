@@ -2,7 +2,7 @@ package com.realdolmen.interceptor;
 
 import com.realdolmen.annotations.Authorized;
 import com.realdolmen.annotations.UserGroup;
-import com.realdolmen.jsf.Session;
+import com.realdolmen.jsf.UserContext;
 import com.realdolmen.json.JsonWebToken;
 import com.realdolmen.service.SecurityManager;
 
@@ -28,14 +28,14 @@ public class EmployeeSecurityInterceptor implements Serializable {
     private transient HttpServletRequest request;
 
     @Inject
-    private transient Session session;
+    private transient UserContext userContext;
 
     @Inject
     private transient SecurityManager securityManager;
 
     @AroundInvoke
     public Object manageTransaction(InvocationContext ctx) throws Exception {
-        if (session.getEmployee() != null) {
+        if (userContext.getUser() != null) {
             return ctx.proceed();
         } else {
             JsonWebToken jwt = new JsonWebToken(request.getHeader("Authorization"));

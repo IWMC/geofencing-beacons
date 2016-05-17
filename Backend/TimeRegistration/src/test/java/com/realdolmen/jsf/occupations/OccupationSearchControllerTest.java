@@ -2,7 +2,7 @@ package com.realdolmen.jsf.occupations;
 
 import com.realdolmen.WarFactory;
 import com.realdolmen.entity.*;
-import com.realdolmen.jsf.Session;
+import com.realdolmen.jsf.UserContext;
 import com.realdolmen.rest.OccupationEndpoint;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
@@ -39,7 +39,7 @@ public class OccupationSearchControllerTest {
     private OccupationSearchController realController;
 
     @Inject
-    private Session session;
+    private UserContext userContext;
 
     @Inject
     private UserTransaction transaction;
@@ -57,7 +57,7 @@ public class OccupationSearchControllerTest {
 
     @Before
     public void init() {
-        session.setEmployee(new ManagementEmployee());
+        userContext.setEmployee(new ManagementEmployee());
         MockitoAnnotations.initMocks(this);
     }
 

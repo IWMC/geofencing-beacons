@@ -1,8 +1,11 @@
 package com.realdolmen.service;
 
+import com.realdolmen.TestMode;
 import com.realdolmen.entity.Employee;
+import com.realdolmen.entity.ManagementEmployee;
 import com.realdolmen.entity.PersistenceUnit;
-import com.realdolmen.jsf.Session;
+import com.realdolmen.entity.ProjectManager;
+import com.realdolmen.jsf.UserContext;
 import com.realdolmen.json.JsonWebToken;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.MalformedJwtException;
@@ -10,6 +13,7 @@ import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.SignatureException;
 import io.jsonwebtoken.impl.crypto.MacProvider;
 import org.jetbrains.annotations.Nullable;
+import org.jetbrains.annotations.TestOnly;
 
 import javax.ejb.Singleton;
 import javax.inject.Inject;
@@ -43,7 +47,7 @@ public class SecurityManager {
     private HttpServletRequest request;
 
     @Inject
-    private Session session;
+    private UserContext userContext;
 
     public String randomSalt() throws NoSuchAlgorithmException {
         return new BigInteger(32 * 8, SecureRandom.getInstanceStrong()).toString(32);
@@ -80,11 +84,19 @@ public class SecurityManager {
     }
 
     public Employee findEmployee() {
-        return Optional.ofNullable(session.getEmployee()).orElse(findByJwt(new JsonWebToken(request.getHeader("Authorization"))));
+        if (TestMode.isTestMode()) {
+            return Optional.ofNullable(userContext == null ? null : userContext.getUser()).orElse(request == null ? null : findByJwt(new JsonWebToken(request.getHeader("Authorization"))));
+        } else {
+            return Optional.ofNullable(userContext.getUser()).orElse(findByJwt(new JsonWebToken(request.getHeader("Authorization"))));
+        }
     }
 
     @Nullable
     public Employee findByJwt(@NotNull JsonWebToken jwt) {
+        if (jwt == null || jwt.getToken() == null || jwt.getToken().isEmpty()) {
+            return null;
+        }
+
         try {
             long id = Long.parseLong(Jwts.parser().setSigningKey(key).parseClaimsJws(jwt.getToken()).getBody().get("id")
                     .toString());
@@ -92,5 +104,25 @@ public class SecurityManager {
         } catch (MalformedJwtException | NoResultException | SignatureException ex) {
             return null;
         }
+    }
+
+    public boolean isManagementEmployee() {
+        Employee employee = findEmployee();
+        return employee != null && employee instanceof ManagementEmployee;
+    }
+
+    public boolean isProjectManager() {
+        Employee employee = findEmployee();
+        return employee != null && employee instanceof ProjectManager;
+    }
+
+    public boolean isManagement() {
+        Employee employee = findEmployee();
+        return employee != null && (employee instanceof ProjectManager || employee instanceof ManagementEmployee);
+    }
+
+    @TestOnly
+    public void setUserContext(UserContext userContext) {
+        this.userContext = userContext;
     }
 }

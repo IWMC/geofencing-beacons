@@ -31,9 +31,9 @@ public class Language implements Serializable {
         defaultLocale = FacesContext.getCurrentInstance().getApplication().getDefaultLocale();
     }
 
-    public String getString(String key, Object...params) {
+    public String getString(String key, Object... params) {
         String value = getLanguageBundle().getString(key);
-        for(int i = 0; i < params.length; i++) {
+        for (int i = 0; i < params.length; i++) {
             value = value.replaceAll("\\{" + i + "\\}", params[i].toString());
         }
 

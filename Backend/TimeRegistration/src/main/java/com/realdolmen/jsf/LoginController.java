@@ -23,7 +23,7 @@ public class LoginController implements Serializable {
     private UserEndpoint endpoint;
 
     @Inject
-    private Session session;
+    private UserContext userContext;
 
     private String username = "";
     private String password = "";
@@ -42,7 +42,7 @@ public class LoginController implements Serializable {
             e.printStackTrace();
         } finally {
             if (response != null && response.getStatus() == 200) {
-                session.setEmployee((Employee) response.getEntity());
+                userContext.setEmployee((Employee) response.getEntity());
                 return Pages.index().asRedirect();
             } else {
                 String messageText = "Verkeerd gebruikersnaam of wachtwoord";
@@ -70,7 +70,7 @@ public class LoginController implements Serializable {
     }
 
     public String logout() {
-        session.setEmployee(null);
+        userContext.setEmployee(null);
         return Pages.login().asLinkOutcome();
     }
 }

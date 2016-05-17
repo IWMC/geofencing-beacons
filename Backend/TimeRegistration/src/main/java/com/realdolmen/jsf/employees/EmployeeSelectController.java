@@ -3,9 +3,12 @@ package com.realdolmen.jsf.employees;
 import com.realdolmen.annotations.Filtered;
 import com.realdolmen.entity.Employee;
 import com.realdolmen.entity.Project;
+import com.realdolmen.entity.Task;
+import com.realdolmen.entity.dao.TaskDao;
 import com.realdolmen.jsf.Pages;
 import com.realdolmen.jsf.occupations.OccupationDetailController;
 import com.realdolmen.rest.OccupationEndpoint;
+import com.realdolmen.service.SecurityManager;
 import org.jboss.logging.Logger;
 import org.jetbrains.annotations.TestOnly;
 import org.omnifaces.cdi.ViewScoped;
@@ -27,7 +30,17 @@ import java.util.stream.Collectors;
 @Filtered
 public class EmployeeSelectController extends EmployeeSearchController {
 
+    @Inject
+    private TaskDao taskDao;
+
+    @Inject
+    private SecurityManager sm;
+
     private String occupationId;
+
+    private String taskId;
+
+    private Task task;
 
     private Project project;
 
@@ -36,7 +49,8 @@ public class EmployeeSelectController extends EmployeeSearchController {
     @Inject
     private OccupationEndpoint occupationEndpoint;
 
-    public void onOccupationId() {
+    @Transactional
+    public void onParentId() {
         try {
             if (occupationId != null) {
                 long id = Long.parseLong(occupationId);
@@ -48,6 +62,13 @@ public class EmployeeSelectController extends EmployeeSearchController {
 
                 project = response.getStatus() == 200 ? (Project) response.getEntity() : null;
                 if (project != null) {
+                    return;
+                }
+            }
+
+            if (taskId != null) {
+                task = taskDao.findByIdEagerly(Long.parseLong(taskId));
+                if (task != null) {
                     return;
                 }
             }
@@ -67,11 +88,19 @@ public class EmployeeSelectController extends EmployeeSearchController {
     }
 
     public List<Employee> filterEmployees(List<Employee> employees) {
-        if (employees == null || project == null) {
-            return employees;
+        if (employees == null) {
+            return null;
         }
 
-        return employees.stream().filter(e -> !project.getEmployees().contains(e)).collect(Collectors.toList());
+        if (project != null) {
+            return employees.stream().filter(e -> !project.getEmployees().contains(e)).collect(Collectors.toList());
+        }
+
+        if (task != null) {
+            return employees.stream().filter(e -> task.getProject().getEmployees().contains(e)).collect(Collectors.toList());
+        }
+
+        return employees;
     }
 
     @Override
@@ -85,12 +114,23 @@ public class EmployeeSelectController extends EmployeeSearchController {
     }
 
     @Transactional
-    public String addEmployeeToProject(Employee employee) {
-        project.getEmployees().add(employee);
-        employee.getMemberProjects().add(project);
-        getEntityManager().merge(project);
-        getEntityManager().merge(employee);
-        return Pages.editProject().param("id", occupationId).asRedirect();
+    public String addEmployeeToParent(Employee employee) {
+        if (project != null && task == null) {
+            project.getEmployees().add(employee);
+            employee.getMemberProjects().add(project);
+            getEntityManager().merge(project);
+            getEntityManager().merge(employee);
+            return Pages.editProject().param("id", occupationId).asRedirect();
+        } else {
+            task = taskDao.refresh(task);
+            if (taskDao.isManagingProjectManager(task, sm.findEmployee())) {
+                task.getEmployees().add(employee);
+                taskDao.update(task);
+                return Pages.detailsTask(task.getId()).asRedirect();
+            }
+        }
+
+        return "";
     }
 
     public String getOccupationId() {
@@ -99,7 +139,7 @@ public class EmployeeSelectController extends EmployeeSearchController {
 
     public void setOccupationId(String occupationId) {
         this.occupationId = occupationId;
-        onOccupationId();
+        onParentId();
     }
 
     public FacesContext getFacesContext() {
@@ -110,6 +150,11 @@ public class EmployeeSelectController extends EmployeeSearchController {
         return facesContext;
     }
 
+    @TestOnly
+    public void setFacesContext(FacesContext facesContext) {
+        this.facesContext = facesContext;
+    }
+
     public Project getProject() {
         return project;
     }
@@ -118,8 +163,12 @@ public class EmployeeSelectController extends EmployeeSearchController {
         this.project = project;
     }
 
-    @TestOnly
-    public void setFacesContext(FacesContext facesContext) {
-        this.facesContext = facesContext;
+    public String getTaskId() {
+        return taskId;
+    }
+
+    public void setTaskId(String taskId) {
+        this.taskId = taskId;
+        onParentId();
     }
 }

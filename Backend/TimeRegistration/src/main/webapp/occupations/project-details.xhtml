@@ -27,6 +27,13 @@
         <ui:define name="body">
             <script src="http://maps.google.com/maps/api/js?sensor=true|false" type="text/javascript"></script>
             <div class="container large-container">
+                <h:panelGroup layout="block" rendered="#{projectDetails.shouldShowTaskEditOption}"
+                              class="fixed-action-btn">
+                    <h:link outcome="#{pages.addTaskFor(projectDetails.entity.id).asLinkOutcome()}"
+                            styleClass="btn-floating btn-large red">
+                        <i class="large material-icons">add</i>
+                    </h:link>
+                </h:panelGroup>
                 <div class="row">
                     <div class="card col l7 s12">
                         <div class="card-content">
@@ -42,30 +49,35 @@
                                 <p class="justify-text">#{projectDetails.entity.description}</p>
                             </div>
                         </div>
-                        <div class="card-action">
-                            <h:link outcome="#{pages.editProject().param('id', projectDetails.id).asLinkOutcome()}"
-                                    styleClass="waves-effect waves-orange card-action-flat" value="#{msg['edit']}"/>
-                            <a class="red-text text-lighten-1 right modal-trigger waves-effect waves-red card-action-flat"
-                               href="#remove-warning"><h:outputText value="#{msg['remove']}"/></a>
-                            <div id="remove-warning" class="modal">
-                                <div class="modal-content">
-                                    <h4><h:outputText value="#{msg['project.remove_warning.title']}"/></h4>
-                                    <p><h:outputText value="#{msg['project.remove_warning.description']}"/></p>
-                                </div>
-                                <div class="modal-footer">
-                                    <h:form>
-                                        <a href="#"
-                                           class="green-text modal-action modal-close waves-effect waves-green btn-flat">
-                                            <h:outputText value="#{msg['no']}"/>
-                                        </a>
-                                        <h:commandLink
-                                                styleClass="red-text modal-action modal-close waves-effect waves-red btn-flat"
-                                                value="#{msg['yes']}"
-                                                action="#{projectDetails.removeProject}"/>
-                                    </h:form>
-                                </div>
+                        <h:panelGroup rendered="#{projectDetails.shouldShowEditOption}">
+                            <div class="card-action">
+                                <h:link outcome="#{pages.editProject().param('id', projectDetails.id).asLinkOutcome()}"
+                                        styleClass="waves-effect waves-orange card-action-flat" value="#{msg['edit']}"/>
+
+                                <h:panelGroup rendered="#{userContext.isManagementEmployee}">
+                                    <a class="red-text text-lighten-1 right modal-trigger waves-effect waves-red card-action-flat"
+                                       href="#remove-warning"><h:outputText value="#{msg['remove']}"/></a>
+                                    <div id="remove-warning" class="modal">
+                                        <div class="modal-content">
+                                            <h4><h:outputText value="#{msg['project.remove_warning.title']}"/></h4>
+                                            <p><h:outputText value="#{msg['project.remove_warning.description']}"/></p>
+                                        </div>
+                                        <div class="modal-footer">
+                                            <h:form>
+                                                <a href="#"
+                                                   class="green-text modal-action modal-close waves-effect waves-green btn-flat">
+                                                    <h:outputText value="#{msg['no']}"/>
+                                                </a>
+                                                <h:commandLink
+                                                        styleClass="red-text modal-action modal-close waves-effect waves-red btn-flat"
+                                                        value="#{msg['yes']}"
+                                                        action="#{projectDetails.removeProject}"/>
+                                            </h:form>
+                                        </div>
+                                    </div>
+                                </h:panelGroup>
                             </div>
-                        </div>
+                        </h:panelGroup>
                     </div>
                     <div class="col l5 s12 row">
                         <div class="card s12" id="sub-project">
@@ -105,7 +117,7 @@
                         </div>
                     </div>
                 </div>
-                <div class="row map-row">
+                <div class="row">
                     <h:inputText id="pac-input" styleClass="col s6 m3 s2" a:placeholder="#{msg['search']}"/>
                     <div class="card col s12 no-padding map">
                         <p:gmap type="MAP" center="#{projectDetails.locationOrDefault}"
@@ -113,7 +125,44 @@
                             <p:ajax event="geocode" listener="#{projectDetails.geocodeLookup}" update="@this"/>
                         </p:gmap>
                     </div>
+                    <nav class="col s12 row no-padding" style="position: relative; margin-top: -60px;">
+                        <div class="nav-wrapper col s12 no-padding">
+                            <h:form>
+                                <div class="input-field">
+                                    <h:inputText id="search" a:type="search"
+                                                 value="#{projectDetails.taskSearchTerms}"/>
+                                    <p:watermark for="search" value="#{msg['project.task.search']}"/>
+                                    <label for="search"><i class="material-icons">search</i></label>
+                                    <i class="material-icons">close</i>
+                                    <p:commandButton id="searchButton"
+                                                     value="#{msg['search']}"
+                                                     style="display: none;">
+                                        <f:ajax render=":task-list" execute="search"/>
+                                    </p:commandButton>
+                                </div>
+                            </h:form>
+                        </div>
+                    </nav>
                 </div>
+                <h:panelGroup id="task-list">
+                    <div class="row">
+                        <ui:repeat value="#{projectDetails.tasks}" var="task">
+                            <div class="col s12 l6">
+                                <div class="card">
+                                    <div class="card-content">
+                                        <p class="card-title">#{task.name}</p>
+                                        <p>#{projectDetails.getEstimatedHours(task)}</p>
+                                    </div>
+                                    <div class="card-action">
+                                        <h:link outcome="#{pages.detailsTask().param('id', task.id).asLinkOutcome()}"
+                                                styleClass="waves-effect waves-orange card-action-flat"
+                                                value="#{msg['details']}"/>
+                                    </div>
+                                </div>
+                            </div>
+                        </ui:repeat>
+                    </div>
+                </h:panelGroup>
             </div>
         </ui:define>
     </ui:composition>

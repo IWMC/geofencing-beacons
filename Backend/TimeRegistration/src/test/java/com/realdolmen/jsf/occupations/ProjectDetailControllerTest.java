@@ -1,12 +1,12 @@
 package com.realdolmen.jsf.occupations;
 
-import com.realdolmen.entity.Employee;
-import com.realdolmen.entity.Location;
-import com.realdolmen.entity.Project;
+import com.realdolmen.entity.*;
 import com.realdolmen.jsf.ControllerTest;
 import com.realdolmen.jsf.Pages;
+import com.realdolmen.jsf.UserContext;
 import com.realdolmen.messages.Language;
 import com.realdolmen.rest.OccupationEndpoint;
+import com.realdolmen.service.SecurityManager;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.InjectMocks;
@@ -25,8 +25,7 @@ import javax.persistence.EntityManager;
 import javax.ws.rs.core.Response;
 import java.util.*;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
+import static org.junit.Assert.*;
 import static org.mockito.Mockito.*;
 
 
@@ -35,27 +34,34 @@ public class ProjectDetailControllerTest extends ControllerTest {
     @Mock
     private EntityManager entityManager;
 
-    private Language language;
-
     @Mock
     private MapModel model;
 
-    private Project project = new Project("Occupation name", "Occupation description", 15, new Date(), new Date());
+    @Mock
+    private OccupationEndpoint endpoint;
 
     @Mock
-    private OccupationEndpoint endpoint = new OccupationEndpoint();
+    private SecurityManager sm;
 
     @InjectMocks
     private ProjectDetailController controller = new ProjectDetailController();
 
+    private Language language;
+
+    private UserContext userContext;
+
+    private Project project = new Project("Occupation name", "Occupation description", 15, new Date(), new Date());
+
     @Before
     public void setUp() throws Exception {
         MockitoAnnotations.initMocks(this);
+        userContext = mock(UserContext.class);
         language = mock(Language.class);
         initForController(controller);
         project.setId(15l);
         controller.setEntity(project);
         controller.setLanguage(language);
+        controller.setUserContext(userContext);
     }
 
     @Test
@@ -228,7 +234,7 @@ public class ProjectDetailControllerTest extends ControllerTest {
     @Test
     public void testSaveProjectShowsToastMessageOnFailure() throws Exception {
         String uuid = UUID.randomUUID().toString();
-        when(endpoint.update(project.getId(), project)).thenReturn(Response.status(Response.Status.BAD_REQUEST).build());
+        when(endpoint.update(project.getId(), project)).thenReturn(Response.status(Response.Status.CONFLICT).build());
         when(getLanguage().getString("occupation.name_taken")).thenReturn(uuid);
         controller.saveProject();
         verify(getExternalContext(), never()).redirect(Pages.occupationDetailsFrom(project).asLocationRedirect());
@@ -253,7 +259,65 @@ public class ProjectDetailControllerTest extends ControllerTest {
         Mockito.verify(getExternalContext()).redirect(Pages.searchOccupation().asLocationRedirect());
     }
 
+    @Test
+    public void testShouldShowEditOptionReturnsFalseIfRegularEmployee() throws Exception {
+        when(sm.isManagementEmployee()).thenReturn(false);
+        when(sm.isProjectManager()).thenReturn(false);
+        when(sm.isManagement()).thenReturn(false);
+        assertFalse(controller.getShouldShowEditOption());
+    }
+
+    @Test
+    public void testShouldShowEditOptionReturnsTrueIfManagementEmployee() throws Exception {
+        when(sm.isManagementEmployee()).thenReturn(true);
+        when(sm.isProjectManager()).thenReturn(false);
+        when(sm.isManagement()).thenReturn(true);
+        assertTrue(controller.getShouldShowEditOption());
+    }
+
+    @Test
+    public void testShouldShowEditOptionReturnsFalseIfNotManagingProjectManager() throws Exception {
+        when(sm.isManagementEmployee()).thenReturn(false);
+        when(sm.isProjectManager()).thenReturn(true);
+        when(sm.isManagement()).thenReturn(true);
+        assertFalse(controller.getShouldShowEditOption());
+        when(sm.findEmployee()).thenReturn(new ProjectManager());
+        assertFalse(controller.getShouldShowEditOption());
+    }
+
+    @Test
+    public void testShouldShowEditOptionReturnsTrueIfManagingProjectManager() throws Exception {
+        when(sm.isManagementEmployee()).thenReturn(false);
+        when(sm.isProjectManager()).thenReturn(true);
+        when(sm.isManagement()).thenReturn(true);
+        ProjectManager manager = new ProjectManager();
+        when(sm.findEmployee()).thenReturn(manager);
+        when(userContext.getUser()).thenReturn(manager);
+        controller.getEntity().getEmployees().add(manager);
+        assertTrue(controller.getShouldShowEditOption());
+    }
+
     public Language getLanguage() {
         return language;
+    }
+
+    @Test
+    public void testGetEstimatedHoursShowsSimplifiedViewWhenRoundedNumber() throws Exception {
+        Task task = new Task();
+        task.setEstimatedHours(7);
+        final String text = UUID.randomUUID().toString();
+        when(language.getString("project.task.hours", 7)).thenReturn(text);
+        String result = controller.getEstimatedHours(task);
+        assertEquals("result should be retrieved with the correct language bundle key", text, result);
+    }
+
+    @Test
+    public void testGetEstimatedHoursShowsHoursAndMinutesWhenUnroundedNumber() throws Exception {
+        Task task = new Task();
+        task.setEstimatedHours(7.5);
+        final String text = UUID.randomUUID().toString();
+        when(language.getString("project.task.hours_minutes", 7, 30)).thenReturn(text);
+        String result = controller.getEstimatedHours(task);
+        assertEquals("result should be retrieved with the correct language bundle key", text, result);
     }
 }
