@@ -83,6 +83,9 @@ public class OccupationSearchControllerTest {
     public void testGetOccupationsWithSearchTermsFiltersOnSearchTerms() throws Exception {
         transaction.begin();
         em.createQuery("DELETE FROM Beacon").executeUpdate();
+        em.createQuery("DELETE FROM RegisteredOccupation").executeUpdate();
+        transaction.commit();
+        transaction.begin();
         em.createQuery("DELETE FROM Occupation").executeUpdate();
         transaction.commit();
 

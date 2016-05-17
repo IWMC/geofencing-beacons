@@ -4,6 +4,7 @@ import com.realdolmen.entity.*;
 import com.realdolmen.service.SecurityManager;
 import org.apache.commons.lang3.time.DateUtils;
 import org.jboss.logging.Logger;
+import org.joda.time.DateTime;
 
 import javax.ejb.Singleton;
 import javax.inject.Inject;
@@ -13,6 +14,8 @@ import javax.persistence.PersistenceContext;
 import javax.transaction.Transactional;
 import java.security.NoSuchAlgorithmException;
 import java.util.Date;
+import java.util.List;
+import java.util.Random;
 
 /**
  * Configuration adding, editing or removing entities that should be present in the database at startup. Should be
@@ -94,14 +97,41 @@ public class JPAImportConfig {
     }
 
     private void createAndPersistOccupations() {
+        final Random random = new Random();
         for (int i = 0; i < 15; i++) {
             Project project = new Project();
             project.setProjectNr(i + 9);
-            project.setStartDate(new Date());
+            DateTime date = DateTime.now().withYear(random.nextInt(3) + 2014).withDayOfYear(1 + random.nextInt(365));
+            project.setStartDate(date.toDate());
             project.setName("Project " + (i + 300));
             project.setDescription("The project details from project #" + i);
-            project.setEndDate(DateUtils.addMonths(new Date(), 3));
+            project.setEndDate(date.plusMonths(random.nextInt(20)).toDate());
             entityManager.persist(project);
+            final int taskCount = random.nextInt(4);
+            final List<Employee> employeeList = entityManager.createNamedQuery("Employee.findAll", Employee.class).getResultList();
+
+            for (int j = 0; j < taskCount; j++) {
+                final String name = "Opdracht " + project.getProjectNr() + " - " + (j + 1);
+                Task task = new Task(name, "Omschrijving van " + name, random.nextDouble() * 6, project);
+                project.getTasks().add(task);
+                entityManager.persist(task);
+
+                final int registrationCount = random.nextInt(3);
+                for (int r = 0; r < registrationCount; r++) {
+                    RegisteredOccupation occupation = new RegisteredOccupation();
+                    occupation.setOccupation(task);
+                    final DateTime registeredOccupationDate = DateTime.now().withDayOfYear(random.nextInt(365) + 1);
+                    occupation.setRegisteredStart(registeredOccupationDate.toDate());
+                    occupation.setRegisteredEnd(registeredOccupationDate.plusDays(random.nextInt(5)).toDate());
+                    occupation.setEmployee(employeeList.get(random.nextInt(employeeList.size())));
+
+                    if (random.nextBoolean()) {
+                        occupation.confirm();
+                    }
+
+                    entityManager.persist(occupation);
+                }
+            }
         }
     }
 }

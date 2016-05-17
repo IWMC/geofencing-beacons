@@ -5,7 +5,8 @@
       xmlns:h="http://xmlns.jcp.org/jsf/html"
       xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
       xmlns:f="http://xmlns.jcp.org/jsf/core" xmlns:a="http://xmlns.jcp.org/jsf/passthrough"
-      xmlns:p="http://primefaces.org/ui">
+      xmlns:p="http://primefaces.org/ui" xmlns:of="http://omnifaces.org/functions"
+      xmlns:c="http://xmlns.jcp.org/jsp/jstl/core">
 <f:view>
     <ui:composition template="page-template.xhtml">
         <ui:define name="toolbar-after-logo">
@@ -44,26 +45,26 @@
                         <ul class="tabs">
                             <li class="tab col s3"><h:commandLink action="#{reports.selectEmployees}"
                                                                   value="#{msg['reports.employees']}">
-                                <f:ajax execute="@this"/>
+                                <f:ajax execute="@this" render="table row-count"/>
                             </h:commandLink></li>
                             <li class="tab col s3"><h:commandLink action="#{reports.selectOccupations}"
                                                                   value="#{msg['reports.occupations']}">
-                                <f:ajax execute="@this"/>
+                                <f:ajax execute="@this" render="table row-count"/>
                             </h:commandLink>
                             </li>
                             <li class="tab col s3"><h:commandLink action="#{reports.selectRegisteredOccupations}"
                                                                   value="#{msg['reports.registrations']}"
                                                                   styleClass="active">
-                                <f:ajax execute="@this"/>
+                                <f:ajax execute="@this" render="table row-count"/>
                             </h:commandLink>
                             </li>
                             <li class="tab col s3"><h:commandLink action="#{reports.selectProject}"
                                                                   value="#{msg['reports.projects']}">
-                                <f:ajax execute="@this"/>
+                                <f:ajax execute="@this" render="table row-count"/>
                             </h:commandLink></li>
                             <li class="tab col s3"><h:commandLink action="#{reports.selectTasks}"
                                                                   value="#{msg['reports.tasks']}">
-                                <f:ajax execute="@this"/>
+                                <f:ajax execute="@this" render="table row-count"/>
                             </h:commandLink></li>
                         </ul>
                     </h:form>
@@ -81,13 +82,30 @@
                                     <p:commandButton id="searchButton"
                                                      value="#{msg['search']}"
                                                      style="display: none;"
-                                                     action="#{reports.createReport}">
+                                                     onsuccess="regenerateTable()"
+                                                     action="#{reports.generateTableRecords}">
                                         <f:ajax execute="search"/>
                                     </p:commandButton>
+                                    <p:remoteCommand name="regenerateTable" update="table row-count"/>
                                 </div>
                             </h:form>
                         </div>
                     </nav>
+                </div>
+                <h:panelGroup id="row-count" styleClass="row" style="margin: 0px;">
+                    <span class="right grey-text">#{reports.limitedPreviewMessage}</span>
+                </h:panelGroup>
+                <div class="card row">
+                    <h:dataTable id="table" styleClass="highlight reports-table" value="#{reports.tableRecords}"
+                                 var="row"
+                                 columnClasses="first-table-column">
+                        <c:forEach items="#{reports.prettyTableFieldList}" var="field" varStatus="loop">
+                            <h:column>
+                                <f:facet name="header">#{field}</f:facet>
+                                #{reports.translateValues(row.get(reports.tableFieldList.get(loop.index)))}
+                            </h:column>
+                        </c:forEach>
+                    </h:dataTable>
                 </div>
             </div>
         </ui:define>

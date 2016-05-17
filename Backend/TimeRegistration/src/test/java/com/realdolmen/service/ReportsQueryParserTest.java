@@ -1,6 +1,7 @@
 package com.realdolmen.service;
 
 import com.realdolmen.TestMode;
+import com.realdolmen.entity.Employee;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -97,25 +98,30 @@ public class ReportsQueryParserTest {
     @Test
     public void testCreatePredicateChecksEqualsOperator() throws Exception {
         Predicate predicate = mock(Predicate.class);
-        when(builder.equal(any(), any(Object.class))).thenReturn(predicate);
+        Path path = mock(Path.class);
+        when(builder.equal(eq(path), any(Object.class))).thenReturn(predicate);
+        when(root.get("id")).thenReturn(path);
+        when(path.getJavaType()).thenReturn(Number.class);
         assertEquals("predicate is the equal predicate", predicate, testPredicate("id=1"));
     }
 
     @Test
     public void testCreatePredicateChecksNotEqualsOperator() throws Exception {
         Predicate predicate = mock(Predicate.class);
-        when(builder.notEqual(any(), any(Object.class))).thenReturn(predicate);
         Path path = mock(Path.class);
-        Expression<Class> pathTypeExpression = mock(Expression.class);
+        when(builder.notEqual(eq(path), any(Object.class))).thenReturn(predicate);
         when(root.get("id")).thenReturn(path);
-        when(path.type()).thenReturn(pathTypeExpression);
-        when(pathTypeExpression.getJavaType()).thenReturn(null);
-        assertEquals("predicate is the not equal predicate", predicate, testPredicate("id!=1"));
+        when(path.getJavaType()).thenReturn(Number.class);
+        assertEquals("predicate is the equal predicate", predicate, testPredicate("id!=1"));
     }
 
     @Test
     public void testCreatePredicateChecksLowerThanOperator() throws Exception {
         Predicate predicate = mock(Predicate.class);
+        Path path = mock(Path.class);
+        when(builder.le(eq(path), any(Number.class))).thenReturn(predicate);
+        when(root.get("id")).thenReturn(path);
+        when(path.getJavaType()).thenReturn(Number.class);
         when(builder.lt(any(), any(Expression.class))).thenReturn(predicate);
         when(builder.lt(any(), any(Number.class))).thenReturn(predicate);
         assertEquals("predicate is the lower than predicate", predicate, testPredicate("id<1"));
@@ -124,6 +130,10 @@ public class ReportsQueryParserTest {
     @Test
     public void testCreatePredicateChecksLowerThanOrEqualToOperator() throws Exception {
         Predicate predicate = mock(Predicate.class);
+        Path path = mock(Path.class);
+        when(builder.le(eq(path), any(Number.class))).thenReturn(predicate);
+        when(root.get("id")).thenReturn(path);
+        when(path.getJavaType()).thenReturn(Number.class);
         when(builder.lessThanOrEqualTo(any(), any(Expression.class))).thenReturn(predicate);
         when(builder.lessThanOrEqualTo(any(), any(Double.class))).thenReturn(predicate);
         assertEquals("predicate is the lower than or equal to predicate", predicate, testPredicate("id<=1"));
@@ -132,6 +142,10 @@ public class ReportsQueryParserTest {
     @Test
     public void testCreatePredicateChecksGreaterThanOperator() throws Exception {
         Predicate predicate = mock(Predicate.class);
+        Path path = mock(Path.class);
+        when(builder.gt(eq(path), any(Number.class))).thenReturn(predicate);
+        when(root.get("id")).thenReturn(path);
+        when(path.getJavaType()).thenReturn(Number.class);
         when(builder.gt(any(), any(Expression.class))).thenReturn(predicate);
         when(builder.gt(any(), any(Number.class))).thenReturn(predicate);
         assertEquals("predicate is the greater than predicate", predicate, testPredicate("id>1"));
@@ -140,6 +154,10 @@ public class ReportsQueryParserTest {
     @Test
     public void testCreatePredicateChecksGreaterThanOrEqualToOperator() throws Exception {
         Predicate predicate = mock(Predicate.class);
+        Path path = mock(Path.class);
+        when(builder.ge(eq(path), any(Number.class))).thenReturn(predicate);
+        when(root.get("id")).thenReturn(path);
+        when(path.getJavaType()).thenReturn(Number.class);
         when(builder.greaterThanOrEqualTo(any(), any(Expression.class))).thenReturn(predicate);
         when(builder.greaterThanOrEqualTo(any(), any(Double.class))).thenReturn(predicate);
         assertEquals("predicate is the greater than predicate", predicate, testPredicate("id>=1"));
@@ -151,6 +169,8 @@ public class ReportsQueryParserTest {
         when(builder.equal(any(), any(Object.class))).thenReturn(predicate);
         Path expression = mock(Path.class);
         when(root.get("id")).thenReturn(expression);
+        when(expression.getJavaType()).thenReturn(Long.class);
+        when(em.getCriteriaBuilder().size(expression)).thenReturn(expression);
         assertEquals("predicate is the equal predicate", predicate, testPredicate("id.size=1"));
         verify(em.getCriteriaBuilder()).size(expression);
     }
@@ -159,70 +179,92 @@ public class ReportsQueryParserTest {
     public void testCreatePredicateChecksNotEqualsOperatorWithPropertyExpression() throws Exception {
         Predicate predicate = mock(Predicate.class);
         when(builder.notEqual(any(), any(Object.class))).thenReturn(predicate);
-        Path path = mock(Path.class);
-        Expression<Class> pathTypeExpression = mock(Expression.class);
-        when(root.get("id")).thenReturn(path);
-        when(path.type()).thenReturn(pathTypeExpression);
-        when(pathTypeExpression.getJavaType()).thenReturn(null);
+        Path expression = mock(Path.class);
+        when(root.get("id")).thenReturn(expression);
+        when(expression.getJavaType()).thenReturn(Long.class);
+        when(em.getCriteriaBuilder().size(expression)).thenReturn(expression);
         assertEquals("predicate is the not equal predicate", predicate, testPredicate("id.size!=1"));
-        verify(em.getCriteriaBuilder()).size(any(Expression.class));
+        verify(em.getCriteriaBuilder(), atLeastOnce()).size(expression);
     }
 
     @Test
     public void testCreatePredicateChecksLowerThanOperatorWithPropertyExpression() throws Exception {
         Predicate predicate = mock(Predicate.class);
-        Path expression = mock(Path.class);
-        when(root.get("id")).thenReturn(expression);
+        Path path = mock(Path.class);
+        Expression expression = mock(Expression.class);
+
+        when(root.get("id")).thenReturn(path);
+        when(builder.lt(any(), any(Double.class))).thenReturn(predicate);
         when(builder.lt(any(), any(Expression.class))).thenReturn(predicate);
-        when(builder.lt(any(), any(Number.class))).thenReturn(predicate);
+        when(builder.size(path)).thenReturn(expression);
+        when(expression.getJavaType()).thenReturn(Number.class);
+        when(path.getJavaType()).thenReturn(Number.class);
         assertEquals("predicate is the lower than predicate", predicate, testPredicate("id.size<1"));
-        verify(em.getCriteriaBuilder()).size(expression);
+        verify(em.getCriteriaBuilder(), atLeastOnce()).size(path);
     }
 
     @Test
     public void testCreatePredicateChecksLowerThanOrEqualToOperatorWithPropertyExpression() throws Exception {
         Predicate predicate = mock(Predicate.class);
-        Path expression = mock(Path.class);
-        when(root.get("id")).thenReturn(expression);
+        Path path = mock(Path.class);
+        Expression expression = mock(Expression.class);
+
+        when(root.get("id")).thenReturn(path);
         when(builder.lessThanOrEqualTo(any(), any(Expression.class))).thenReturn(predicate);
         when(builder.lessThanOrEqualTo(any(), any(Double.class))).thenReturn(predicate);
-        assertEquals("predicate is the lower than or equal to predicate", predicate, testPredicate("id.size<=1"));
-        verify(em.getCriteriaBuilder()).size(expression);
+        when(builder.size(path)).thenReturn(expression);
+        when(expression.getJavaType()).thenReturn(Number.class);
+        when(path.getJavaType()).thenReturn(Number.class);
+        assertEquals("predicate is the less than or equal to predicate", predicate, testPredicate("id.size<=1"));
+        verify(em.getCriteriaBuilder(), atLeastOnce()).size(path);
     }
 
     @Test
     public void testCreatePredicateChecksGreaterThanOperatorWithPropertyExpression() throws Exception {
         Predicate predicate = mock(Predicate.class);
-        Path expression = mock(Path.class);
-        when(root.get("id")).thenReturn(expression);
+        Path path = mock(Path.class);
+        Expression expression = mock(Expression.class);
+
+        when(root.get("id")).thenReturn(path);
+        when(builder.gt(any(), any(Double.class))).thenReturn(predicate);
         when(builder.gt(any(), any(Expression.class))).thenReturn(predicate);
-        when(builder.gt(any(), any(Number.class))).thenReturn(predicate);
+        when(builder.size(path)).thenReturn(expression);
+        when(expression.getJavaType()).thenReturn(Number.class);
+        when(path.getJavaType()).thenReturn(Number.class);
         assertEquals("predicate is the greater than predicate", predicate, testPredicate("id.size>1"));
-        verify(em.getCriteriaBuilder()).size(expression);
     }
 
     @Test
     public void testCreatePredicateChecksGreaterThanOrEqualToOperatorWithPropertyExpression() throws Exception {
         Predicate predicate = mock(Predicate.class);
-        Path expression = mock(Path.class);
-        when(root.get("id")).thenReturn(expression);
+        Path path = mock(Path.class);
+        Expression expression = mock(Expression.class);
+
+        when(root.get("id")).thenReturn(path);
         when(builder.greaterThanOrEqualTo(any(), any(Expression.class))).thenReturn(predicate);
         when(builder.greaterThanOrEqualTo(any(), any(Double.class))).thenReturn(predicate);
-        assertEquals("predicate is the greater than predicate", predicate, testPredicate("id.size>=1"));
-        verify(em.getCriteriaBuilder()).size(expression);
+        when(builder.size(path)).thenReturn(expression);
+        when(expression.getJavaType()).thenReturn(Number.class);
+        when(path.getJavaType()).thenReturn(Number.class);
+        assertEquals("predicate is the greater than or equal to predicate", predicate, testPredicate("id.size>=1"));
+        verify(em.getCriteriaBuilder(), atLeastOnce()).size(path);
     }
 
     private Predicate testPredicate(String expression) {
         Stream<Predicate> stream = queryParser.predicateStream(root, expression);
         List<Predicate> list = stream.collect(Collectors.toList());
-        assertEquals(1, list.size());
+        assertEquals("list should contain one predicate", 1, list.size());
         return list.get(0);
     }
 
     @Test
     public void testCreateExpressionFromFieldStringUsesQueryFunctions() throws Exception {
-        Expression<Long> expression = mock(Expression.class);
+        Expression expression = mock(Expression.class);
+        when(expression.getJavaType()).thenReturn(Long.class);
         when(em.getCriteriaBuilder().count(any())).thenReturn(expression);
+        Path path = mock(Path.class);
+        when(root.get("id")).thenReturn(path);
+        when(path.getJavaType()).thenReturn(Long.class);
         assertEquals(expression, queryParser.createExpressionFromFieldString("id.count"));
     }
 
@@ -241,9 +283,12 @@ public class ReportsQueryParserTest {
         when(em.getCriteriaBuilder().count(any())).thenReturn(expression);
         SetJoin join = mock(SetJoin.class);
         Path path = mock(Path.class);
-        when(root.joinSet("memberProjects")).thenReturn(join);
-        when(join.get("memberProjects")).thenReturn(path);
-        assertEquals(expression, queryParser.createExpressionFromFieldString("memberProjects.count"));
+        when(root.joinSet("employee")).thenReturn(join);
+        when(root.get("employee")).thenReturn(path);
+        when(join.get("employee")).thenReturn(path);
+        when(path.getJavaType()).thenReturn(Employee.class);
+        assertEquals(expression, queryParser.createExpressionFromFieldString("employee.count"));
+        verify(root).joinSet("employee");
         verify(em.getCriteriaBuilder()).count(path);
     }
 
@@ -260,9 +305,10 @@ public class ReportsQueryParserTest {
         Expression<Long> expression = mock(Expression.class);
         when(em.getCriteriaBuilder().count(any())).thenReturn(expression);
         Path path = mock(Path.class);
-        when(root.joinSet("memberProjects")).thenThrow(IllegalArgumentException.class);
-        when(root.get("memberProjects")).thenReturn(path);
-        assertEquals(expression, queryParser.createExpressionFromFieldString("memberProjects.count"));
+        when(root.joinSet("employee")).thenThrow(IllegalArgumentException.class);
+        when(root.get("employee")).thenReturn(path);
+        when(path.getJavaType()).thenReturn(Object.class);
+        assertEquals(expression, queryParser.createExpressionFromFieldString("employee.count"));
         verify(em.getCriteriaBuilder()).count(path);
     }
 
