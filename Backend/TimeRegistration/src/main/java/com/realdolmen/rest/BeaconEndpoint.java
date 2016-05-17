@@ -104,7 +104,7 @@ public class BeaconEndpoint {
     @GET
     @Produces("application/json")
     @Authorized
-    public List<Beacon> listAllForEmployee(@QueryParam("start") Integer startPosition,
+    public Response listAllForEmployee(@QueryParam("start") Integer startPosition,
                                            @QueryParam("max") Integer maxResult) {
         TypedQuery<Beacon> findAllQuery = em.createNamedQuery("Beacon.findAllForEmployee", Beacon.class);
         findAllQuery.setParameter("employee", sm.findEmployee());
@@ -118,7 +118,7 @@ public class BeaconEndpoint {
 
         final List<Beacon> results = findAllQuery.getResultList();
         results.forEach(Initializable::initialize);
-        return results;
+        return Response.ok(results).build();
     }
 
     @PUT
