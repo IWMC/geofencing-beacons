@@ -177,9 +177,18 @@ nav + .container {
     line-height: 27px !important;
 }
 
-p.small {
+p.small, span.small {
     font-size: 13px;
 }
+
+table.reports-table thead tr th:first-child {
+    padding: 15px 15px;
+}
+
+.first-table-column {
+    padding: 0px 15px;
+}
+
 
 /*************** Maps ***************/
 #pac-input {

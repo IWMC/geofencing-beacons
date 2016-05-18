@@ -250,8 +250,8 @@ public class OccupationEndpoint {
         if (!validationResult.isValid())
             return Response.status(400).entity(validationResult.getInvalidationTokens()).build();
 
-        Employee foundEmployee = em.find(Employee.class, ro.getRegistrar().getId());
-        ro.setRegistrar(foundEmployee);
+        Employee foundEmployee = em.find(Employee.class, ro.getEmployee().getId());
+        ro.setEmployee(foundEmployee);
         em.persist(ro);
         foundEmployee.getRegisteredOccupations().add(ro);
 
@@ -271,8 +271,8 @@ public class OccupationEndpoint {
         if (!validationResult.isValid())
             return Response.status(400).entity(validationResult.getInvalidationTokens()).build();
 
-        Employee foundEmployee = em.find(Employee.class, ro.getRegistrar().getId());
-        ro.setRegistrar(foundEmployee);
+        Employee foundEmployee = em.find(Employee.class, ro.getEmployee().getId());
+        ro.setEmployee(foundEmployee);
         em.merge(ro);
 
         return Response.status(204).build();

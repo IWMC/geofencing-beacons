@@ -218,7 +218,7 @@ public class OccupationEndpointTest {
         ro.setOccupation(new Occupation());
         ro.setRegisteredStart(new Date());
         ro.setRegisteredEnd(new Date());
-        ro.setRegistrar(sm.findEmployee());
+        ro.setEmployee(sm.findEmployee());
 
         TypedQuery<RegisteredOccupation> query = when(mock(TypedQuery.class).getSingleResult()).thenReturn(ro).getMock();
         when(query.setParameter(anyString(), any())).thenReturn(query);
@@ -236,7 +236,7 @@ public class OccupationEndpointTest {
         ro.setOccupation(new Occupation());
         ro.setRegisteredStart(new Date());
         ro.setRegisteredEnd(new Date());
-        ro.setRegistrar(sm.findEmployee());
+        ro.setEmployee(sm.findEmployee());
 
         TypedQuery<RegisteredOccupation> query = when(mock(TypedQuery.class).getSingleResult()).thenReturn(null).getMock();
         when(query.setParameter(anyString(), any())).thenReturn(query);

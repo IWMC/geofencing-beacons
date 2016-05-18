@@ -1,7 +1,10 @@
 package com.realdolmen.jsf.occupations;
 
 import com.realdolmen.WarFactory;
-import com.realdolmen.entity.*;
+import com.realdolmen.entity.ManagementEmployee;
+import com.realdolmen.entity.Occupation;
+import com.realdolmen.entity.PersistenceUnit;
+import com.realdolmen.entity.Project;
 import com.realdolmen.jsf.UserContext;
 import com.realdolmen.rest.OccupationEndpoint;
 import org.jboss.arquillian.container.test.api.Deployment;
@@ -17,7 +20,6 @@ import org.mockito.MockitoAnnotations;
 import javax.inject.Inject;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
-import javax.persistence.criteria.CriteriaDelete;
 import javax.transaction.Transactional;
 import javax.transaction.UserTransaction;
 import javax.ws.rs.core.Response;
@@ -80,10 +82,14 @@ public class OccupationSearchControllerTest {
     @Test
     public void testGetOccupationsWithSearchTermsFiltersOnSearchTerms() throws Exception {
         transaction.begin();
-        CriteriaDelete<Occupation> delete = em.getCriteriaBuilder().createCriteriaDelete(Occupation.class);
-        delete.from(Occupation.class);
-        em.createQuery(delete).executeUpdate();
+        em.createQuery("DELETE FROM Beacon").executeUpdate();
+        em.createQuery("DELETE FROM RegisteredOccupation").executeUpdate();
+        transaction.commit();
+        transaction.begin();
+        em.createQuery("DELETE FROM Occupation").executeUpdate();
+        transaction.commit();
 
+        transaction.begin();
         Occupation occupation = new Occupation("Occupation", "Description for lunch");
         Project project = new Project("Project X", "Some description", 10, new Date(), new Date());
 

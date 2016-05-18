@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+        "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:f="http://xmlns.jcp.org/jsf/core" xmlns:a="http://xmlns.jcp.org/jsf/passthrough"
+      xmlns:p="http://primefaces.org/ui" xmlns:of="http://omnifaces.org/functions"
+      xmlns:c="http://xmlns.jcp.org/jsp/jstl/core">
+<f:view>
+    <ui:composition template="page-template.xhtml">
+        <ui:define name="toolbar-after-logo">
+            <h5 class="col s12 hide-on-med-and-down" id="subtitle">#{msg['reports.title']}</h5>
+        </ui:define>
+        <ui:define name="additional-toolbar-full">
+            <div class="row">
+                <h5 class="col s12 hide-on-large-only">#{msg['reports.title']}</h5>
+            </div>
+        </ui:define>
+        <ui:define name="body">
+            <div class="fixed-action-btn">
+                <h:form>
+                    <h:commandLink styleClass="btn-floating btn-large red" action="#{reports.downloadRecordsXml}">
+                        <i class="large material-icons">file_download</i>
+                    </h:commandLink>
+                    <ul>
+                        <li>
+                            <h:commandLink styleClass="btn-floating red"
+                                           action="#{reports.downloadRecordsJson}">
+                                <span class="small">JSON</span>
+                            </h:commandLink>
+                        </li>
+                        <li>
+                            <h:commandLink styleClass="btn-floating red"
+                                           action="#{reports.downloadRecordsXml}">
+                                <span class="small">XML</span>
+                            </h:commandLink>
+                        </li>
+                    </ul>
+                </h:form>
+            </div>
+            <div class="container">
+                <div class="card row" style="padding-right: 1px;">
+                    <h:form>
+                        <ul class="tabs">
+                            <li class="tab col s3"><h:commandLink action="#{reports.selectEmployees}"
+                                                                  value="#{msg['reports.employees']}">
+                                <f:ajax execute="@this" render="table row-count"/>
+                            </h:commandLink></li>
+                            <li class="tab col s3"><h:commandLink action="#{reports.selectOccupations}"
+                                                                  value="#{msg['reports.occupations']}">
+                                <f:ajax execute="@this" render="table row-count"/>
+                            </h:commandLink>
+                            </li>
+                            <li class="tab col s3"><h:commandLink action="#{reports.selectRegisteredOccupations}"
+                                                                  value="#{msg['reports.registrations']}"
+                                                                  styleClass="active">
+                                <f:ajax execute="@this" render="table row-count"/>
+                            </h:commandLink>
+                            </li>
+                            <li class="tab col s3"><h:commandLink action="#{reports.selectProject}"
+                                                                  value="#{msg['reports.projects']}">
+                                <f:ajax execute="@this" render="table row-count"/>
+                            </h:commandLink></li>
+                            <li class="tab col s3"><h:commandLink action="#{reports.selectTasks}"
+                                                                  value="#{msg['reports.tasks']}">
+                                <f:ajax execute="@this" render="table row-count"/>
+                            </h:commandLink></li>
+                        </ul>
+                    </h:form>
+                </div>
+                <div class="row">
+                    <nav class="col s12 row no-padding">
+                        <div class="nav-wrapper col s12 no-padding">
+                            <h:form>
+                                <div class="input-field">
+                                    <h:inputText id="search" a:type="search"
+                                                 value="#{reports.filter}"/>
+                                    <p:watermark for="search" value="#{msg['reports.search']}"/>
+                                    <label for="search"><i class="material-icons">search</i></label>
+                                    <i class="material-icons">close</i>
+                                    <p:commandButton id="searchButton"
+                                                     value="#{msg['search']}"
+                                                     style="display: none;"
+                                                     onsuccess="regenerateTable()"
+                                                     action="#{reports.generateTableRecords}">
+                                        <f:ajax execute="search"/>
+                                    </p:commandButton>
+                                    <p:remoteCommand name="regenerateTable" update="table row-count"/>
+                                </div>
+                            </h:form>
+                        </div>
+                    </nav>
+                </div>
+                <h:panelGroup id="row-count" styleClass="row" style="margin: 0px;">
+                    <span class="right grey-text">#{reports.limitedPreviewMessage}</span>
+                </h:panelGroup>
+                <div class="card row">
+                    <h:dataTable id="table" styleClass="highlight reports-table" value="#{reports.tableRecords}"
+                                 var="row"
+                                 columnClasses="first-table-column">
+                        <c:forEach items="#{reports.prettyTableFieldList}" var="field" varStatus="loop">
+                            <h:column>
+                                <f:facet name="header">#{field}</f:facet>
+                                #{reports.translateValues(row.get(reports.tableFieldList.get(loop.index)))}
+                            </h:column>
+                        </c:forEach>
+                    </h:dataTable>
+                </div>
+            </div>
+        </ui:define>
+    </ui:composition>
+</f:view>
+</html>

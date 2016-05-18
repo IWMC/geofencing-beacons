@@ -31,7 +31,7 @@ public class TaskAddController extends TaskEditController {
 
     @Override
     public String saveTask() {
-        if (taskDao.isManagingProjectManager(getEntity(), sm.findEmployee())) {
+        if (taskDao.isManagingProjectManager(getEntity().getProjectId(), sm.findEmployee())) {
             taskDao.addTask(getEntity());
         }
 

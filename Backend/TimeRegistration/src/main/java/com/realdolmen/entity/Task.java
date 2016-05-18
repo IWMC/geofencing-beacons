@@ -12,6 +12,7 @@ import javax.persistence.*;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
 import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.bind.annotation.XmlTransient;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -21,7 +22,7 @@ import java.util.Set;
  * One of the tasks hold by any {@link Project}.
  */
 @Entity
-@XmlRootElement
+@XmlRootElement(name = "task")
 @NamedQueries({
         @NamedQuery(name = "Task.findAll", query = "SELECT t FROM Task t"),
         @NamedQuery(name = "Task.findByProjectId", query = "SELECT t FROM Task t WHERE t.project.projectNr = :projectId"),
@@ -35,7 +36,7 @@ public class Task extends Occupation {
 
     @ManyToOne
     @NotNull(message = "project.empty", groups = Existing.class)
-    @JsonIgnore
+    @JsonInclude(JsonInclude.Include.NON_DEFAULT)
     private Project project;
 
     @ManyToMany
@@ -73,6 +74,7 @@ public class Task extends Occupation {
         this.estimatedHours = estimatedHours;
     }
 
+    @XmlTransient
     public Project getProject() {
         return project;
     }
