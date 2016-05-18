@@ -1,6 +1,8 @@
 package com.realdolmen.jsf;
 
 import com.realdolmen.entity.Employee;
+import com.realdolmen.entity.ManagementEmployee;
+import com.realdolmen.entity.ProjectManager;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
@@ -37,9 +39,9 @@ public class AuthorizationFilter implements Filter {
         Employee employee = userContext.getUser();
         HttpServletRequest httpRequest = (HttpServletRequest) request;
 
-        if (includedUrls.stream().anyMatch(httpRequest.getRequestURI()::matches) && employee == null) {
+        if (includedUrls.stream().anyMatch(httpRequest.getRequestURI()::matches) && !(employee instanceof ProjectManager || employee instanceof ManagementEmployee) ) {
             HttpServletResponse servletResponse = (HttpServletResponse) response;
-            servletResponse.sendRedirect(Pages.login().asLocationRedirect());
+            servletResponse.sendRedirect(((HttpServletRequest) request).getContextPath() + Pages.login().asLocationRedirect());
         } else {
             chain.doFilter(request, response);
         }

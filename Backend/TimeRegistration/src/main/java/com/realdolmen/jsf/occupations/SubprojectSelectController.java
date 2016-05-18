@@ -5,7 +5,6 @@ import com.realdolmen.entity.Occupation;
 import com.realdolmen.entity.Project;
 import com.realdolmen.jsf.Pages;
 import com.realdolmen.messages.Language;
-import org.jboss.logging.Logger;
 import org.jetbrains.annotations.TestOnly;
 import org.omnifaces.cdi.ViewScoped;
 import org.primefaces.material.application.ToastService;
@@ -15,7 +14,6 @@ import javax.inject.Inject;
 import javax.inject.Named;
 import javax.transaction.Transactional;
 import javax.ws.rs.core.Response;
-import java.io.IOException;
 import java.io.Serializable;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -39,32 +37,25 @@ public class SubprojectSelectController extends OccupationSearchController imple
     @Inject
     private Language language;
 
-    public void onPreRender() {
+    public String onPreRender() {
         try {
             if (occupationId != null) {
                 long id = Long.parseLong(occupationId);
                 Response response = getOccupationEndpoint().findById(id);
 
                 if (response.getEntity() != null && !(response.getEntity() instanceof Project)) {
-                    getFacesContext().getExternalContext().redirect(Pages.detailsOccupation().param("id", occupationId).asRedirect());
+                    return Pages.detailsOccupation().param("id", occupationId).asRedirect();
                 }
 
                 project = response.getStatus() == 200 ? (Project) response.getEntity() : null;
                 if (project != null) {
-                    return;
+                    return "";
                 }
             }
 
-            (facesContext == null ? FacesContext.getCurrentInstance() : facesContext)
-                    .getExternalContext().redirect(Pages.searchOccupation().asLocationRedirect());
+            return Pages.searchOccupation().asLocationRedirect();
         } catch (NumberFormatException nfex) {
-            try {
-                getFacesContext().getExternalContext().redirect(Pages.searchOccupation().asLocationRedirect());
-            } catch (IOException e) {
-                Logger.getLogger(OccupationDetailController.class).error("couldn't redirect with FacesContext", e);
-            }
-        } catch (IOException e) {
-            Logger.getLogger(OccupationDetailController.class).error("couldn't redirect with FacesContext", e);
+            return Pages.searchOccupation().asLocationRedirect();
         }
     }
 

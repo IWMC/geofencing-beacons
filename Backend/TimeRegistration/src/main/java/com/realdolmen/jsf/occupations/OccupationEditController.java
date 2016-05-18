@@ -15,12 +15,13 @@ import java.io.Serializable;
 @ViewScoped
 public class OccupationEditController extends OccupationDetailController implements Serializable {
 
-    public void saveOccupation() throws IOException {
+    public String saveOccupation() throws IOException {
         Response response = getOccupationEndpoint().update(getEntity().getId(), getEntity());
         if (response.getStatus() == Response.Status.NO_CONTENT.getStatusCode()) {
-            getFacesContext().getExternalContext().redirect(Pages.occupationDetailsFrom(getEntity()).asLocationRedirect());
+            return Pages.occupationDetailsFrom(getEntity()).asLocationRedirect();
         } else {
             getToastService().newToast(getLanguage().getString("occupation.name_taken"), 3000);
+            return "";
         }
     }
 }

@@ -159,7 +159,7 @@
                                         <div class="collection-item">
                                             <h:form>
                                                 <h:link outcome="#{pages.detailsEmployee().param('id', employee.id).asLinkOutcome()}">
-                                                    #{employee.firstName} #{employee.lastName}
+                                                    #{employee.firstName} #{employee.lastName} (#{projectDetails.getEmployeeJobFunction(employee)})
                                                 </h:link>
                                                 <h:commandLink style="top: -2px; right: 16px;"
                                                                class="right btn-small btn-floating red"

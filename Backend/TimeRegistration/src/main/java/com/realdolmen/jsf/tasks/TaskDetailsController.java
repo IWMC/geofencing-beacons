@@ -29,6 +29,7 @@ public class TaskDetailsController extends DetailController<Task> {
     }
 
     @Override
+    @Transactional
     public Task loadEntity(long id) {
         Task task = taskDao.findById(id);
 
@@ -63,5 +64,13 @@ public class TaskDetailsController extends DetailController<Task> {
 
     public boolean getShouldShowEditOptions() {
         return taskDao.isManagingProjectManager(getEntity(), sm.findEmployee());
+    }
+
+    public String returnToProject() {
+        return Pages.detailsProject(getEntity().getProject().getId()).asRedirect();
+    }
+
+    public String getReturnToProjectMessage() {
+        return getLanguage().getString("project.task.return_to_project", getEntity().getProject().getName());
     }
 }

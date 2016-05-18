@@ -50,22 +50,20 @@ public class ReportsController extends Controller implements Serializable {
     private ArrayList<ObjectNode> tableRecords = new ArrayList<>();
 
     private long querySize;
+    private String filter;
+    private Class<?> selectedEntity = RegisteredOccupation.class;
 
     public long getQuerySize() {
         return querySize;
-    }
-
-    public long getTableSize() {
-        return Math.min(querySize, 10);
     }
 
     public void setQuerySize(long querySize) {
         this.querySize = querySize;
     }
 
-    private String filter;
-
-    private Class<?> selectedEntity = RegisteredOccupation.class;
+    public long getTableSize() {
+        return Math.min(querySize, 10);
+    }
 
     public void createReport() {
         createReport(0, 10);
@@ -187,11 +185,36 @@ public class ReportsController extends Controller implements Serializable {
         return Arrays.asList(columns.split(","));
     }
 
-    public String translateValues(JsonNode value) {
-        if (value.toString().equalsIgnoreCase("false")) {
+    public String translateValues(int columnIndex, JsonNode value) {
+        final String stringValue = value.toString();
+        if (stringValue.equalsIgnoreCase("false")) {
             return language.getString("no");
-        } else if (value.toString().equalsIgnoreCase("true")) {
+        } else if (stringValue.equalsIgnoreCase("true")) {
             return language.getString("yes");
+        }
+
+        if (getTableFieldList().get(columnIndex).equals("jobFunction")) {
+            return language.getString("employee.jobtitle." + value.toString());
+        }
+
+        if (getTableFieldList().get(columnIndex).toLowerCase().contains("hour")) {
+            if (value.asDouble() == value.asInt()) {
+                return getLanguage().getString("project.task.hours", value.asInt());
+            } else if (value.asInt() == 0) {
+                return getLanguage().getString("project.task.minutes", (int) ((value.asDouble() - Math.floor(value.asDouble())) * 60));
+            }
+
+            return getLanguage().getString("project.task.hours_minutes",
+                    value.asInt(),
+                    (int) Math.ceil((value.asDouble() - Math.floor(value.asDouble())) * 60));
+        }
+
+        try {
+            double doubleValue = Double.parseDouble(stringValue);
+            if (doubleValue == (int) doubleValue) {
+                return String.valueOf(Integer.parseInt(stringValue));
+            }
+        } catch (NumberFormatException nfex) {
         }
 
         return value.toString();
@@ -207,7 +230,8 @@ public class ReportsController extends Controller implements Serializable {
 
         private List<E> list = new ArrayList<>();
 
-        public JAXBList() {}
+        public JAXBList() {
+        }
 
         public JAXBList(List<E> list) {
             this.list = list;

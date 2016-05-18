@@ -56,7 +56,12 @@ public class SimplifiedReportsQueryBuilder extends ReportsQueryBuilder {
 
     private String tryTranslation(String fieldName) {
         fieldName = fieldName.toLowerCase();
-        return getQueryBundle().containsKey(fieldName.trim()) ? getQueryBundle().getString(fieldName.trim()) : fieldName;
+        if (getQueryBundle().containsKey(fieldName.trim())) {
+            return getQueryBundle().getString(fieldName.trim());
+        } else {
+            final String contextualizedField = getEntityClass().getSimpleName() + "." + fieldName.trim();
+            return getQueryBundle().containsKey(contextualizedField) ? getQueryBundle().getString(contextualizedField) : fieldName;
+        }
     }
 
     private String trySpecialTranslation(String fieldName) {

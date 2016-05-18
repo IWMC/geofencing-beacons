@@ -67,6 +67,10 @@ public class ReportsQueryBuilder {
         return this;
     }
 
+    public Class<?> getEntityClass() {
+        return entityClazz;
+    }
+
     public ReportsQueryBuilder where(String selection) {
         this.where = selection;
         if (selection != null && !selection.isEmpty())

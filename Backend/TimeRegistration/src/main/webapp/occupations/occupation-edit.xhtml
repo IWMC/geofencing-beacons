@@ -45,7 +45,7 @@
                             </div>
                         </div>
                         <div class="card-action">
-                            <h:panelGroup rendered="#{userContext.isManagementEmployee()}">
+                            <h:panelGroup rendered="#{userContext.isManagementEmployee}">
                                 <h:commandLink action="#{occupationEdit.saveOccupation()}"
                                                styleClass="waves-effect waves-orange card-action-flat"
                                                value="#{msg['save']}">
@@ -70,6 +70,12 @@
                                     </div>
                                 </div>
                             </h:panelGroup>
+                        </div>
+                    </div>
+                    <div class="card">
+                        <div class="card-content">
+                            <p class="card-title"> #{msg['hint']}</p>
+                            #{msg['occupation.explanation']}
                         </div>
                     </div>
                 </h:form>

@@ -56,7 +56,7 @@ public class Controller implements Serializable {
         this.language = language;
     }
 
-    public void redirect(Pages.Page page) throws IOException {
-        getFacesContext().getExternalContext().redirect(page.asLocationRedirect());
+    public String redirect(Pages.Page page) throws IOException {
+        return page.asRedirect();
     }
 }

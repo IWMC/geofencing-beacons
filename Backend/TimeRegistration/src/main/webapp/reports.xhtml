@@ -102,7 +102,7 @@
                         <c:forEach items="#{reports.prettyTableFieldList}" var="field" varStatus="loop">
                             <h:column>
                                 <f:facet name="header">#{field}</f:facet>
-                                #{reports.translateValues(row.get(reports.tableFieldList.get(loop.index)))}
+                                #{reports.translateValues(loop.index, row.get(reports.tableFieldList.get(loop.index)))}
                             </h:column>
                         </c:forEach>
                     </h:dataTable>

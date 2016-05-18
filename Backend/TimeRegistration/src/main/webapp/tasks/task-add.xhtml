@@ -18,6 +18,18 @@
                 <h:outputText value="#{msg['project.task.add.title']}"/>
             </h5>
         </ui:define>
+        <ui:define name="extra-dropdown-options">
+            <li><h:commandLink action="#{taskAdd.returnToProject}"
+                               value="#{taskAdd.returnToProjectMessage}"/></li>
+        </ui:define>
+        <ui:define name="extra-nav-options">
+            <li class="hide-on-med-and-down">
+                <h:commandLink action="#{taskAdd.returnToProject}">
+                    <i class="material-icons left">arrow_back</i>
+                    <span class="left">#{taskAdd.returnToProjectMessage}</span>
+                </h:commandLink>
+            </li>
+        </ui:define>
         <ui:define name="additional-toolbar-full">
             <div class="row">
                 <h5 class="col s12 hide-on-large-only"><h:outputText value="#{msg['project.task.edit.title']}"/></h5>
@@ -45,8 +57,9 @@
                             </div>
                             <p class="range-field">
                                 <label for="estimatedHours">#{msg['project.task.estimated_hours']}</label>
-                                <h:inputText id="estimatedHours" a:type="range" a:min="0" a:max="16" a:step="0.5"
+                                <h:inputText id="estimatedHours" a:type="range" a:min="0" a:max="40" a:step="0.5"
                                              value="#{taskAdd.entity.estimatedHours}"/>
+                                <!--<h:inputText id="estimatedHours" value="#{taskAdd.entity.estimatedHours}" />-->
                             </p>
                         </div>
                         <div class="card-action">
@@ -55,72 +68,9 @@
                                            value="#{msg['save']}">
                                 <f:ajax execute="@form"/>
                             </h:commandLink>
-                            <a class="red-text text-lighten-1 right modal-trigger waves-effect waves-red card-action-flat"
-                               href="#remove-warning"><h:outputText value="#{msg['remove']}"/></a>
-                            <div id="remove-warning" class="modal">
-                                <div class="modal-content">
-                                    <h4><h:outputText value="#{msg['project.task.remove_warning.title']}"/></h4>
-                                    <p><h:outputText value="#{msg['project.task.remove_warning.description']}"/></p>
-                                </div>
-                                <div class="modal-footer">
-                                    <a href="#"
-                                       class="green-text modal-action modal-close waves-effect waves-green btn-flat">
-                                        <h:outputText value="#{msg['no']}"/>
-                                    </a>
-                                    <h:commandLink
-                                            styleClass="red-text modal-action modal-close waves-effect waves-red btn-flat"
-                                            value="#{msg['yes']}"
-                                            action="#{taskAdd.removeTask}"/>
-                                </div>
-                            </div>
                         </div>
                     </div>
                 </h:form>
-                <h:panelGroup id="employeeList">
-                    <div class="row">
-                        <ui:repeat value="#{of:setToList(taskAdd.entity.employees)}" var="employee">
-                            <div class="col s12 l6">
-                                <h:form>
-                                    <div class="card">
-                                        <div class="card-content">
-                                            <h:outputText styleClass="card-title"
-                                                          value="#{employee.firstName} #{employee.lastName}"/><br/>
-                                            <h:outputText styleClass="truncate" value="#{employee.email}"/>
-                                        </div>
-                                        <div class="card-action">
-                                            <h:link styleClass="realdolmen-blue-text waves-effect waves-realdolmen-blue card-action-flat"
-                                                    value="#{msg['employee.search.open_details']}"
-                                                    outcome="#{pages.detailsEmployee().param('id', employee.id).asRedirect()}"/>
-                                            <a class="right red-text text-lighten-1 modal-trigger waves-effect waves-red card-action-flat"
-                                               href="#remove-employee-warning">#{msg['remove']}</a>
-                                            <div id="remove-employee-warning" class="modal">
-                                                <div class="modal-content">
-                                                    <h4>#{msg['employee.remove_warning.title']}</h4>
-                                                    <h:outputText
-                                                            value="#{msg['project.task.employee.remove_warning.description']}"/>
-                                                </div>
-                                                <div class="modal-footer">
-                                                    <h:form>
-                                                        <a href="#!"
-                                                           class="green-text modal-action modal-close waves-effect waves-green btn-flat">
-                                                            #{msg['no']}
-                                                        </a>
-                                                        <h:commandLink
-                                                                styleClass="red-text modal-action modal-close waves-effect waves-red btn-flat"
-                                                                value="#{msg['yes']}"
-                                                                action="#{taskAdd.removeEmployee(employee)}">
-                                                            <f:ajax execute="@form" render="employeeList"/>
-                                                        </h:commandLink>
-                                                    </h:form>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </h:form>
-                            </div>
-                        </ui:repeat>
-                    </div>
-                </h:panelGroup>
             </div>
         </ui:define>
     </ui:composition>

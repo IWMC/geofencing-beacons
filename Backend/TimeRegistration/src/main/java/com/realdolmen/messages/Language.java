@@ -32,6 +32,10 @@ public class Language implements Serializable {
     }
 
     public String getString(String key, Object... params) {
+        if (!getLanguageBundle().containsKey(key)) {
+            return null;
+        }
+
         String value = getLanguageBundle().getString(key);
         for (int i = 0; i < params.length; i++) {
             value = value.replaceAll("\\{" + i + "\\}", params[i].toString());

@@ -2,6 +2,7 @@ package com.realdolmen.jsf.occupations;
 
 import com.realdolmen.entity.Occupation;
 import com.realdolmen.entity.PersistenceUnit;
+import com.realdolmen.entity.Task;
 import com.realdolmen.rest.OccupationEndpoint;
 import org.hibernate.search.jpa.FullTextEntityManager;
 import org.hibernate.search.query.dsl.QueryBuilder;
@@ -15,6 +16,8 @@ import javax.persistence.PersistenceContext;
 import javax.transaction.Transactional;
 import javax.ws.rs.core.Response;
 import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * A controller for <code>/occupations/search-occupations.xhtml</code>.
@@ -49,8 +52,8 @@ public class OccupationSearchController {
         javax.persistence.Query jpaQuery =
                 fullTextEntityManager.createFullTextQuery(luceneQuery, Occupation.class);
 
-        List<Occupation> result = jpaQuery.getResultList();
-        return result;
+        Stream<Occupation> result = jpaQuery.getResultList().stream().filter(o -> !(o instanceof Task));
+        return result.collect(Collectors.toList());
     }
 
     @Transactional

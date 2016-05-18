@@ -23,6 +23,8 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.security.NoSuchAlgorithmException;
 
+import static com.realdolmen.jsf.Pages.searchEmployee;
+
 /**
  * A controller for <code>/employees/employee-edit.xhtml</code>.
  */
@@ -53,7 +55,7 @@ public class EmployeeEditController implements Serializable {
     private String passwordRepeat;
 
     @Transactional
-    public void onPreRender() throws IOException {
+    public String onPreRender() throws IOException {
         userId = getFacesContext().getExternalContext().getRequestParameterMap().getOrDefault("userId", userId);
 
         try {
@@ -67,17 +69,19 @@ public class EmployeeEditController implements Serializable {
                         employeeType = "2";
                     } else if (employee instanceof ManagementEmployee) {
                         employeeType = "3";
-                    } else {
+                    } else if (employee.getJobFunction() == null || employee.getJobFunction().isEmpty()){
                         employeeType = "1";
+                    } else {
+                        employeeType = employee.getJobFunction() == null || employee.getJobFunction().isEmpty() ? "1" : employee.getJobFunction();
                     }
 
-                    return;
+                    return "";
                 }
             }
 
-            getFacesContext().getExternalContext().redirect(Pages.searchEmployee().asLocationRedirect());
+            return searchEmployee().asLocationRedirect();
         } catch (NumberFormatException nfex) {
-            getFacesContext().getExternalContext().redirect(Pages.searchEmployee().asLocationRedirect());
+            return searchEmployee().asLocationRedirect();
         }
     }
 
@@ -119,10 +123,21 @@ public class EmployeeEditController implements Serializable {
             }
         }
 
-        return Pages.searchEmployee().asRedirect();
+        return searchEmployee().asRedirect();
     }
 
-    public void saveUser() throws Exception {
+    public String saveUser() throws Exception {
+//        if (employeeType.equals(EmployeeController.EMPLOYEE_TYPE)) {
+//            employee.setJobFunction(language.getString("employee.jobtitle.employee"));
+//        } else if (employeeType.equals(EmployeeController.MANAGEMENT_EMPLOYEE_TYPE)) {
+//            employee.setJobFunction(language.getString("employee.jobtitle.management"));
+//        } else if (employeeType.equals(EmployeeController.PROJECT_MANAGER_TYPE)) {
+//            employee.setJobFunction(language.getString("employee.jobtitle.project_manager"));
+//        } else {
+//            employee.setJobFunction(language.getString("employee.jobtitle." + employeeType));
+//        }
+        employee.setJobFunction(employeeType);
+
         Response response = employeeEndpoint.update(employee.getId(), employee);
         if (employeeType.equals(EmployeeController.PROJECT_MANAGER_TYPE) && !(employee instanceof ProjectManager)) {
             employeeEndpoint.upgradeProjectManager(employee.getId());
@@ -132,9 +147,7 @@ public class EmployeeEditController implements Serializable {
             employeeEndpoint.downgradeEmployee(employee.getId());
         }
 
-        if (response.getStatus() == Response.Status.NO_CONTENT.getStatusCode()) {
-            getFacesContext().getExternalContext().redirect(Pages.searchEmployee().asRedirect());
-        }
+        return response.getStatus() == Response.Status.NO_CONTENT.getStatusCode() ? Pages.searchEmployee().asRedirect() : "";
     }
 
     public long getIdAsLong() {

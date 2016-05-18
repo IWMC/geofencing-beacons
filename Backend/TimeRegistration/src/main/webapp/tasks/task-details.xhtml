@@ -17,6 +17,18 @@
                     value="#{msg['project.task.details.title']}"/>
             </h5>
         </ui:define>
+        <ui:define name="extra-dropdown-options">
+            <li><h:commandLink action="#{taskDetails.returnToProject}"
+                               value="#{taskDetails.returnToProjectMessage}"/></li>
+        </ui:define>
+        <ui:define name="extra-nav-options">
+            <li class="hide-on-med-and-down">
+                <h:commandLink action="#{taskDetails.returnToProject}">
+                    <i class="material-icons left">arrow_back</i>
+                    <span class="left">#{taskDetails.returnToProjectMessage}</span>
+                </h:commandLink>
+            </li>
+        </ui:define>
         <ui:define name="additional-toolbar-full">
             <div class="row">
                 <h5 class="col s12 hide-on-large-only"><h:outputText value="#{msg['project.task.details.title']}"/></h5>

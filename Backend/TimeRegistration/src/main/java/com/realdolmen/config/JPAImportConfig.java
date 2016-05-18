@@ -37,6 +37,8 @@ public class JPAImportConfig {
         employee.setEmail("admin@realdolmen.com");
         employee.setFirstName("admin");
         employee.setLastName("admin");
+        employee.setJobFunction("3");
+
         String salt = null;
         try {
             salt = securityManager.randomSalt();

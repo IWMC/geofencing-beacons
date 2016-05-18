@@ -23,6 +23,18 @@
                 <h5 class="col s12 hide-on-large-only"><h:outputText value="#{msg['project.task.edit.title']}"/></h5>
             </div>
         </ui:define>
+        <ui:define name="extra-dropdown-options">
+            <li><h:commandLink action="#{taskEdit.returnToProject}"
+                               value="#{taskEdit.returnToProjectMessage}"/></li>
+        </ui:define>
+        <ui:define name="extra-nav-options">
+            <li class="hide-on-med-and-down">
+                <h:commandLink action="#{taskEdit.returnToProject}">
+                    <i class="material-icons left">arrow_back</i>
+                    <span class="left">#{taskEdit.returnToProjectMessage}</span>
+                </h:commandLink>
+            </li>
+        </ui:define>
         <ui:define name="body">
             <div class="container small-container">
                 <h:panelGroup layout="block" rendered="#{taskEdit.shouldShowEditOptions}"
@@ -52,8 +64,9 @@
                             </div>
                             <p class="range-field">
                                 <label for="estimatedHours">#{msg['project.task.estimated_hours']}</label>
-                                <h:inputText id="estimatedHours" a:type="range" a:min="0" a:max="16" a:step="0.5"
-                                             value="#{taskEdit.entity.estimatedHours}"/>
+                                <h:inputText id="estimatedHours" a:type="range" a:min="0" a:max="40" a:step="0.5"
+                                             value="#{taskEdit.entity.estimatedHours}" />
+                                <!--<h:inputText id="estimatedHours" value="#{taskAdd.entity.estimatedHours}" />-->
                             </p>
                         </div>
                         <div class="card-action">

@@ -122,15 +122,17 @@ public class ProjectDetailController extends DetailController<Project> implement
         }
     }
 
-    public void saveProject() throws IOException {
+    public String saveProject() throws IOException {
         Response response = getOccupationEndpoint().update(getEntity().getId(), getEntity());
         if (response.getStatus() == Response.Status.NO_CONTENT.getStatusCode()) {
-            redirect(Pages.occupationDetailsFrom(getEntity()));
+            return redirect(Pages.occupationDetailsFrom(getEntity()));
         } else if (response.getStatus() == Response.Status.FORBIDDEN.getStatusCode()) {
-            redirectToErrorPage();
+            return redirectToErrorPage();
         } else if (response.getStatus() == Response.Status.CONFLICT.getStatusCode()) {
             getToastService().newToast(getLanguage().getString("occupation.name_taken"));
         }
+
+        return "";
     }
 
     public OccupationEndpoint getOccupationEndpoint() {
@@ -181,9 +183,9 @@ public class ProjectDetailController extends DetailController<Project> implement
     }
 
     @Authorized(UserGroup.PROJECT_MANAGER_ONLY)
-    public void removeProject() throws IOException {
+    public String removeProject() throws IOException {
         getOccupationEndpoint().removeOccupation(getEntity().getId());
-        redirect(Pages.searchOccupation());
+        return redirect(Pages.searchOccupation());
     }
 
     @Override
@@ -204,8 +206,7 @@ public class ProjectDetailController extends DetailController<Project> implement
     }
 
     public boolean getShouldShowEditOption() {
-        return sm.isManagementEmployee() ||
-                (sm.isProjectManager() && getEntity().getEmployees().contains(userContext.getUser()));
+        return sm.isProjectManager() && getEntity().getEmployees().contains(userContext.getUser());
     }
 
     public boolean getShouldShowTaskEditOption() {
@@ -254,5 +255,9 @@ public class ProjectDetailController extends DetailController<Project> implement
     @TestOnly
     public void setUserContext(UserContext userContext) {
         this.userContext = userContext;
+    }
+
+    public String getEmployeeJobFunction(Employee employee) {
+        return getLanguage().getString("employee.jobtitle." + employee.getJobFunction());
     }
 }

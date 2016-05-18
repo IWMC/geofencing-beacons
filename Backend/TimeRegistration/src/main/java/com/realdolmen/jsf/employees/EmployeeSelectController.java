@@ -6,10 +6,8 @@ import com.realdolmen.entity.Project;
 import com.realdolmen.entity.Task;
 import com.realdolmen.entity.dao.TaskDao;
 import com.realdolmen.jsf.Pages;
-import com.realdolmen.jsf.occupations.OccupationDetailController;
 import com.realdolmen.rest.OccupationEndpoint;
 import com.realdolmen.service.SecurityManager;
-import org.jboss.logging.Logger;
 import org.jetbrains.annotations.TestOnly;
 import org.omnifaces.cdi.ViewScoped;
 
@@ -18,7 +16,8 @@ import javax.inject.Inject;
 import javax.inject.Named;
 import javax.transaction.Transactional;
 import javax.ws.rs.core.Response;
-import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.net.URLDecoder;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -40,6 +39,8 @@ public class EmployeeSelectController extends EmployeeSearchController {
 
     private String taskId;
 
+    private String returnURL;
+
     private Task task;
 
     private Project project;
@@ -50,40 +51,32 @@ public class EmployeeSelectController extends EmployeeSearchController {
     private OccupationEndpoint occupationEndpoint;
 
     @Transactional
-    public void onParentId() {
+    public String onParentId() {
         try {
             if (occupationId != null) {
                 long id = Long.parseLong(occupationId);
                 Response response = occupationEndpoint.findById(id);
 
                 if (response.getEntity() != null && !(response.getEntity() instanceof Project)) {
-                    getFacesContext().getExternalContext().redirect(Pages.detailsOccupation().param("id", occupationId).asRedirect());
+                    return Pages.detailsOccupation().param("id", occupationId).asRedirect();
                 }
 
                 project = response.getStatus() == 200 ? (Project) response.getEntity() : null;
                 if (project != null) {
-                    return;
+                    return "";
                 }
             }
 
             if (taskId != null) {
                 task = taskDao.findByIdEagerly(Long.parseLong(taskId));
                 if (task != null) {
-                    return;
+                    return "";
                 }
             }
 
-            (facesContext == null ? FacesContext.getCurrentInstance() : facesContext)
-                    .getExternalContext().redirect(Pages.searchOccupation().asLocationRedirect());
+            return Pages.searchOccupation().asLocationRedirect();
         } catch (NumberFormatException nfex) {
-            try {
-                (facesContext == null ? FacesContext.getCurrentInstance() : facesContext)
-                        .getExternalContext().redirect(Pages.searchOccupation().asLocationRedirect());
-            } catch (IOException e) {
-                Logger.getLogger(OccupationDetailController.class).error("couldn't redirect with FacesContext", e);
-            }
-        } catch (IOException e) {
-            Logger.getLogger(OccupationDetailController.class).error("couldn't redirect with FacesContext", e);
+            return Pages.searchOccupation().asLocationRedirect();
         }
     }
 
@@ -114,19 +107,19 @@ public class EmployeeSelectController extends EmployeeSearchController {
     }
 
     @Transactional
-    public String addEmployeeToParent(Employee employee) {
+    public String addEmployeeToParent(Employee employee) throws UnsupportedEncodingException {
         if (project != null && task == null) {
             project.getEmployees().add(employee);
             employee.getMemberProjects().add(project);
             getEntityManager().merge(project);
             getEntityManager().merge(employee);
-            return Pages.editProject().param("id", occupationId).asRedirect();
-        } else {
+            return returnURL == null ? Pages.editProject().param("id", occupationId).asRedirect() : URLDecoder.decode(returnURL, "UTF-8");
+        } else if (project == null && task != null) {
             task = taskDao.refresh(task);
             if (taskDao.isManagingProjectManager(task, sm.findEmployee())) {
                 task.getEmployees().add(employee);
                 taskDao.update(task);
-                return Pages.detailsTask(task.getId()).asRedirect();
+                return returnURL == null ? Pages.detailsTask(task.getId()).asRedirect() : URLDecoder.decode(returnURL, "UTF-8");
             }
         }
 
@@ -170,5 +163,13 @@ public class EmployeeSelectController extends EmployeeSearchController {
     public void setTaskId(String taskId) {
         this.taskId = taskId;
         onParentId();
+    }
+
+    public String getReturnURL() {
+        return returnURL;
+    }
+
+    public void setReturnURL(String returnURL) {
+        this.returnURL = returnURL;
     }
 }

@@ -68,23 +68,24 @@ public class EmployeeAddController implements Serializable {
         return facesContext;
     }
 
-    public void saveUser() throws Exception {
+    public String saveUser() throws Exception {
         if (password != null && !password.isEmpty() && !password.equals(passwordRepeat)) {
             getToastService().newToast(language.getLanguageBundle().getString(Language.Text.EMPLOYEE_EDIT_PASSWORD_INVALID), 5000);
-            return;
+            return "";
         }
 
         employee.setPassword(password);
+        employee.setJobFunction(employeeType);
+
         Response response = userEndpoint.register(employee);
         if (employeeType.equals(EmployeeController.PROJECT_MANAGER_TYPE) && !(employee instanceof ProjectManager)) {
             employeeEndpoint.upgradeProjectManager(employee.getId());
+
         } else if (employeeType.equals(EmployeeController.MANAGEMENT_EMPLOYEE_TYPE) && !(employee instanceof ManagementEmployee)) {
             employeeEndpoint.upgradeManagementEmployee(employee.getId());
         }
 
-        if (response.getStatus() == Response.Status.CREATED.getStatusCode()) {
-            getFacesContext().getExternalContext().redirect(Pages.searchEmployee().asRedirect());
-        }
+        return response.getStatus() == Response.Status.CREATED.getStatusCode() ? Pages.searchEmployee().asRedirect() : "";
     }
 
     public String getEmployeeType() {

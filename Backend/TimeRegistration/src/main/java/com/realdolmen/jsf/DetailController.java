@@ -20,17 +20,15 @@ public abstract class DetailController<E extends Serializable> extends Controlle
     /**
      * The only constructor requiring an error page if something would go wrong.
      *
-     * @param errorPage     the page the system should redirect to if the id is not given as a query parameter.
+     * @param errorPage the page the system should redirect to if the id is not given as a query parameter.
      */
     public DetailController(Pages.Page errorPage) {
         this.errorPage = errorPage;
     }
 
-    public void redirectToErrorPage() throws IOException {
+    public String redirectToErrorPage() throws IOException {
         // Is it due to redirection to another page?
-        if (!getFacesContext().getExternalContext().isResponseCommitted()) {
-            getFacesContext().getExternalContext().redirect(errorPage.asLocationRedirect());
-        }
+        return getFacesContext().getExternalContext().isResponseCommitted() ? "" : errorPage.asLocationRedirect();
     }
 
     @Transactional

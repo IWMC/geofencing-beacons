@@ -121,16 +121,28 @@ public class Employee implements Serializable, Initializable {
     private Set<Project> memberProjects = new HashSet<>();
 
     @OneToMany(mappedBy = "employee")
-    @JsonInclude(JsonInclude.Include.NON_DEFAULT)
+    @JsonIgnore
+    @XmlTransient
     private Set<RegisteredOccupation> registeredOccupations = new HashSet<>();
 
     @ManyToMany(mappedBy = "employees")
     @JsonIgnore
     private Set<Task> tasks;
 
+    private String jobFunction;
+
     public Employee() {
     }
 
+    public String getJobFunction() {
+        return jobFunction;
+    }
+
+    public void setJobFunction(String jobFunction) {
+        this.jobFunction = jobFunction;
+    }
+
+    @XmlTransient
     public Set<RegisteredOccupation> getRegisteredOccupations() {
         return registeredOccupations;
     }

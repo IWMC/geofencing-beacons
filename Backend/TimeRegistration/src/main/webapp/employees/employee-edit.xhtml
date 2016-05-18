@@ -69,15 +69,22 @@
                                 </div>
                                 <div class="input-field col push-s1 s10 push-m1 m5" style="padding-top: 15px;">
                                     <p:inputText styleClass="validate" id="email" a:type="email"
-                                                 value="#{employeeEdit.employee.email}" a:pattern="[a-z0-9]+[_a-z0-9\.-]*[a-z0-9]+@[a-z0-9-]+(\.[a-z0-9-]+)*(\.[a-z]{2,4})"/>
-                                    <h:outputLabel styleClass="label-big-textfield" value="#{msg['employee.email']}" for="email" a:data-error="${msg['validation.invalid_email']}"/>
+                                                 value="#{employeeEdit.employee.email}"
+                                                 a:pattern="[a-z0-9]+[_a-z0-9\.-]*[a-z0-9]+@[a-z0-9-]+(\.[a-z0-9-]+)*(\.[a-z]{2,4})"/>
+                                    <h:outputLabel styleClass="label-big-textfield" value="#{msg['employee.email']}"
+                                                   for="email" a:data-error="${msg['validation.invalid_email']}"/>
                                 </div>
                                 <div class="input-field col push-s1 s10 push-m1 m5">
                                     <mp:selectOne value="#{employeeEdit.employeeType}">
-                                        <f:selectItem itemLabel="#{msg['employee.edit.employee']}" itemValue="1"/>
-                                        <f:selectItem itemLabel="#{msg['employee.edit.project_manager']}"
+                                        <f:selectItem itemLabel="#{msg['employee.jobtitle.employee']}" itemValue="1"/>
+                                        <f:selectItem itemLabel="#{msg['employee.jobtitle.project_manager']}"
                                                       itemValue="2"/>
-                                        <f:selectItem itemLabel="#{msg['employee.edit.management']}" itemValue="3"/>
+                                        <f:selectItem itemLabel="#{msg['employee.jobtitle.management']}" itemValue="3"/>
+                                        <f:selectItem itemLabel="#{msg['employee.jobtitle.4']}" itemValue="4"/>
+                                        <f:selectItem itemLabel="#{msg['employee.jobtitle.5']}" itemValue="5"/>
+                                        <f:selectItem itemLabel="#{msg['employee.jobtitle.6']}" itemValue="6"/>
+                                        <f:selectItem itemLabel="#{msg['employee.jobtitle.7']}" itemValue="7"/>
+                                        <f:selectItem itemLabel="#{msg['employee.jobtitle.8']}" itemValue="8"/>
                                     </mp:selectOne>
                                 </div>
                             </div>
@@ -100,7 +107,7 @@
                             <h:commandLink action="#{employeeEdit.saveUser()}"
                                            styleClass="waves-effect waves-orange card-action-flat"
                                            value="#{msg['save']}">
-                                <f:ajax execute="@form" />
+                                <f:ajax execute="@form"/>
                             </h:commandLink>
                             <a class="right red-text text-lighten-1 modal-trigger waves-effect waves-red card-action-flat"
                                href="#remove-warning">#{msg['remove']}</a>
@@ -133,14 +140,17 @@
                                     <input type="password" style="display: none;" value=""/>
                                     <div class="input-field col s12 m6">
                                         <h:inputSecret id="password" styleClass="validate"
-                                                       value="#{employeeEdit.password}" a:pattern="^((?=.*\d)(?=.*[a-z])(?=.*[A-Z])[0-9a-zA-Z]{6,15})?$"/>
-                                        <h:outputLabel value="#{msg['password']}" a:data-error="#{msg['validation.invalid_password']}"
+                                                       value="#{employeeEdit.password}"
+                                                       a:pattern="^((?=.*\d)(?=.*[a-z])(?=.*[A-Z])[0-9a-zA-Z]{6,15})?$"/>
+                                        <h:outputLabel value="#{msg['password']}"
+                                                       a:data-error="#{msg['validation.invalid_password']}"
                                                        for="password"/>
                                     </div>
                                     <div class="input-field col s12 m6">
                                         <h:inputSecret id="password-repeat" styleClass="validate"
                                                        value="#{employeeEdit.passwordRepeat}" a:required="true"/>
-                                        <h:outputLabel for="password-repeat" value="#{msg['employee.edit.password_repeat']}"
+                                        <h:outputLabel for="password-repeat"
+                                                       value="#{msg['employee.edit.password_repeat']}"
                                                        a:data-error="#{msg['validation.field_empty']}"/>
                                     </div>
                                 </div>

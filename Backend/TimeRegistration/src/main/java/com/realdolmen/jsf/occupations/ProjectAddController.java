@@ -36,10 +36,10 @@ public class ProjectAddController {
     public ProjectAddController() {
     }
 
-    public void saveProject() throws IOException {
+    public String saveProject() throws IOException {
         Response response = endpoint.addProject(project);
         if (response.getStatus() == Response.Status.CREATED.getStatusCode()) {
-            getFacesContext().getExternalContext().redirect(Pages.searchOccupation().asRedirect());
+            return Pages.searchOccupation().asRedirect();
         } else if (response.getStatus() == Response.Status.CONFLICT.getStatusCode()) {
             getToastService().newToast(language.getString(Language.Text.OCCUPATION_ADD_NAME_TAKEN));
         } else if (response.getStatus() == Response.Status.BAD_REQUEST.getStatusCode()) {
@@ -49,6 +49,8 @@ public class ProjectAddController {
                 getToastService().newToast(language.getString(Language.Text.PROJECT_DATE_OUT_OF_BOUNDS));
             }
         }
+
+        return "";
     }
 
     public FacesContext getFacesContext() {

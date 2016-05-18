@@ -12,6 +12,7 @@
                 <main>
                     <h:form>
                         <ul id="dropdown1" class="dropdown-content" style="min-width: 200px;">
+                            <ui:insert name="extra-dropdown-options"/>
                             <li><h:commandLink action="#{pages.searchEmployee().asLinkOutcome()}"
                                                value="#{msg['page.navigation.employees']}"/></li>
                             <li><h:commandLink action="#{pages.searchOccupation().asLinkOutcome()}"
@@ -30,7 +31,7 @@
                     <nav>
                         <div class="nav-wrapper realdolmen-red">
                             <div class="left brand-logo">
-                                <a href="/index.xhtml">
+                                <h:link outcome="#{pages.index().asLinkOutcome()}">
                                     <span class="left valign-wrapper" id="toolbar-logo-wrapper">
                                         <span class="hide-on-small-and-down">
                                             <h:graphicImage styleClass="valign" library="img" name="logo-white.svg"/>
@@ -39,12 +40,13 @@
                                             <h:graphicImage styleClass="valign" library="img" name="logo-white-short.svg"/>
                                         </span>
                                     </span>
-                                </a>
+                                </h:link>
                                 <ui:insert name="toolbar-after-logo"/>
                             </div>
 
                             <h:form>
                                 <ul class="right" id="nav-mobile">
+                                    <ui:insert name="extra-nav-options"/>
                                     <li class="hide-on-med-and-down">
                                         <h:commandLink action="#{pages.searchEmployee().asLinkOutcome()}"
                                                        value="#{msg['page.navigation.employees']}"/>
