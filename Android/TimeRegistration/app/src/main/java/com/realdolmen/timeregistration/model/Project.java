@@ -7,6 +7,7 @@ import com.j256.ormlite.field.DatabaseField;
 import com.j256.ormlite.field.ForeignCollectionField;
 import com.j256.ormlite.table.DatabaseTable;
 import com.realdolmen.timeregistration.RC;
+import com.realdolmen.timeregistration.service.data.ProjectDao;
 
 import org.joda.time.DateTime;
 
@@ -17,7 +18,7 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-@DatabaseTable
+@DatabaseTable(daoClass = ProjectDao.class)
 public class Project extends Occupation implements Serializable {
 
 	@DatabaseField
@@ -29,12 +30,18 @@ public class Project extends Occupation implements Serializable {
 	@DatabaseField
 	private int projectNr;
 
+	@DatabaseField(foreign = true)
+	private Project parent;
+
 	private final transient int DTYPE = RC.dtypes.PROJECT_DTYPE;
 
 	@ForeignCollectionField // TODO: 16/05/2016 Check if sets work in the database
-	private Set<Project> subProjects = new HashSet<>();
+	private Collection<Project> subProjects = new HashSet<>();
 
 	private transient Map<Location, Geofence> geofenceMap = new HashMap<>();
+
+	public Project() {
+	}
 
 	public Project(String name, String description, int projectNr, DateTime startDate, DateTime endDate) {
 		super(name, description);
@@ -67,7 +74,7 @@ public class Project extends Occupation implements Serializable {
 		this.projectNr = projectNr;
 	}
 
-	public Set<Project> getSubProjects() {
+	public Collection<Project> getSubProjects() {
 		return subProjects;
 	}
 

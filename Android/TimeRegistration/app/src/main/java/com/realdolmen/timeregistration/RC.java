@@ -89,7 +89,7 @@ public interface RC {
 
 	interface backend {
 
-		String HOST = "http://10.16.26.134";
+		String HOST = "http://10.16.26.76";
 
 		interface urls {
 			String API_LOGIN_URI = HOST + "/api/user/login",
@@ -108,7 +108,7 @@ public interface RC {
 	interface beacon {
 		String UUID = "906bbd3df3264669b1466c225a04d935";
 		boolean MEASURE_RANGE = false;
-		boolean SAVE_POWER = true;
+		boolean SAVE_POWER = false;
 		int PROCESS_DELAY = 2000;
 	}
 

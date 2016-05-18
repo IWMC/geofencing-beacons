@@ -21,6 +21,8 @@ import java.util.List;
 
 public class OccupationRepository extends DataRepository<Occupation, Occupation, Occupation> {
 
+	private static final String TAG = OccupationRepository.class.getSimpleName();
+
 	/**
 	 * Calls {@link OccupationRepository#reload(Context)} to initially load the data. Upon completion,
 	 * the optional {@link LoadCallback#onResult(LoadCallback.Result, Throwable)} is called.
@@ -94,7 +96,7 @@ public class OccupationRepository extends DataRepository<Occupation, Occupation,
 	 * @return The promise.
 	 */
 	@Override
-	public Promise<OccupationRepository, VolleyError, Object> reload(Context context) {
+	public Promise<OccupationRepository, VolleyError, Object> reload(final Context context) {
 		final Deferred<OccupationRepository, VolleyError, Object> def = new DeferredObject<>();
 		BackendService.with(context).getRelevantOccupations(new ResultCallback<List<Occupation>>() {
 			@Override
@@ -102,8 +104,30 @@ public class OccupationRepository extends DataRepository<Occupation, Occupation,
 				if (result == Result.SUCCESS) {
 					OccupationRepository.this.data.clear();
 					OccupationRepository.this.data.addAll(data);
-					setLoaded(true, null);
-					def.resolve(OccupationRepository.this);
+//					Database.with(context).populateOccupations(data).done(new DoneCallback<Void>() {
+//						@Override
+//						public void onDone(Void result) {
+//							Database.with(context).getOccupations().done(new DoneCallback<List<Occupation>>() {
+//								@Override
+//								public void onDone(List<Occupation> result) {
+//									Log.d(TAG, "onDone: " + Arrays.toString(result.toArray()));
+//									setLoaded(true, null);
+//									def.resolve(OccupationRepository.this);
+//								}
+//							}).fail(new FailCallback<Throwable>() {
+//								@Override
+//								public void onFail(Throwable result) {
+//									Log.e(TAG, "onFail: ", result);
+//								}
+//							});
+//						}
+//					}).fail(new FailCallback<Throwable>() {
+//						@Override
+//						public void onFail(Throwable result) {
+//							Log.e(TAG, "onFail: ", result);
+//						}
+//					});
+
 				} else {
 					def.reject(error);
 				}

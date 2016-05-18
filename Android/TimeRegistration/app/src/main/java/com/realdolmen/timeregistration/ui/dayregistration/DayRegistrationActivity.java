@@ -136,8 +136,12 @@ public class DayRegistrationActivity extends AppCompatActivity {
 
 	@Override
 	protected void onNewIntent(final Intent intent) {
-		if (intent != null && intent.getAction() != null) {
-			suggestionDialogs.handleNewIntent(intent);
+
+		if (intent != null) {
+			Log.d(LOG_TAG, "onNewIntent: action: " + intent.getAction());
+			if(intent.getAction() != null) {
+				suggestionDialogs.handleNewIntent(intent);
+			}
 		}
 	}
 

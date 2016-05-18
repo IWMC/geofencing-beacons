@@ -71,7 +71,7 @@ public class UserManager {
 							@Override
 							public void onDone(final User result) {
 								if (result == null) {
-									preferences.edit().remove(RC.pref.KEY_LAST_LOGGED_IN).commit();
+									preferences.edit().remove(RC.pref.KEY_LAST_LOGGED_IN).apply();
 									def.reject(new NoSuchUserException("User not found"));
 									return;
 								}
@@ -98,6 +98,7 @@ public class UserManager {
 							@Override
 							public void onFail(Throwable result) {
 								Log.d(TAG, "onFail: Unable to get user", result);
+								preferences.edit().remove(RC.pref.KEY_LAST_LOGGED_IN).apply();
 								def.reject(result);
 							}
 						});
