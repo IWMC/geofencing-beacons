@@ -28,7 +28,17 @@ public class Occupation implements Serializable {
 	@DatabaseField(foreign = true)
 	private BeaconAction action;
 
+	private double estimatedHours;
+
 	public Occupation() {
+	}
+
+	public double getEstimatedHours() {
+		return estimatedHours;
+	}
+
+	public void setEstimatedHours(double estimatedHours) {
+		this.estimatedHours = estimatedHours;
 	}
 
 	public Occupation(String name, String description) {
@@ -103,5 +113,9 @@ public class Occupation implements Serializable {
 		result = 31 * result + (description != null ? description.hashCode() : 0);
 		result = 31 * result + (int) (id ^ (id >>> 32));
 		return result;
+	}
+
+	public boolean hasEstimation() {
+		return estimatedHours > 0.0;
 	}
 }

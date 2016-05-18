@@ -7,6 +7,7 @@ import org.hibernate.search.annotations.Field;
 import org.hibernate.search.annotations.Indexed;
 
 import javax.persistence.*;
+import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 import javax.xml.bind.annotation.XmlRootElement;
@@ -21,7 +22,9 @@ import java.io.Serializable;
 @NamedQueries({
         @NamedQuery(name = "Occupation.findOnlyOccupations", query = "SELECT o FROM Occupation o WHERE TYPE(o) IN (Occupation) ORDER BY o.name"),
         @NamedQuery(name = "Occupation.findAll", query = "SELECT o FROM Occupation o WHERE TYPE(o) IN (Occupation, Project)"),
-        @NamedQuery(name = "Occupation.removeById", query = "DELETE FROM Occupation o WHERE o.id = :id")
+        @NamedQuery(name = "Occupation.removeById", query = "DELETE FROM Occupation o WHERE o.id = :id"),
+//        @NamedQuery(name = "Occupation.findTasksByEmployee", query = "SELECT o FROM Occupation o INNER JOIN Task t ON t.project.id = o.id " +
+//                "WHERE :employeeId IN (SELECT td.id from t.employees AS td)")
 })
 @Indexed
 @XmlRootElement
@@ -43,6 +46,9 @@ public class Occupation implements Serializable, Initializable {
             Project.initialize(((Task) occupation).getProject());
         }
     }
+
+    @Min(0)
+    private double estimatedHours;
 
     @Column
     @NotNull(message = "name.empty")
@@ -94,6 +100,14 @@ public class Occupation implements Serializable, Initializable {
         if (description != null && !description.trim().isEmpty())
             result += ", description: " + description;
         return result;
+    }
+
+    public double getEstimatedHours() {
+        return estimatedHours;
+    }
+
+    public void setEstimatedHours(double estimatedHours) {
+        this.estimatedHours = estimatedHours;
     }
 
     @Override

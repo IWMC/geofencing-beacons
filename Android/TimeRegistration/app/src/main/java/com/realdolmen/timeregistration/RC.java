@@ -89,7 +89,7 @@ public interface RC {
 
 	interface backend {
 
-		String HOST = "http://10.16.26.76";
+		String HOST = "http://192.168.1.4";
 
 		interface urls {
 			String API_LOGIN_URI = HOST + "/api/user/login",

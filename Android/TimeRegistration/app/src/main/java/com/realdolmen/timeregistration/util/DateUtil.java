@@ -3,8 +3,10 @@ package com.realdolmen.timeregistration.util;
 import android.content.Context;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.support.annotation.StringRes;
 
 import com.realdolmen.timeregistration.R;
+import com.realdolmen.timeregistration.model.Task;
 import com.realdolmen.timeregistration.service.GenericVolleyError;
 import com.realdolmen.timeregistration.service.ResultCallback;
 
@@ -15,7 +17,6 @@ import org.joda.time.DateTimeZone;
 import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;
 
-import java.text.DateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -147,5 +148,15 @@ public class DateUtil {
 
 	public static boolean enforceUTC(DateTime date, @Nullable ResultCallback<?> callback) {
 		return enforceUTC(date, "Date should be in UTC zone!", callback);
+	}
+
+	public static String getEstimatedHoursString(Context context, Task task, @StringRes int hoursString, @StringRes int hoursMinutesString) {
+		if (task.getEstimatedHours() == (int) task.getEstimatedHours()) {
+			return context.getString(hoursString, (int) task.getEstimatedHours());
+		} else {
+			return context.getString(hoursMinutesString,
+										   (int) task.getEstimatedHours(),
+										   (int) ((task.getEstimatedHours() - Math.floor(task.getEstimatedHours())) * 60));
+		}
 	}
 }

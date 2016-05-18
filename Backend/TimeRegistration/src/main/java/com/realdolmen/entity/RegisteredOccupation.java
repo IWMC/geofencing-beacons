@@ -15,7 +15,7 @@ import java.util.Date;
 @XmlRootElement
 @NamedQueries({
         @NamedQuery(name = "RegisteredOccupation.findOccupationsInRange",
-                query = "SELECT r FROM RegisteredOccupation r WHERE YEAR(r.startDate) = :year AND DAY(r.endDate) = :day AND MONTH(r.startDate) = :month AND r.employee.id = :employeeId ORDER BY r.startDate")
+                query = "SELECT r FROM RegisteredOccupation r WHERE YEAR(r.startDate) = :year AND DAY(r.startDate) = :day AND MONTH(r.startDate) = :month AND r.employee.id = :employeeId ORDER BY r.startDate")
         , @NamedQuery(name = "RegisteredOccupation.findOccupationByIdAndUser", query = "SELECT ro FROM RegisteredOccupation ro WHERE ro.employee.id = :userId AND ro.id = :regId")
 })
 public class RegisteredOccupation implements Initializable {

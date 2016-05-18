@@ -104,31 +104,9 @@ public class OccupationRepository extends DataRepository<Occupation, Occupation,
 				if (result == Result.SUCCESS) {
 					OccupationRepository.this.data.clear();
 					OccupationRepository.this.data.addAll(data);
-//					Database.with(context).populateOccupations(data).done(new DoneCallback<Void>() {
-//						@Override
-//						public void onDone(Void result) {
-//							Database.with(context).getOccupations().done(new DoneCallback<List<Occupation>>() {
-//								@Override
-//								public void onDone(List<Occupation> result) {
-//									Log.d(TAG, "onDone: " + Arrays.toString(result.toArray()));
-//									setLoaded(true, null);
-//									def.resolve(OccupationRepository.this);
-//								}
-//							}).fail(new FailCallback<Throwable>() {
-//								@Override
-//								public void onFail(Throwable result) {
-//									Log.e(TAG, "onFail: ", result);
-//								}
-//							});
-//						}
-//					}).fail(new FailCallback<Throwable>() {
-//						@Override
-//						public void onFail(Throwable result) {
-//							Log.e(TAG, "onFail: ", result);
-//						}
-//					});
-
+					setLoaded(true, null);
 				} else {
+					setLoaded(false, error);
 					def.reject(error);
 				}
 			}

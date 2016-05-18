@@ -31,9 +31,6 @@ import java.util.Set;
 @Indexed
 public class Task extends Occupation {
 
-    @Min(0)
-    private double estimatedHours;
-
     @ManyToOne
     @NotNull(message = "project.empty", groups = Existing.class)
     @JsonInclude(JsonInclude.Include.NON_DEFAULT)
@@ -62,16 +59,8 @@ public class Task extends Occupation {
 
     public Task(String name, String description, double estimatedHours, Project project) {
         super(name, description);
-        this.estimatedHours = estimatedHours;
+        setEstimatedHours(estimatedHours);
         this.project = project;
-    }
-
-    public double getEstimatedHours() {
-        return estimatedHours;
-    }
-
-    public void setEstimatedHours(double estimatedHours) {
-        this.estimatedHours = estimatedHours;
     }
 
     @XmlTransient

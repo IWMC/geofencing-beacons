@@ -218,6 +218,16 @@ public class OccupationEndpoint {
         Employee e = sm.findEmployee();
         Employee.initialize(e);
         occupations.addAll(e.getMemberProjects());
+        List<Task> tasks = em.createNamedQuery("Project.findTasksForEmployee").setParameter("employee", e).getResultList(); //em.createNamedQuery("Occupation.findTasksByEmployee", Task.class).setParameter("employeeId", e.getId()).getResultList();
+        tasks.forEach(t -> {
+            if(t.getProject() != null) {
+                t.setProjectId(t.getProject().getId());
+            } else {
+                System.err.println("Project is null in task " + t);
+            }
+        });
+        System.out.println("Adding " + tasks.size() + " tasks!");
+        occupations.addAll(tasks);
         return Response.ok(occupations).build();
     }
 

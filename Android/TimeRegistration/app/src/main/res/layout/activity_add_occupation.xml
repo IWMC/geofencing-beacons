@@ -108,6 +108,10 @@
                         android:layout_height="wrap_content"
                         android:text="XX:XX"
                         android:textColor="@color/colorPrimary"/>
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:id="@+id/add_occupation_est_text"
+                        android:layout_height="wrap_content" android:text="(est)"/>
                 </LinearLayout>
             </TableRow>
         </LinearLayout>

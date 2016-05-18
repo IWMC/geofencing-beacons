@@ -53,4 +53,7 @@
     <string name="notification_beacon_remove_multiple_results">You are leaving multiple occupations.</string>
     <string name="login_no_internet">You must be connected to the internet!</string>
     <string name="login_unknown_error">Whoops! Something weird went wrong!</string>
+    <string name="task_part_of">Part of %s</string>
+    <string name="task_hours">Estimated %s hours</string>
+    <string name="task_hours_minutes" formatted="false">Estimated %1$sh, %2$s min</string>
 </resources>

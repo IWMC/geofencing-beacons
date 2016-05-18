@@ -1,8 +1,8 @@
 package com.realdolmen.timeregistration.model;
 
-public class Task extends Occupation {
+import com.realdolmen.timeregistration.service.repository.Repositories;
 
-	private double estimatedHours;
+public class Task extends Occupation {
 
 	private Project project;
 
@@ -13,19 +13,14 @@ public class Task extends Occupation {
 
 	public Task(String name, String description, double estimatedHours, Project project) {
 		super(name, description);
-		this.estimatedHours = estimatedHours;
+		setEstimatedHours(estimatedHours);
 		this.project = project;
 	}
 
-	public double getEstimatedHours() {
-		return estimatedHours;
-	}
-
-	public void setEstimatedHours(double estimatedHours) {
-		this.estimatedHours = estimatedHours;
-	}
-
 	public Project getProject() {
+		if(project == null) {
+			project = (Project) Repositories.occupationRepository().getById(getProjectId());
+		}
 		return project;
 	}
 

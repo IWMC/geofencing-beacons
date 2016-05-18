@@ -356,6 +356,8 @@ public class DayRegistrationActivity extends AppCompatActivity {
 				if (refresh) {
 					geofenceRequester.disconnect();
 					geofenceRequester.connect();
+				} else {
+					geofenceRequester.connect();
 				}
 			}
 		});

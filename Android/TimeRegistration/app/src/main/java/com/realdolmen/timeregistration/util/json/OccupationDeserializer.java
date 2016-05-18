@@ -47,7 +47,7 @@ public class OccupationDeserializer implements JsonDeserializer<Occupation> {
 	}
 
 	private Task createTask(JsonObject json, JsonDeserializationContext context) {
-		return null;
+		return new Gson().fromJson(json, Task.class);
 	}
 
 	private Occupation createOccupation(JsonObject json, JsonDeserializationContext context) {
@@ -64,6 +64,7 @@ public class OccupationDeserializer implements JsonDeserializer<Occupation> {
 		int projectNr = json.get("projectNr").getAsInt();
 		Project[] subProjects = context.deserialize(json.get("subProjects"), Project[].class);
 		Set<Location> locations = new HashSet<>();
+		double estimatedHours = 0;
 		if (json.has("locations"))
 			for (JsonElement jsonElement : json.get("locations").getAsJsonArray()) {
 				JsonObject loc = jsonElement.getAsJsonObject();
@@ -73,6 +74,9 @@ public class OccupationDeserializer implements JsonDeserializer<Occupation> {
 				locations.add(l);
 			}
 
+		if(json.has("estimatedHours")) {
+			estimatedHours = json.get("estimatedHours").getAsDouble();
+		}
 		Project p = new Project(name, description, projectNr, DateTime.parse(startDate).toDateTime(DateTimeZone.UTC), DateTime.parse(endDate).toDateTime(DateTimeZone.UTC));
 		if (subProjects != null)
 			p.setSubProjects(new HashSet<>(Arrays.asList(subProjects)));
@@ -82,7 +86,7 @@ public class OccupationDeserializer implements JsonDeserializer<Occupation> {
 			map.put(location, GeofenceUtils.createGeofence(id, location, 1000));
 		}
 		p.setGeofenceMap(map);
-
+		p.setEstimatedHours(estimatedHours);
 		return p;
 	}
 }

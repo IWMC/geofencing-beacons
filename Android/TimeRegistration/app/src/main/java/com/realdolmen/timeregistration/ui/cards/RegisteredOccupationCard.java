@@ -63,7 +63,7 @@ public class RegisteredOccupationCard extends OccupationCard<RegisteredOccupatio
 			sb.append(DateUtil.formatToHours(DateUtil.toLocal(data.getRegisteredStart())))
 					.append(" - ");
 
-			if(data.getRegisteredEnd() != null) {
+			if (data.getRegisteredEnd() != null) {
 				sb.append(DateUtil.formatToHours(DateUtil.toLocal(data.getRegisteredEnd())));
 			} else {
 				sb.append("Ongoing...");
@@ -71,6 +71,15 @@ public class RegisteredOccupationCard extends OccupationCard<RegisteredOccupatio
 			description.setText(sb.toString());
 		} else
 			description.setText("No duration set!");
+//		if (o.getOccupation() instanceof Task) {
+//			DateTime now = new DateTime();
+//			int minutes = Minutes.minutesBetween(o.getRegisteredStart(), now).getMinutes();
+//			if (minutes > o.getOccupation().getEstimatedHours() * 60) {
+//				overdue.setVisibility(VISIBLE);
+//			} else {
+//				overdue.setVisibility(GONE);
+//			}
+//		}
 		updateViewState();
 	}
 
@@ -88,7 +97,7 @@ public class RegisteredOccupationCard extends OccupationCard<RegisteredOccupatio
 				editButton.setVisibility(INVISIBLE);
 			}
 		} else {
-			if(editButton != null) {
+			if (editButton != null) {
 				if (isEditable()) {
 					editButton.setVisibility(VISIBLE);
 				} else {

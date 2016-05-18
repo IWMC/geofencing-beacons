@@ -33,8 +33,12 @@ public class RDBeaconListener extends BeaconListener {
 
 	@Override
 	public void didRangeBeaconsInRegion(Collection<Beacon> collection, Region region) {
-		BeaconAction action = Repositories.beaconRepository().getByRegion(region);
-		if (action != null && eventHandler != null)
-			eventHandler.registerEvent(new RangeBeaconEvent(BeaconEvent.BeaconEventType.RANGE, action, region, collection));
+		try {
+			BeaconAction action = Repositories.beaconRepository().getByRegion(region);
+			if (action != null && eventHandler != null)
+				eventHandler.registerEvent(new RangeBeaconEvent(BeaconEvent.BeaconEventType.RANGE, action, region, collection));
+		} catch (IllegalStateException ise) {
+			//Sometimes happens when the beacon library accidentally calls this method one last time while everything is already shut down
+		}
 	}
 }

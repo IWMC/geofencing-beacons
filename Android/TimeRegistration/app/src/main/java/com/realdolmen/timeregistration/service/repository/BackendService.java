@@ -3,6 +3,7 @@ package com.realdolmen.timeregistration.service.repository;
 import android.content.Context;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.util.Log;
 
 import com.android.volley.AuthFailureError;
 import com.android.volley.NetworkResponse;
@@ -174,7 +175,7 @@ public class BackendService {
 	 */
 	public Promise<LoginRequest, Throwable, Void> login(@NonNull final LoginRequest loginRequest) {
 		final Deferred<LoginRequest, Throwable, Void> def = new DeferredObject<>();
-
+		Log.d("BackendService", "login: Connecting with " + RC.backend.HOST);
 
 		JsonObjectRequest request = new JsonObjectRequest(Request.Method.POST, API_LOGIN_URI,
 														  compactGson.toJson(loginRequest), new Response.Listener<JSONObject>() {

@@ -41,7 +41,7 @@
     <string name="day_registration_confirm_ongoing_occupations">U heeft nog lopende bezigheden!</string>
     <string name="dialog_negative_no">Nee</string>
     <string name="dialog_positive_yes">Ja</string>
-    <string name="suggestion_already_confirmed_day">Je kan geen bezigheid toevoegen aan en dag dat al bevestigd is</string>
+    <string name="suggestion_already_confirmed_day">Je kan geen bezigheid toevoegen aan en dag dat al bevestigd is!</string>
     <string name="menu_logout">Afmelden</string>
     <string name="notification_remove_single_result_title">%s afwerken?</string>
     <string name="menu_reports">Rapporten</string>
@@ -54,4 +54,7 @@
     <string name="notification_remove_multi_results_title">Je bent niet langer dicht bij verschillende bezigheden…</string>
     <string name="notification_remove_single_result_message"><![CDATA[Het lijkt erop dat je <b>%1$s</b> verlaat. Wil je je bezigheid beëindigen om <b>%2$s</b>?]]></string>
     <string name="login_unknown_error">Er is een onbekende fout!</string>
+    <string name="task_hours">Geschat %s uren</string>
+    <string name="task_hours_minutes" formatted="false">Geschat %1$su, %2$s min</string>
+    <string name="task_part_of">Onderdeel van %s</string>
 </resources>
