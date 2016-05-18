@@ -8,7 +8,59 @@
 <f:view>
     <ui:composition template="page-template.xhtml">
         <ui:define name="body">
-            <p>Hello world</p>
+            <div class="valign-wrapper container index-container" style="height: calc(100% - 50px); padding: 0px">
+                <div class="row" style="margin: 0px auto; position: relative;">
+                    <div class="col s12 m6">
+                        <div class="card">
+                            <div class="card-content">
+                                <h:link outcome="#{pages.searchEmployee().asLinkOutcome()}">
+                                    <p class="card-title valign-wrapper">
+                                        <i class="valign material-icons medium">person</i>
+                                        <span class="valign">#{msg['page.navigation.employees']}</span>
+                                    </p>
+                                </h:link>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col s12 m6">
+                        <div class="card">
+                            <div class="card-content">
+                                <h:link outcome="#{pages.searchOccupation().asLinkOutcome()}"
+                                        class="card-title">
+                                    <p class="card-title valign-wrapper">
+                                        <i class="valign material-icons medium">assignment</i>
+                                        <span class="valign">#{msg['page.navigation.occupations']}</span>
+                                    </p>
+                                </h:link>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col s12 m6">
+                        <div class="card">
+                            <div class="card-content">
+                                <h:link outcome="#{pages.reports().asLinkOutcome()}" class="card-title">
+                                    <p class="card-title valign-wrapper">
+                                        <i class="material-icons medium valign">trending_up</i>
+                                        <span class="valign">#{msg['page.navigation.reports']}</span>
+                                    </p>
+                                </h:link>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col s12 m6">
+                        <h:form class="card">
+                            <div class="card-content">
+                                <h:commandLink action="#{loginController.logout()}" class="card-title">
+                                    <p class="card-title valign-wrapper">
+                                        <i class="material-icons medium valign">exit_to_app</i>
+                                        <span class="valign">#{msg['page.navigation.logout']}</span>
+                                    </p>
+                                </h:commandLink>
+                            </div>
+                        </h:form>
+                    </div>
+                </div>
+            </div>
         </ui:define>
     </ui:composition>
 </f:view>

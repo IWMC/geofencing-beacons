@@ -189,6 +189,14 @@ table.reports-table thead tr th:first-child {
     padding: 0px 15px;
 }
 
+.index-container a {
+    text-decoration: none;
+    color: black;
+}
+
+.index-container a span {
+    margin-left: 15px;
+}
 
 /*************** Maps ***************/
 #pac-input {
