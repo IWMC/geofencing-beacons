@@ -35,8 +35,8 @@ public class OccupationDetailController extends DetailController<Occupation> {
         return occupationEndpoint;
     }
 
-    public void removeOccupation() throws IOException {
+    public String removeOccupation() throws IOException {
         getOccupationEndpoint().removeOccupation(getEntity().getId());
-        redirect(Pages.searchOccupation());
+        return redirect(Pages.searchOccupation());
     }
 }

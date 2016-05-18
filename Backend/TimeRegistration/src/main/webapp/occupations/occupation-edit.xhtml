@@ -46,7 +46,7 @@
                         </div>
                         <div class="card-action">
                             <h:panelGroup rendered="#{userContext.isManagementEmployee}">
-                                <h:commandLink action="#{occupationEdit.saveOccupation()}"
+                                <h:commandLink action="#{occupationEdit.saveOccupation}"
                                                styleClass="waves-effect waves-orange card-action-flat"
                                                value="#{msg['save']}">
                                     <f:ajax execute="@form"/>

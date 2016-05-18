@@ -124,7 +124,7 @@ public class Pages {
         }
 
         public Page param(String key, Object value) {
-            params.put(key, value.toString());
+            params.put(key, value == null ? "" : value.toString());
             return this;
         }
 

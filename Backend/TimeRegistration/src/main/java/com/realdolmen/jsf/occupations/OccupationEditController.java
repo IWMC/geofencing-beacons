@@ -17,8 +17,8 @@ public class OccupationEditController extends OccupationDetailController impleme
 
     public String saveOccupation() throws IOException {
         Response response = getOccupationEndpoint().update(getEntity().getId(), getEntity());
-        if (response.getStatus() == Response.Status.NO_CONTENT.getStatusCode()) {
-            return Pages.occupationDetailsFrom(getEntity()).asLocationRedirect();
+         if (response.getStatus() == Response.Status.NO_CONTENT.getStatusCode()) {
+            return Pages.occupationDetailsFrom(getEntity()).asRedirect();
         } else {
             getToastService().newToast(getLanguage().getString("occupation.name_taken"), 3000);
             return "";

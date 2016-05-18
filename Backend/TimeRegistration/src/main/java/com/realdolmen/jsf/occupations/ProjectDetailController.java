@@ -182,7 +182,7 @@ public class ProjectDetailController extends DetailController<Project> implement
         searchLocation = new Location(location.getLat(), location.getLng());
     }
 
-    @Authorized(UserGroup.PROJECT_MANAGER_ONLY)
+    @Authorized(UserGroup.MANAGEMENT_EMPLOYEE_ONLY)
     public String removeProject() throws IOException {
         getOccupationEndpoint().removeOccupation(getEntity().getId());
         return redirect(Pages.searchOccupation());
