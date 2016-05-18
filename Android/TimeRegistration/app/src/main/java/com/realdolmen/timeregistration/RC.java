@@ -115,6 +115,7 @@ public interface RC {
 	interface dtypes {
 		int OCCUPATION_DTYPE = 1;
 		int PROJECT_DTYPE = 2;
+		int TASK_DTYPE = 3;
 	}
 
 	interface pref {

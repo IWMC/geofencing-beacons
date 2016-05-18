@@ -12,6 +12,7 @@ import com.google.gson.JsonParseException;
 import com.realdolmen.timeregistration.RC;
 import com.realdolmen.timeregistration.model.Occupation;
 import com.realdolmen.timeregistration.model.Project;
+import com.realdolmen.timeregistration.model.Task;
 import com.realdolmen.timeregistration.service.location.geofence.GeofenceUtils;
 
 import org.joda.time.DateTime;
@@ -34,6 +35,8 @@ public class OccupationDeserializer implements JsonDeserializer<Occupation> {
 			switch (DTYPE) {
 				case RC.dtypes.PROJECT_DTYPE:
 					return createProject(json, context);
+				case RC.dtypes.TASK_DTYPE:
+					return createTask(json, context);
 				case RC.dtypes.OCCUPATION_DTYPE:
 				default:
 					return createOccupation(json, context);
@@ -41,6 +44,10 @@ public class OccupationDeserializer implements JsonDeserializer<Occupation> {
 		}
 
 		return createOccupation(json, context);
+	}
+
+	private Task createTask(JsonObject json, JsonDeserializationContext context) {
+		return null;
 	}
 
 	private Occupation createOccupation(JsonObject json, JsonDeserializationContext context) {

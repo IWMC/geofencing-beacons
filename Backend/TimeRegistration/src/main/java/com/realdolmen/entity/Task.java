@@ -2,6 +2,7 @@ package com.realdolmen.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.realdolmen.entity.validation.Existing;
 import com.realdolmen.entity.validation.New;
 import org.hibernate.search.annotations.Indexed;
@@ -46,6 +47,10 @@ public class Task extends Occupation {
     @JsonInclude(JsonInclude.Include.NON_DEFAULT)
     @Min(value = 1, message = "project_id.invalid", groups = New.class)
     private long projectId;
+
+    @Transient
+    @JsonProperty("DTYPE")
+    private final int DTYPE = 3;
 
     @Transient
     @JsonInclude(JsonInclude.Include.NON_DEFAULT)
