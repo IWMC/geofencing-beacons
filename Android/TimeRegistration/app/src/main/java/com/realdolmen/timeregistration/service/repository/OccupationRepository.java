@@ -21,6 +21,8 @@ import java.util.List;
 
 public class OccupationRepository extends DataRepository<Occupation, Occupation, Occupation> {
 
+	private static final String TAG = OccupationRepository.class.getSimpleName();
+
 	/**
 	 * Calls {@link OccupationRepository#reload(Context)} to initially load the data. Upon completion,
 	 * the optional {@link LoadCallback#onResult(LoadCallback.Result, Throwable)} is called.
@@ -94,7 +96,7 @@ public class OccupationRepository extends DataRepository<Occupation, Occupation,
 	 * @return The promise.
 	 */
 	@Override
-	public Promise<OccupationRepository, VolleyError, Object> reload(Context context) {
+	public Promise<OccupationRepository, VolleyError, Object> reload(final Context context) {
 		final Deferred<OccupationRepository, VolleyError, Object> def = new DeferredObject<>();
 		BackendService.with(context).getRelevantOccupations(new ResultCallback<List<Occupation>>() {
 			@Override
@@ -103,8 +105,8 @@ public class OccupationRepository extends DataRepository<Occupation, Occupation,
 					OccupationRepository.this.data.clear();
 					OccupationRepository.this.data.addAll(data);
 					setLoaded(true, null);
-					def.resolve(OccupationRepository.this);
 				} else {
+					setLoaded(false, error);
 					def.reject(error);
 				}
 			}

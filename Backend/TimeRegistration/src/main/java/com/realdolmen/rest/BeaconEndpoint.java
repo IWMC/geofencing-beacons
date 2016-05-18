@@ -9,6 +9,7 @@ import javax.persistence.NoResultException;
 import javax.persistence.OptimisticLockException;
 import javax.persistence.PersistenceContext;
 import javax.persistence.TypedQuery;
+import javax.transaction.Transactional;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
@@ -44,6 +45,7 @@ public class BeaconEndpoint {
     @POST
     @Consumes("application/json")
     @Authorized(UserGroup.MANAGEMENT_EMPLOYEE_ONLY)
+    @Transactional
     public Response create(Beacon entity) {
         em.persist(entity);
         return Response.created(
@@ -54,6 +56,7 @@ public class BeaconEndpoint {
     @DELETE
     @Path("/{id:[0-9][0-9]*}")
     @Authorized(UserGroup.MANAGEMENT_EMPLOYEE_ONLY)
+    @Transactional
     public Response deleteById(@PathParam("id") Long id) {
         Beacon entity = em.find(Beacon.class, id);
         if (entity == null) {
@@ -84,6 +87,7 @@ public class BeaconEndpoint {
     @GET
     @Produces("application/json")
     @Authorized(UserGroup.MANAGEMENT_EMPLOYEE_ONLY)
+    @Transactional
     public Response listAll(@QueryParam("start") Integer startPosition,
                                 @QueryParam("max") Integer maxResult) {
         TypedQuery<Beacon> findAllQuery = em.createNamedQuery("Beacon.findAll", Beacon.class);
@@ -104,6 +108,7 @@ public class BeaconEndpoint {
     @GET
     @Produces("application/json")
     @Authorized
+    @Transactional
     public Response listAllForEmployee(@QueryParam("start") Integer startPosition,
                                            @QueryParam("max") Integer maxResult) {
         TypedQuery<Beacon> findAllQuery = em.createNamedQuery("Beacon.findAllForEmployee", Beacon.class);
@@ -125,6 +130,7 @@ public class BeaconEndpoint {
     @Path("/{id:[0-9][0-9]*}")
     @Consumes("application/json")
     @Authorized(UserGroup.MANAGEMENT_EMPLOYEE_ONLY)
+    @Transactional
     public Response update(@PathParam("id") Long id, Beacon entity) {
         if (entity == null) {
             return Response.status(Status.BAD_REQUEST).build();

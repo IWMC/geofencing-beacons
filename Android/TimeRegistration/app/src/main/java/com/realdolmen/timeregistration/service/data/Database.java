@@ -6,15 +6,14 @@ import android.support.annotation.NonNull;
 import android.util.Log;
 
 import com.j256.ormlite.android.apptools.OpenHelperManager;
-import com.j256.ormlite.dao.DaoManager;
+import com.realdolmen.timeregistration.model.Occupation;
+import com.realdolmen.timeregistration.model.Project;
 import com.realdolmen.timeregistration.model.User;
 
 import org.jdeferred.Deferred;
 import org.jdeferred.Promise;
 import org.jdeferred.impl.DeferredObject;
 
-import java.sql.SQLException;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -22,14 +21,16 @@ import java.util.concurrent.Executors;
 public final class Database {
 
 	private static final String TAG = Database.class.getSimpleName();
-	public static final int DATABASE_VERSION = 5;
+	public static final int DATABASE_VERSION = 11;
 	public static final String DATABASE_NAME = "timeregistration.db";
 
 	private DatabaseHelper helper;
 	private ExecutorService dbWorker = Executors.newSingleThreadExecutor();
 	private ExecutorService resolver = Executors.newCachedThreadPool();
 
-	private UserDao userDao;
+	private UserDao _userDao;
+	private OccupationDao _occupationDao;
+	private ProjectDao _projectDao;
 
 	private Context context;
 
@@ -46,6 +47,62 @@ public final class Database {
 		}
 		instance.context = context;
 		return instance;
+	}
+
+	private <A, B, C> void resolve(final Deferred<A, B, C> deferred, final A data) {
+		new AsyncTask<Void, Void, Void>() {
+			@Override
+			protected Void doInBackground(Void... params) {
+				deferred.resolve(data);
+				return null;
+			}
+		}.executeOnExecutor(resolver);
+	}
+
+	private <A, B, C> void reject(final Deferred<A, B, C> deferred, final B data) {
+		new AsyncTask<Void, Void, Void>() {
+			@Override
+			protected Void doInBackground(Void... params) {
+				deferred.reject(data);
+				return null;
+			}
+		}.executeOnExecutor(resolver);
+	}
+
+	private UserDao userDao() {
+		if (_userDao == null)
+			try {
+				_userDao = helper.getDao(User.class);
+				Log.d(TAG, "Successfully created user dao");
+			} catch (Exception e) {
+				Log.e(TAG, "Failed to create user dao", e);
+			}
+
+		return _userDao;
+	}
+
+	private OccupationDao occupationDao() {
+		if (_occupationDao == null)
+			try {
+				_occupationDao = helper.getDao(Occupation.class);
+				Log.d(TAG, "Successfully created occupation dao");
+			} catch (Exception e) {
+				Log.e(TAG, "Failed to create occupation dao", e);
+			}
+
+		return _occupationDao;
+	}
+
+	private ProjectDao projectDao() {
+		if (_projectDao == null)
+			try {
+				_projectDao = helper.getDao(Project.class);
+				Log.d(TAG, "Successfully created user dao");
+			} catch (Exception e) {
+				Log.e(TAG, "Failed to create user dao", e);
+			}
+
+		return _projectDao;
 	}
 
 	public synchronized Promise<User, Throwable, Void> addUser(final User user) {
@@ -114,7 +171,7 @@ public final class Database {
 		return def.promise();
 	}
 
-	public Promise<User, Throwable, Void> getUserById(final int id) {
+	public synchronized Promise<User, Throwable, Void> getUserById(final int id) {
 		final Deferred<User, Throwable, Void> def = new DeferredObject<>();
 		dbWorker.submit(new Runnable() {
 			@Override
@@ -154,36 +211,44 @@ public final class Database {
 		return def.promise();
 	}
 
-	private <A, B, C> void resolve(final Deferred<A, B, C> deferred, final A data) {
-		new AsyncTask<Void, Void, Void>() {
+	public synchronized Promise<List<Occupation>, Throwable, Void> getOccupations() {
+		final Deferred<List<Occupation>, Throwable, Void> def = new DeferredObject<>();
+		dbWorker.submit(new Runnable() {
 			@Override
-			protected Void doInBackground(Void... params) {
-				deferred.resolve(data);
-				return null;
+			public void run() {
+				try {
+					List<Occupation> occs = occupationDao().queryForAll();
+					resolve(def, occs);
+				} catch (Exception e) {
+					reject(def, e);
+				}
 			}
-		}.executeOnExecutor(resolver);
+		});
+		return def.promise();
 	}
 
-	private <A, B, C> void reject(final Deferred<A, B, C> deferred, final B data) {
-		new AsyncTask<Void, Void, Void>() {
+	public Promise<Void, Throwable, Void> populateOccupations(final List<Occupation> occs) {
+		final Deferred<Void, Throwable, Void> def = new DeferredObject<>();
+		dbWorker.submit(new Runnable() {
 			@Override
-			protected Void doInBackground(Void... params) {
-				deferred.reject(data);
-				return null;
-			}
-		}.executeOnExecutor(resolver);
-	}
+			public void run() {
+				for(Occupation o : occs) {
+					try {
+						if (o instanceof Project) {
+							projectDao().createIfNotExists((Project) o);
+						} else {
+							occupationDao().createIfNotExists(o);
+						}
+					} catch (Exception e) {
+						reject(def, e);
+						break;
+					}
+				}
 
-	private UserDao userDao() {
-		if (userDao == null)
-			try {
-				userDao = helper.getDao(User.class);
-				Log.d(TAG, "Successfully created user dao");
-			} catch (Exception e) {
-				Log.e(TAG, "Failed to create user dao", e);
+				resolve(def, null);
 			}
-
-		return userDao;
+		});
+		return def.promise();
 	}
 
 	public void updateUser(User loggedInUser) {

@@ -7,6 +7,7 @@
     android:paddingLeft="30dp"
     android:paddingRight="30dp"
     android:paddingTop="@dimen/activity_vertical_margin"
+                android:id="@+id/login_root_view"
     tools:contextActivity=".ui.login.LoginActivity">
 
     <LinearLayout

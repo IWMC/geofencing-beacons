@@ -1,12 +1,15 @@
 package com.realdolmen.timeregistration.model;
 
 import com.j256.ormlite.field.DatabaseField;
+import com.j256.ormlite.table.DatabaseTable;
 import com.realdolmen.timeregistration.service.location.beacon.BeaconMode;
 
 import java.io.Serializable;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
 
+@DatabaseTable
 public class BeaconAction implements Serializable {
 
 	private static final long serialVersionUID = 1L;
@@ -14,12 +17,13 @@ public class BeaconAction implements Serializable {
 	@DatabaseField(generatedId = true)
 	private Long id;
 
-	@DatabaseField
-	private Set<Occupation> occupations = new HashSet<>();
+	@DatabaseField(foreign = true)
+	private Collection<Occupation> occupations = new HashSet<>();
 
 	@DatabaseField
 	private String region;
 
+	@DatabaseField(foreign = true)
 	private BeaconMode mode;
 
 	public Long getId() {
@@ -30,7 +34,7 @@ public class BeaconAction implements Serializable {
 		this.id = id;
 	}
 
-	public Set<Occupation> getOccupations() {
+	public Collection<Occupation> getOccupations() {
 		return this.occupations;
 	}
 

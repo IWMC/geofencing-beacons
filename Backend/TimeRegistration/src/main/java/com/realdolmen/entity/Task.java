@@ -2,6 +2,7 @@ package com.realdolmen.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.realdolmen.entity.validation.Existing;
 import com.realdolmen.entity.validation.New;
 import org.hibernate.search.annotations.Indexed;
@@ -30,9 +31,6 @@ import java.util.Set;
 @Indexed
 public class Task extends Occupation {
 
-    @Min(0)
-    private double estimatedHours;
-
     @ManyToOne
     @NotNull(message = "project.empty", groups = Existing.class)
     @JsonInclude(JsonInclude.Include.NON_DEFAULT)
@@ -49,6 +47,10 @@ public class Task extends Occupation {
     private long projectId;
 
     @Transient
+    @JsonProperty("DTYPE")
+    private final int DTYPE = 3;
+
+    @Transient
     @JsonInclude(JsonInclude.Include.NON_DEFAULT)
     private List<Long> employeeIds = new ArrayList<>();
 
@@ -57,16 +59,8 @@ public class Task extends Occupation {
 
     public Task(String name, String description, double estimatedHours, Project project) {
         super(name, description);
-        this.estimatedHours = estimatedHours;
+        setEstimatedHours(estimatedHours);
         this.project = project;
-    }
-
-    public double getEstimatedHours() {
-        return estimatedHours;
-    }
-
-    public void setEstimatedHours(double estimatedHours) {
-        this.estimatedHours = estimatedHours;
     }
 
     @XmlTransient

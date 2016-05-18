@@ -1,6 +1,7 @@
 package com.realdolmen.config;
 
 import com.realdolmen.entity.*;
+import com.realdolmen.entity.dao.TaskDao;
 import com.realdolmen.service.SecurityManager;
 import org.apache.commons.lang3.time.DateUtils;
 import org.jboss.logging.Logger;
@@ -26,6 +27,9 @@ public class JPAImportConfig {
 
     @PersistenceContext(unitName = PersistenceUnit.PRODUCTION)
     private EntityManager entityManager;
+
+    @Inject
+    private TaskDao taskDao;
 
     @Inject
     private SecurityManager securityManager;
@@ -54,6 +58,7 @@ public class JPAImportConfig {
         Occupation o = new Occupation();
         o.setName("Lunch");
         o.setDescription("Lunch time");
+        o.setEstimatedHours(0.5);
 
         Project project = new Project();
         project.setProjectNr(8);
@@ -93,6 +98,12 @@ public class JPAImportConfig {
             Employee employee1 = entityManager.createNamedQuery("Employee.findByUsername", Employee.class).setParameter("username", "brentc").getSingleResult();
             employee1.getMemberProjects().add(project);
             entityManager.merge(employee1);
+            Project p = entityManager.merge(project);
+
+            Task javadocTask = new Task("Javadoc", "Omschrijving van javadoc", 8.5, p);
+            project.getTasks().add(javadocTask);
+            javadocTask.getEmployeeIds().add(2L);
+            taskDao.addTask(javadocTask);
         } catch (NoResultException nrex) {
             Logger.getLogger(JPAImportConfig.class).info("Couldn't find user 'brentc', skipping project assignment");
         }
@@ -100,7 +111,7 @@ public class JPAImportConfig {
 
     private void createAndPersistOccupations() {
         final Random random = new Random();
-        for (int i = 0; i < 15; i++) {
+        for (int i = 0; i < 3; i++) {
             Project project = new Project();
             project.setProjectNr(i + 9);
             DateTime date = DateTime.now().withYear(random.nextInt(3) + 2014).withDayOfYear(1 + random.nextInt(365));

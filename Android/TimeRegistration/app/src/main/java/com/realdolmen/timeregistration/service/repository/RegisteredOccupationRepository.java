@@ -180,6 +180,7 @@ public class RegisteredOccupationRepository extends DataRepository<RegisteredOcc
 					setLoaded(true, null);
 					def.resolve(RegisteredOccupationRepository.this);
 				} else {
+					setLoaded(false, error);
 					def.reject(error);
 				}
 			}

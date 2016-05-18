@@ -9,7 +9,9 @@ import com.realdolmen.timeregistration.RC;
 import com.realdolmen.timeregistration.model.LoginRequest;
 import com.realdolmen.timeregistration.model.User;
 import com.realdolmen.timeregistration.service.repository.BackendService;
+import com.realdolmen.timeregistration.util.Util;
 import com.realdolmen.timeregistration.util.exception.MissingTokenException;
+import com.realdolmen.timeregistration.util.exception.NoInternetException;
 import com.realdolmen.timeregistration.util.exception.NoSuchUserException;
 
 import org.jdeferred.Deferred;
@@ -61,6 +63,9 @@ public class UserManager {
 	 */
 	public Promise<Void, Throwable, Void> checkLocalLogin() {
 		final Deferred<Void, Throwable, Void> def = new DeferredObject<>();
+		if(!Util.isConnectedToInternet(context)) {
+			def.reject(new NoInternetException("Logging in is impossible without an internet connection."));
+		} else {
 		executor.submit(new Runnable() {
 			@Override
 			public void run() {
@@ -71,7 +76,7 @@ public class UserManager {
 							@Override
 							public void onDone(final User result) {
 								if (result == null) {
-									preferences.edit().remove(RC.pref.KEY_LAST_LOGGED_IN).commit();
+									preferences.edit().remove(RC.pref.KEY_LAST_LOGGED_IN).apply();
 									def.reject(new NoSuchUserException("User not found"));
 									return;
 								}
@@ -98,6 +103,7 @@ public class UserManager {
 							@Override
 							public void onFail(Throwable result) {
 								Log.d(TAG, "onFail: Unable to get user", result);
+								preferences.edit().remove(RC.pref.KEY_LAST_LOGGED_IN).apply();
 								def.reject(result);
 							}
 						});
@@ -108,6 +114,7 @@ public class UserManager {
 				}
 			}
 		});
+	}
 		return def.promise();
 	}
 
@@ -127,34 +134,38 @@ public class UserManager {
 	 */
 	public Promise<Void, Throwable, Void> doLogin(@NonNull final String username, @NonNull final String password) {
 		final Deferred<Void, Throwable, Void> def = new DeferredObject<>();
-		executor.submit(new Runnable() {
-			@Override
-			public void run() {
-				LoginRequest request = new LoginRequest(username, password);
-				BackendService.with(context).login(request).done(new DoneCallback<LoginRequest>() {
-					@Override
-					public void onDone(LoginRequest result) {
-						//successful login
-						db.addUser(result.toUser()).done(new DoneCallback<User>() {
-							@Override
-							public void onDone(User result) {
-								loggedInUser = result;
-								preferences.edit().putInt(RC.pref.KEY_LAST_LOGGED_IN, loggedInUser.getId()).apply();
-								Log.d(TAG, "onDone: Saving user " + loggedInUser.getId() + " to shared prefs");
-								def.resolve(null);
-							}
-						});
-					}
-				}).fail(new FailCallback<Throwable>() {
-					@Override
-					public void onFail(Throwable result) {
-						//failed login
-						Log.d(TAG, "onFail: Login failed", result);
-						def.reject(result);
-					}
-				});
-			}
-		});
+		if(!Util.isConnectedToInternet(context)) {
+			def.reject(new NoInternetException());
+		} else {
+			executor.submit(new Runnable() {
+				@Override
+				public void run() {
+					LoginRequest request = new LoginRequest(username, password);
+					BackendService.with(context).login(request).done(new DoneCallback<LoginRequest>() {
+						@Override
+						public void onDone(LoginRequest result) {
+							//successful login
+							db.addUser(result.toUser()).done(new DoneCallback<User>() {
+								@Override
+								public void onDone(User result) {
+									loggedInUser = result;
+									preferences.edit().putInt(RC.pref.KEY_LAST_LOGGED_IN, loggedInUser.getId()).apply();
+									Log.d(TAG, "onDone: Saving user " + loggedInUser.getId() + " to shared prefs");
+									def.resolve(null);
+								}
+							});
+						}
+					}).fail(new FailCallback<Throwable>() {
+						@Override
+						public void onFail(Throwable result) {
+							//failed login
+							Log.d(TAG, "onFail: Login failed", result);
+							def.reject(result);
+						}
+					});
+				}
+			});
+		}
 		return def.promise();
 	}
 

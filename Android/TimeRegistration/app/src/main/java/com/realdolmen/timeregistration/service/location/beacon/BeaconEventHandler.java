@@ -132,6 +132,7 @@ public class BeaconEventHandler {
 		if (event.getAction().getOccupations().size() == 1 && event.getType() == BeaconEvent.BeaconEventType.ENTER) {
 			Occupation o = (Occupation) event.getAction().getOccupations().toArray()[0];
 			if (Repositories.registeredOccupationRepository().isAlreadyOngoing(o, time.withZone(DateTimeZone.UTC))) {
+				Log.d(TAG, "trigger: " + o.getName() + " is already ongoing!");
 				return;
 			}
 			intent.setAction(RC.action.fromNotification.ADD_SINGLE_RESULT);
@@ -178,6 +179,8 @@ public class BeaconEventHandler {
 				content = context.getString(R.string.notification_beacon_remove_multiple_results);
 			}
 		}
+
+		Log.d(TAG, "trigger: Showing beacon notification");
 		NotificationCompat.Builder builder = Util.newNotification(context, context.getString(R.string.notification_title), content, pendingIntent);
 		Util.notifyUser(context, event.getRegion().getId2().toInt(), builder);
 	}

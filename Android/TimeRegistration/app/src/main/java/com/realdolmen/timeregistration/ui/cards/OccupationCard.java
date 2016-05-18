@@ -23,6 +23,9 @@ public abstract class OccupationCard<E> extends FrameLayout implements Adaptable
 	@BindView(R.id.occupation_card_edit)
 	RippleView editButton;
 
+	@BindView(R.id.occupation_card_overdue)
+	TextView overdue;
+
 	FrameLayout frame;
 
 	E data;

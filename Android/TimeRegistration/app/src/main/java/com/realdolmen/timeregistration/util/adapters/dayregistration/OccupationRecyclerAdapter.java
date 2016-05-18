@@ -9,14 +9,30 @@ import com.realdolmen.timeregistration.service.repository.Repositories;
 import com.realdolmen.timeregistration.ui.cards.OccupationCard;
 import com.realdolmen.timeregistration.ui.cards.RegularOccupationCard;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Observer;
+
 public class OccupationRecyclerAdapter extends RecyclerView.Adapter<OccupationViewHolder> {
 
 	private Occupation selectedItem;
 
 	private RecyclerView owner;
 
+	private List<Observer> observers = new ArrayList<>();
+
 	public OccupationRecyclerAdapter(RecyclerView owner) {
 		this.owner = owner;
+	}
+
+	public void registerObserver(Observer o) {
+		if(!observers.contains(o))
+			observers.add(o);
+	}
+
+	public void unregisterObserver(Observer o) {
+		if(observers.contains(o))
+			observers.remove(o);
 	}
 
 	@Override
@@ -46,6 +62,9 @@ public class OccupationRecyclerAdapter extends RecyclerView.Adapter<OccupationVi
 
 	public void setSelectedItem(Occupation occ) {
 		selectedItem = occ;
+		for(Observer o : observers) {
+			o.update(null, occ);
+		}
 		for (int i = 0; i < getItemCount(); i++) {
 			OccupationCard<Occupation> card = (OccupationCard<Occupation>) owner.getChildAt(i);
 			if (card != null)

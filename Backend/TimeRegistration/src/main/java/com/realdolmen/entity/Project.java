@@ -27,6 +27,7 @@ import java.util.Set;
 @Indexed
 @NamedQueries({
         @NamedQuery(name = "Project.findAll", query = "SELECT p FROM Project p"),
+        @NamedQuery(name = "Project.findTasksForEmployee", query = "SELECT t FROM Project o INNER JOIN o.tasks t WHERE :employee MEMBER OF t.employees"),
         @NamedQuery(name = "Project.findProjectWithEmployeesById", query = "SELECT p FROM Project p JOIN FETCH p.employees where p.id=:id")
 })
 public class Project extends Occupation implements Serializable {
@@ -74,7 +75,6 @@ public class Project extends Occupation implements Serializable {
     })
     //@JsonInclude(JsonInclude.Include.NON_DEFAULT)
     @JsonIgnore
-    // TODO: 21/03/2016 Field bridge to allow search on subprojects
     private Set<Project> subProjects = new HashSet<>();
 
     @ManyToMany(mappedBy = "memberProjects")

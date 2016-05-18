@@ -20,6 +20,7 @@ import com.realdolmen.timeregistration.service.GenericVolleyError;
 import com.realdolmen.timeregistration.service.data.UserManager;
 import com.realdolmen.timeregistration.service.location.beacon.BeaconDwellService;
 import com.realdolmen.timeregistration.ui.dayregistration.DayRegistrationActivity;
+import com.realdolmen.timeregistration.util.exception.NoInternetException;
 
 import org.jdeferred.DoneCallback;
 import org.jdeferred.FailCallback;
@@ -82,7 +83,15 @@ public class LoginActivity extends AppCompatActivity implements ServiceConnectio
 					}
 				});
 				loggingIn = false;
-				if (result instanceof IllegalStateException) {
+				if (result instanceof NoInternetException) {
+					setContentView(R.layout.activity_login);
+					ButterKnife.bind(LoginActivity.this);
+					if (DEBUG) {
+						username.setText("brentc");
+						password.setText("Bla123");
+					}
+					Snackbar.make(findViewById(R.id.login_root_view), R.string.login_no_internet, Snackbar.LENGTH_LONG).show();
+				} else if (result instanceof IllegalStateException) {
 					//Proceed with regular login procedure
 					runOnUiThread(new Runnable() {
 						@Override
@@ -96,8 +105,7 @@ public class LoginActivity extends AppCompatActivity implements ServiceConnectio
 						}
 					});
 				} else {
-					//Network unavailable
-					Snackbar.make(findViewById(R.id.day_registration_root_view), "Network exception", Snackbar.LENGTH_LONG).show();
+					Snackbar.make(findViewById(R.id.login_root_view), R.string.login_unknown_error, Snackbar.LENGTH_LONG).show();
 				}
 			}
 		});
@@ -106,7 +114,7 @@ public class LoginActivity extends AppCompatActivity implements ServiceConnectio
 	private void onSuccessfulLogin() {
 		Log.d(TAG, "onSuccessfulLogin: Login successful");
 		finish();
-		if(getIntent() != null && getIntent().getAction() != null && getIntent().getAction().equals(RC.action.login.RE_AUTHENTICATION)) {
+		if (getIntent() != null && getIntent().getAction() != null && getIntent().getAction().equals(RC.action.login.RE_AUTHENTICATION)) {
 			bindService(new Intent(this, BeaconDwellService.class), this, 0);
 			canNotifyService = true;
 		} else {
@@ -183,8 +191,10 @@ public class LoginActivity extends AppCompatActivity implements ServiceConnectio
 					} else {
 						Snackbar.make(findViewById(android.R.id.content), R.string.login_generic_error, Snackbar.LENGTH_LONG).show();
 					}
+				} else if (result instanceof NoInternetException) {
+					Snackbar.make(findViewById(R.id.login_root_view), R.string.login_no_internet, Snackbar.LENGTH_LONG).show();
 				} else {
-					Snackbar.make(findViewById(R.id.day_registration_root_view), "An error occured.", Snackbar.LENGTH_LONG).show();
+					Snackbar.make(findViewById(R.id.login_root_view), "An error occured.", Snackbar.LENGTH_LONG).show();
 				}
 
 				runOnUiThread(new Runnable() {
@@ -220,7 +230,7 @@ public class LoginActivity extends AppCompatActivity implements ServiceConnectio
 			dwellManager = ((BeaconDwellService.Binder) service).getService();
 		}
 
-		if(canNotifyService) {
+		if (canNotifyService) {
 			dwellManager.positiveLoginResult();
 		}
 	}

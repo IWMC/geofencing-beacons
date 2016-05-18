@@ -51,7 +51,11 @@ public class RegisteredOccupationRecyclerAdapter extends RecyclerView.Adapter<Re
 
 	@Override
 	public int getItemCount() {
-		return Repositories.registeredOccupationRepository().getAll(date).size();
+		try {
+			return Repositories.registeredOccupationRepository().getAll(date).size();
+		} catch (IllegalStateException ise) {
+			return 0;
+		}
 	}
 
 	public List<RegisteredOccupation> getData() {

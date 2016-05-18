@@ -20,8 +20,8 @@ import android.widget.TableRow;
 import android.widget.TextView;
 import android.widget.TimePicker;
 
-import com.realdolmen.timeregistration.RC;
 import com.realdolmen.timeregistration.R;
+import com.realdolmen.timeregistration.RC;
 import com.realdolmen.timeregistration.model.Occupation;
 import com.realdolmen.timeregistration.model.RegisteredOccupation;
 import com.realdolmen.timeregistration.service.repository.LoadCallback;
@@ -31,6 +31,10 @@ import com.realdolmen.timeregistration.util.UTC;
 import com.realdolmen.timeregistration.util.adapters.dayregistration.OccupationRecyclerAdapter;
 
 import org.joda.time.DateTime;
+import org.joda.time.DurationFieldType;
+
+import java.util.Observable;
+import java.util.Observer;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -45,7 +49,7 @@ import static com.realdolmen.timeregistration.util.DateUtil.enforceUTC;
 import static com.realdolmen.timeregistration.util.DateUtil.toLocal;
 import static com.realdolmen.timeregistration.util.DateUtil.toUTC;
 
-public class AddOccupationActivity extends AppCompatActivity {
+public class AddOccupationActivity extends AppCompatActivity implements Observer {
 
 	private static final String LOG_TAG = AddOccupationActivity.class.getSimpleName();
 
@@ -64,6 +68,9 @@ public class AddOccupationActivity extends AppCompatActivity {
 	@BindView(R.id.add_occupation_endTime)
 	Button endButton;
 
+	@BindView(R.id.add_occupation_est_text)
+	TextView estLabel;
+
 	private boolean initializing;
 
 	private OccupationRecyclerAdapter adapter;
@@ -79,6 +86,7 @@ public class AddOccupationActivity extends AppCompatActivity {
 	private RegisteredOccupation registeredOccupationToBeEdited;
 
 	private boolean editMode;
+	private int minutesToAdd = 0;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -115,6 +123,7 @@ public class AddOccupationActivity extends AppCompatActivity {
 				}
 			});
 		}
+
 		updateDateButtons();
 	}
 
@@ -182,13 +191,18 @@ public class AddOccupationActivity extends AppCompatActivity {
 				startDate = toLocal(registeredOccupationToBeEdited.getRegisteredStart());
 
 			if (endDate == null)
-				if(registeredOccupationToBeEdited.getRegisteredEnd() == null) {
+				if (registeredOccupationToBeEdited.getRegisteredEnd() == null) {
 					endDate = new DateTime();
 				} else {
 					endDate = toLocal(registeredOccupationToBeEdited.getRegisteredEnd());
 				}
 		}
-		System.out.println("Update buttons! START: " + startDate + " END: " + endDate);
+
+		if (adapter != null && adapter.getSelectedItem() != null && adapter.getSelectedItem().hasEstimation()) {
+			estLabel.setVisibility(View.VISIBLE);
+		} else {
+			estLabel.setVisibility(View.GONE);
+		}
 		startButton.setText(DateUtil.formatToHours(startDate, DateFormat.is24HourFormat(getApplicationContext())));
 		endButton.setText(DateUtil.formatToHours(endDate, DateFormat.is24HourFormat(getApplicationContext())));
 	}
@@ -216,6 +230,7 @@ public class AddOccupationActivity extends AppCompatActivity {
 				if (result == Result.SUCCESS) {
 					adapter = new OccupationRecyclerAdapter(recycler);
 					recycler.setAdapter(adapter);
+					adapter.registerObserver(AddOccupationActivity.this);
 					if (editMode)
 						adapter.setSelectedItem(registeredOccupationToBeEdited.getOccupation());
 					initializing = false;
@@ -245,6 +260,19 @@ public class AddOccupationActivity extends AppCompatActivity {
 		MenuInflater inflater = getMenuInflater();
 		inflater.inflate(R.menu.add_occupation_menu, menu);
 		return true;
+	}
+
+	private void addEstTime() {
+		if (endDate != null && startDate != null)
+			endDate = startDate.withFieldAdded(DurationFieldType.minutes(), minutesToAdd);
+		updateDateButtons();
+	}
+
+	@Override
+	protected void onDestroy() {
+		if (adapter != null)
+			adapter.unregisterObserver(this);
+		super.onDestroy();
 	}
 
 	@Override
@@ -310,6 +338,17 @@ public class AddOccupationActivity extends AppCompatActivity {
 		editMode = savedInstanceState.getBoolean(EDIT_MODE);
 		if (savedInstanceState.getSerializable(SELECTED_OCCUPATION) != null && adapter != null)
 			adapter.setSelectedItem((Occupation) savedInstanceState.getSerializable(SELECTED_OCCUPATION));
+		updateDateButtons();
+	}
+
+	@Override
+	public void update(Observable observable, Object data) {
+		if (data instanceof Occupation) {
+			double temp = ((Occupation) data).getEstimatedHours() * 60;
+			Log.d(LOG_TAG, "update: data is occupation" + ((Occupation) data).getEstimatedHours());
+			minutesToAdd = (int) temp;
+		}
+		addEstTime();
 		updateDateButtons();
 	}
 }

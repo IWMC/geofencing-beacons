@@ -181,8 +181,11 @@ public class GeofenceRequester implements ConnectionCallbacks, OnConnectionFaile
 		}
 
 		if (!geofences.isEmpty()) {
+			Log.d(LOG_TAG, "pushGeofences: Adding " + geofences.size() + " geofences");
 			getGeofencingApi().removeGeofences(getGoogleApiClient(), createRequestPendingIntent()).setResultCallback(this);
 			getGeofencingApi().addGeofences(getGoogleApiClient(), createGeofencingRequest(geofences), createRequestPendingIntent()).setResultCallback(this);
+		} else {
+			Log.d(LOG_TAG, "pushGeofences: Geofences list is empty");
 		}
 	}
 
@@ -217,7 +220,7 @@ public class GeofenceRequester implements ConnectionCallbacks, OnConnectionFaile
 
 	private LocationRequest createLocationRequest() {
 		return LocationRequest.create()
-				.setPriority(LocationRequest.PRIORITY_BALANCED_POWER_ACCURACY)
+				.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY)
 				.setInterval(RC.geofencing.POLL_INTERVAL)
 				.setFastestInterval(RC.geofencing.POLL_INTERVAL);
 	}

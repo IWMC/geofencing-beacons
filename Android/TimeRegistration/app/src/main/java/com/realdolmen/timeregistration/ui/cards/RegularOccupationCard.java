@@ -8,6 +8,8 @@ import android.widget.FrameLayout;
 
 import com.realdolmen.timeregistration.R;
 import com.realdolmen.timeregistration.model.Occupation;
+import com.realdolmen.timeregistration.model.Task;
+import com.realdolmen.timeregistration.util.DateUtil;
 
 import butterknife.ButterKnife;
 
@@ -49,6 +51,19 @@ public class RegularOccupationCard extends OccupationCard<Occupation> {
 		} else {
 			description.setText("");
 			description.setVisibility(GONE);
+		}
+
+		if(o instanceof Task) {
+			description.setText(getContext().getString(R.string.task_part_of, ((Task) o).getProject().getName()));
+			if(o.getEstimatedHours() > 0) {
+				String est = DateUtil.getEstimatedHoursString(getContext(), (Task) o, R.string.task_hours, R.string.task_hours_minutes);
+				title.setText(o.getName());
+				String desc = "";
+				if(o.getDescription() != null && !o.getDescription().isEmpty()) {
+					desc = "\n\n" + o.getDescription();
+				}
+				description.setText(getContext().getString(R.string.task_part_of,((Task) o).getProject().getName()) + "\n" + est + desc);
+			}
 		}
 	}
 

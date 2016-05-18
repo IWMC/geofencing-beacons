@@ -40,15 +40,20 @@
     <string name="day_registration_confirm_ongoing_occupations">You still have ongoing occupations!</string>
     <string name="dialog_positive_yes">Yes</string>
     <string name="dialog_negative_no">No</string>
-    <string name="notification_remove_single_result_message" translatable="false"><![CDATA[It seems like you are leaving <b>%1$s</b>. Do you wish to finish your occupation on <b>%2$s</b>?]]></string>
+    <string name="notification_remove_single_result_message"><![CDATA[It seems like you are leaving <b>%1$s</b>. Do you wish to finish your occupation on <b>%2$s</b>?]]></string>
     <string name="notification_remove_single_result_title">Finish %s?</string>
     <string name="suggestion_already_confirmed_day">You cannot add an occupation to an already confirmed day!</string>
-    <string name="notification_remove_multi_results_title"/>
-    <string name="notification_remove_multi_results"/>
+    <string name="notification_remove_multi_results_title">You are no longer near multiple occupations…</string>
+    <string name="notification_remove_multi_results">You are near multiple occupations…</string>
     <string name="menu_logout">Log out</string>
     <string name="menu_reports">Reports</string>
     <string name="notification_beacon_add_single_result">You are near \'%s\'.</string>
     <string name="notification_beacon_remove_single_result">You are no longer near \'%s\'.</string>
     <string name="notification_beacon_add_multiple_results">You are near multiple occupations.</string>
     <string name="notification_beacon_remove_multiple_results">You are leaving multiple occupations.</string>
+    <string name="login_no_internet">You must be connected to the internet!</string>
+    <string name="login_unknown_error">Whoops! Something weird went wrong!</string>
+    <string name="task_part_of">Part of %s</string>
+    <string name="task_hours">Estimated %s hours</string>
+    <string name="task_hours_minutes" formatted="false">Estimated %1$sh, %2$s min</string>
 </resources>

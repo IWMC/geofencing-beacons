@@ -24,6 +24,7 @@ import com.realdolmen.timeregistration.util.DateUtil;
 import com.realdolmen.timeregistration.util.UTC;
 
 import org.jdeferred.DoneCallback;
+import org.jdeferred.FailCallback;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
 
@@ -56,6 +57,11 @@ public class SuggestionDialogs {
 				} else {
 					showSingleResultEnterDialog(time, o);
 				}
+			}
+		}).fail(new FailCallback<Throwable>() {
+			@Override
+			public void onFail(Throwable result) {
+				Log.d(LOG_TAG, "onFail: Single result enter failed", result);
 			}
 		});
 	}

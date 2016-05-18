@@ -29,8 +29,11 @@ public class RegisteredOccupation implements Serializable {
 	@DatabaseField
 	private boolean confirmed = false;
 
-	@DatabaseField
+	@DatabaseField(id = true)
 	private long id;
+
+	public RegisteredOccupation() {
+	}
 
 	public long getId() {
 		return id;

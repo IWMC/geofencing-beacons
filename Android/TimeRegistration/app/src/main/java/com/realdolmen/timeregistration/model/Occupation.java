@@ -3,10 +3,11 @@ package com.realdolmen.timeregistration.model;
 import com.j256.ormlite.field.DatabaseField;
 import com.j256.ormlite.table.DatabaseTable;
 import com.realdolmen.timeregistration.RC;
+import com.realdolmen.timeregistration.service.data.OccupationDao;
 
 import java.io.Serializable;
 
-@DatabaseTable(tableName = "Occupation")
+@DatabaseTable(tableName = "Occupation", daoClass = OccupationDao.class)
 public class Occupation implements Serializable {
 
 	private transient final int DTYPE = RC.dtypes.OCCUPATION_DTYPE;
@@ -21,8 +22,24 @@ public class Occupation implements Serializable {
 	@DatabaseField(id = true)
 	private long id;
 
-	@DatabaseField
+	@DatabaseField(foreign = true)
 	private User owner;
+
+	@DatabaseField(foreign = true)
+	private BeaconAction action;
+
+	private double estimatedHours;
+
+	public Occupation() {
+	}
+
+	public double getEstimatedHours() {
+		return estimatedHours;
+	}
+
+	public void setEstimatedHours(double estimatedHours) {
+		this.estimatedHours = estimatedHours;
+	}
 
 	public Occupation(String name, String description) {
 		this(name);
@@ -96,5 +113,9 @@ public class Occupation implements Serializable {
 		result = 31 * result + (description != null ? description.hashCode() : 0);
 		result = 31 * result + (int) (id ^ (id >>> 32));
 		return result;
+	}
+
+	public boolean hasEstimation() {
+		return estimatedHours > 0.0;
 	}
 }

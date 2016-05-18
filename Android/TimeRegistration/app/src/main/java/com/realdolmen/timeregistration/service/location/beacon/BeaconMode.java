@@ -1,10 +1,20 @@
 package com.realdolmen.timeregistration.service.location.beacon;
 
+import com.j256.ormlite.field.DatabaseField;
+import com.j256.ormlite.table.DatabaseTable;
+
 import java.io.Serializable;
 
+@DatabaseTable
 public class BeaconMode implements Serializable {
 
+	@DatabaseField(generatedId = true)
+	private long id;
+
+	@DatabaseField
 	private boolean rangeMode;
+
+	@DatabaseField
 	private double meters;
 
 	public BeaconMode() {
